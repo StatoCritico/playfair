@@ -124,6 +124,19 @@
 .macchina[data-attivo="condenser"] .marcatore[data-parte="condenser"] text, .macchina[data-attivo="economiser"] .marcatore[data-parte="economiser"] text,
 .macchina[data-attivo="feedpump"] .marcatore[data-parte="feedpump"] text { fill: var(--su-primario); }
 
+/* parte 8 (Playfair-G): le perdite per irraggiamento, cioè tutti i tratti grigi sottili che escono dalla macchina */
+.macchina[data-attivo="radiation"] .parte-radiation { fill-opacity: .12; stroke-opacity: 1; }
+.macchina[data-attivo="radiation"] .p-radiation { opacity: 1 !important; }
+.macchina[data-attivo="radiation"] .scia.p-radiation { stroke-width: calc(var(--w) * .7px + 6px); }
+.macchina[data-attivo="radiation"] .alveo.p-radiation { opacity: .45 !important; stroke-width: calc(var(--w) * 1.2px + 6px); }
+.macchina[data-attivo="radiation"] .marcatore[data-parte="radiation"] circle { fill: var(--primario); stroke: var(--primario); r: 31px; }
+.macchina[data-attivo="radiation"] .marcatore[data-parte="radiation"] text { fill: var(--su-primario); }
+/* riquadri sotto la tavola: stessa cella, ciascuno spostato secondo --x */
+@media (min-width: 1100px) {
+  .note-giu { display: grid; align-items: start; }
+  .note-giu > .nota { grid-area: 1 / 1; }
+}
+
 /* ------- riquadri di annotazione */
 .nota {
   position: relative; display: block; padding: .85rem 1rem .9rem; text-decoration: none; color: var(--bp-testo);
@@ -224,6 +237,7 @@ a.nota:focus-visible { outline: 2px solid var(--bp-luce); outline-offset: 4px; }
     <a href="playfair-e.html" data-tip="Electric — curve di carico elettriche quartorarie: profili, mappe orarie, picchi e base">Playfair-E</a>
     <a href="playfair-t.html" data-tip="Thermal — consumi termici ed elettrici, simulazione di cogenerazione e valutazione economica">Playfair-T</a>
     <a href="playfair-m.html" data-tip="Money — confronto di investimenti energetici: VAN, TIR, ROI, WACC e flussi di cassa">Playfair-M</a>
+    <a href="playfair-g.html" data-tip="Group — analisi di un gruppo di sedi: consumo specifico, incidenza sul totale, Pareto e mappa a 4 quadranti">Playfair-G</a>
     <a href="playfair-c.html" data-tip="Cusum — regressione, residui e carta CUSUM secondo ISO 50006">Playfair-C</a>
     <a href="sankey.html" data-tip="Sankey — disegna diagrammi di flusso energetico a blocchi e verifica i bilanci">Sankey</a>
     <a href="personaggi.html" data-tip="William Playfair e Matthew H. P. R. Sankey: chi erano">Personaggi</a>
@@ -301,6 +315,7 @@ a.nota:focus-visible { outline: 2px solid var(--bp-luce); outline-offset: 4px; }
           <rect class="parte parte-condenser" data-parte="condenser" x="1338" y="828" width="444" height="184" rx="6"/>
           <rect class="parte parte-economiser" data-parte="economiser" x="26" y="402" width="172" height="166" rx="6"/>
           <rect class="parte parte-feedpump" data-parte="feedpump" x="402" y="852" width="250" height="136" rx="6"/>
+          <rect class="parte parte-radiation" data-parte="radiation" x="780" y="584" width="430" height="104" rx="6"/>
         </g>
         <g class="flussi-g">
 <g class="alvei">
@@ -309,19 +324,19 @@ a.nota:focus-visible { outline: 2px solid var(--bp-luce); outline-offset: 4px; }
 <path class="alveo p-pipe p-boiler p-engine" d="M640 376 H1340 C1420 376 1470 384 1500 400" style="--w:52.0;stroke:var(--flusso-th)"/>
 <path class="alveo p-engine" d="M1352 220 H1905" style="--w:8.9;stroke:var(--flusso-el)"/>
 <path class="alveo p-condenser p-engine" d="M1420 330 C1560 360 1600 430 1600 560 V1044" style="--w:38.4;stroke:var(--flusso-altro)"/>
-<path class="alveo p-engine" d="M1772 205 C1800 196 1812 160 1830 104" style="--w:5.0;stroke:var(--flusso-altro)"/>
-<path class="alveo p-engine" d="M1640 404 C1700 440 1740 442 1812 442" style="--w:5.0;stroke:var(--flusso-altro)"/>
-<path class="alveo p-boiler" d="M706 690 C706 638 730 630 838 630" style="--w:5.0;stroke:var(--flusso-altro)"/>
-<path class="alveo p-pipe" d="M1050 580 C1108 580 1132 590 1140 614" style="--w:5.0;stroke:var(--flusso-altro)"/>
-<path class="alveo p-condenser" d="M1782 696 C1790 738 1808 750 1838 750" style="--w:5.0;stroke:var(--flusso-altro)"/>
+<path class="alveo p-engine p-radiation" d="M1772 205 C1800 196 1812 160 1830 104" style="--w:5.0;stroke:var(--flusso-altro)"/>
+<path class="alveo p-engine p-radiation" d="M1640 404 C1700 440 1740 442 1812 442" style="--w:5.0;stroke:var(--flusso-altro)"/>
+<path class="alveo p-boiler p-radiation" d="M706 690 C706 638 730 630 838 630" style="--w:5.0;stroke:var(--flusso-altro)"/>
+<path class="alveo p-pipe p-radiation" d="M1050 580 C1108 580 1132 590 1140 614" style="--w:5.0;stroke:var(--flusso-altro)"/>
+<path class="alveo p-condenser p-radiation" d="M1782 696 C1790 738 1808 750 1838 750" style="--w:5.0;stroke:var(--flusso-altro)"/>
 <path class="alveo p-engine p-pipe p-boiler" d="M1548 180 C1606 180 1622 140 1600 122 C1590 113 1570 112 1545 112 H160 C122 112 108 138 116 160 C124 180 150 184 214 184" style="--w:5.0;stroke:var(--flusso-acqua)"/>
 <path class="alveo p-condenser p-pipe" d="M1336 578 C1440 578 1487 600 1487 660 V872 C1487 905 1462 915 1424 915" style="--w:5.0;stroke:var(--flusso-acqua)"/>
 <path class="alveo p-feedpump p-economiser p-condenser" d="M1424 915 H200 C140 915 112 885 112 830 V262 C112 240 128 230 160 230 H214" style="--w:5.0;stroke:var(--flusso-acqua)"/>
 <path class="alveo p-economiser p-boiler" d="M356 604 C356 500 296 444 200 444 C140 444 112 470 70 480 H4" style="--w:5.1;stroke:var(--flusso-th)"/>
-<path class="alveo p-pipe" d="M830 106 C830 92 826 84 828 68" style="--w:5.0;stroke:var(--flusso-altro)"/>
-<path class="alveo p-feedpump" d="M962 918 C952 930 946 944 940 962" style="--w:5.0;stroke:var(--flusso-altro)"/>
-<path class="alveo p-economiser" d="M106 304 H60" style="--w:5.0;stroke:var(--flusso-altro)"/>
-<path class="alveo p-economiser" d="M106 762 H58" style="--w:5.0;stroke:var(--flusso-altro)"/>
+<path class="alveo p-pipe p-radiation" d="M830 106 C830 92 826 84 828 68" style="--w:5.0;stroke:var(--flusso-altro)"/>
+<path class="alveo p-feedpump p-radiation" d="M962 918 C952 930 946 944 940 962" style="--w:5.0;stroke:var(--flusso-altro)"/>
+<path class="alveo p-economiser p-radiation" d="M106 304 H60" style="--w:5.0;stroke:var(--flusso-altro)"/>
+<path class="alveo p-economiser p-radiation" d="M106 762 H58" style="--w:5.0;stroke:var(--flusso-altro)"/>
 </g>
 <g class="scie">
 <path class="scia p-grate p-boiler" d="M300 772 V610 C300 470 380 400 520 384" style="--w:13.7;--ciclo:64;--dur:0.500s;stroke:var(--flusso-th);stroke-dasharray:15 49"/>
@@ -329,19 +344,19 @@ a.nota:focus-visible { outline: 2px solid var(--bp-luce); outline-offset: 4px; }
 <path class="scia p-pipe p-boiler p-engine" d="M640 376 H1340 C1420 376 1470 384 1500 400" style="--w:52.0;--ciclo:216;--dur:2.000s;stroke:var(--flusso-th);stroke-dasharray:57 159"/>
 <path class="scia p-engine" d="M1352 220 H1905" style="--w:8.9;--ciclo:53;--dur:0.400s;stroke:var(--flusso-el);stroke-dasharray:12 41"/>
 <path class="scia p-condenser p-engine" d="M1420 330 C1560 360 1600 430 1600 560 V1044" style="--w:38.4;--ciclo:162;--dur:2.000s;stroke:var(--flusso-altro);stroke-dasharray:42 120"/>
-<path class="scia p-engine" d="M1772 205 C1800 196 1812 160 1830 104" style="--w:5.0;--ciclo:53;--dur:0.400s;stroke:var(--flusso-altro);stroke-dasharray:12 41"/>
-<path class="scia p-engine" d="M1640 404 C1700 440 1740 442 1812 442" style="--w:5.0;--ciclo:53;--dur:0.400s;stroke:var(--flusso-altro);stroke-dasharray:12 41"/>
-<path class="scia p-boiler" d="M706 690 C706 638 730 630 838 630" style="--w:5.0;--ciclo:53;--dur:0.400s;stroke:var(--flusso-altro);stroke-dasharray:12 41"/>
-<path class="scia p-pipe" d="M1050 580 C1108 580 1132 590 1140 614" style="--w:5.0;--ciclo:53;--dur:0.400s;stroke:var(--flusso-altro);stroke-dasharray:12 41"/>
-<path class="scia p-condenser" d="M1782 696 C1790 738 1808 750 1838 750" style="--w:5.0;--ciclo:53;--dur:0.400s;stroke:var(--flusso-altro);stroke-dasharray:12 41"/>
+<path class="scia p-engine p-radiation" d="M1772 205 C1800 196 1812 160 1830 104" style="--w:5.0;--ciclo:53;--dur:0.400s;stroke:var(--flusso-altro);stroke-dasharray:12 41"/>
+<path class="scia p-engine p-radiation" d="M1640 404 C1700 440 1740 442 1812 442" style="--w:5.0;--ciclo:53;--dur:0.400s;stroke:var(--flusso-altro);stroke-dasharray:12 41"/>
+<path class="scia p-boiler p-radiation" d="M706 690 C706 638 730 630 838 630" style="--w:5.0;--ciclo:53;--dur:0.400s;stroke:var(--flusso-altro);stroke-dasharray:12 41"/>
+<path class="scia p-pipe p-radiation" d="M1050 580 C1108 580 1132 590 1140 614" style="--w:5.0;--ciclo:53;--dur:0.400s;stroke:var(--flusso-altro);stroke-dasharray:12 41"/>
+<path class="scia p-condenser p-radiation" d="M1782 696 C1790 738 1808 750 1838 750" style="--w:5.0;--ciclo:53;--dur:0.400s;stroke:var(--flusso-altro);stroke-dasharray:12 41"/>
 <path class="scia p-engine p-pipe p-boiler" d="M1548 180 C1606 180 1622 140 1600 122 C1590 113 1570 112 1545 112 H160 C122 112 108 138 116 160 C124 180 150 184 214 184" style="--w:5.0;--ciclo:53;--dur:0.400s;stroke:var(--flusso-acqua);stroke-dasharray:12 41"/>
 <path class="scia p-condenser p-pipe" d="M1336 578 C1440 578 1487 600 1487 660 V872 C1487 905 1462 915 1424 915" style="--w:5.0;--ciclo:53;--dur:0.400s;stroke:var(--flusso-acqua);stroke-dasharray:12 41"/>
 <path class="scia p-feedpump p-economiser p-condenser" d="M1424 915 H200 C140 915 112 885 112 830 V262 C112 240 128 230 160 230 H214" style="--w:5.0;--ciclo:53;--dur:0.400s;stroke:var(--flusso-acqua);stroke-dasharray:12 41"/>
 <path class="scia p-economiser p-boiler" d="M356 604 C356 500 296 444 200 444 C140 444 112 470 70 480 H4" style="--w:5.1;--ciclo:53;--dur:0.400s;stroke:var(--flusso-th);stroke-dasharray:12 41"/>
-<path class="scia p-pipe" d="M830 106 C830 92 826 84 828 68" style="--w:5.0;--ciclo:53;--dur:0.400s;stroke:var(--flusso-altro);stroke-dasharray:12 41"/>
-<path class="scia p-feedpump" d="M962 918 C952 930 946 944 940 962" style="--w:5.0;--ciclo:53;--dur:0.400s;stroke:var(--flusso-altro);stroke-dasharray:12 41"/>
-<path class="scia p-economiser" d="M106 304 H60" style="--w:5.0;--ciclo:53;--dur:0.400s;stroke:var(--flusso-altro);stroke-dasharray:12 41"/>
-<path class="scia p-economiser" d="M106 762 H58" style="--w:5.0;--ciclo:53;--dur:0.400s;stroke:var(--flusso-altro);stroke-dasharray:12 41"/>
+<path class="scia p-pipe p-radiation" d="M830 106 C830 92 826 84 828 68" style="--w:5.0;--ciclo:53;--dur:0.400s;stroke:var(--flusso-altro);stroke-dasharray:12 41"/>
+<path class="scia p-feedpump p-radiation" d="M962 918 C952 930 946 944 940 962" style="--w:5.0;--ciclo:53;--dur:0.400s;stroke:var(--flusso-altro);stroke-dasharray:12 41"/>
+<path class="scia p-economiser p-radiation" d="M106 304 H60" style="--w:5.0;--ciclo:53;--dur:0.400s;stroke:var(--flusso-altro);stroke-dasharray:12 41"/>
+<path class="scia p-economiser p-radiation" d="M106 762 H58" style="--w:5.0;--ciclo:53;--dur:0.400s;stroke:var(--flusso-altro);stroke-dasharray:12 41"/>
 </g>
 </g>
         <g class="marcatori">
@@ -352,6 +367,7 @@ a.nota:focus-visible { outline: 2px solid var(--bp-luce); outline-offset: 4px; }
           <g class="marcatore" data-parte="condenser" transform="translate(1520 960)"><circle/><text>5</text></g>
           <g class="marcatore" data-parte="economiser" transform="translate(150 525)"><circle/><text>6</text></g>
           <g class="marcatore" data-parte="feedpump" transform="translate(620 920)"><circle/><text>7</text></g>
+          <g class="marcatore" data-parte="radiation" transform="translate(965 652)"><circle/><text>8</text></g>
         </g>
       </svg>
     </figure>
@@ -386,6 +402,12 @@ a.nota:focus-visible { outline: 2px solid var(--bp-luce); outline-offset: 4px; }
         <span class="nota-rif"><span class="nota-n">07</span>Feed pump · chi la avviò</span>
         <span class="nota-titolo">Personaggi</span>
         <span class="nota-desc">Chi mise in moto tutto: William Playfair e il capitano Sankey.</span>
+        <span class="nota-vai" aria-hidden="true">→</span>
+      </a>
+      <a class="nota" href="playfair-g.html" data-parte="radiation" style="--x: 68%; --ordine: 8">
+        <span class="nota-rif"><span class="nota-n">08</span>Radiation · le perdite</span>
+        <span class="nota-titolo">Playfair-G</span>
+        <span class="nota-desc">Le sedi che pesano di più: Pareto, incidenza e quadranti di un gruppo.</span>
         <span class="nota-vai" aria-hidden="true">→</span>
       </a>
     </div>
@@ -434,7 +456,7 @@ a.nota:focus-visible { outline: 2px solid var(--bp-luce); outline-offset: 4px; }
   var richiami = macchina.querySelector(".richiami"), tavola = macchina.querySelector(".tavola");
   var NS = "http://www.w3.org/2000/svg", W = 1920, H = 1046;
   /* punto della tavola (coordinate dell'immagine) a cui punta ciascun riquadro */
-  var BERSAGLI = { grate: [420, 745], boiler: [420, 300], pipe: [1050, 290], engine: [1640, 222], condenser: [1520, 960], economiser: [150, 525], feedpump: [620, 920] };
+  var BERSAGLI = { grate: [420, 745], boiler: [420, 300], pipe: [1050, 290], engine: [1640, 222], condenser: [1520, 960], economiser: [150, 525], feedpump: [620, 920], radiation: [965, 652] };
   var note = Array.prototype.slice.call(macchina.querySelectorAll("a.nota[data-parte]"));
 
   function el(nome, attr, padre) { var e = document.createElementNS(NS, nome); for (var k in attr) e.setAttribute(k, attr[k]); if (padre) padre.appendChild(e); return e; }

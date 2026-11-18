@@ -83,6 +83,13 @@ code, kbd, samp, pre { font-family: var(--mono); font-size: .92em; }
   background: linear-gradient(currentColor, currentColor) center / 100% 2px no-repeat; }
 .pf-menu-apri[aria-expanded="true"] { background: var(--inchiostro); color: var(--carta); border-color: var(--inchiostro); }
 
+/* schermi medi: 9 voci nel menu, si stringono prima di passare al menu del telefono */
+@media (min-width: 961px) and (max-width: 1200px) {
+  .pf-menu { gap: 0; }
+  .pf-menu a { padding: 0 .42rem; font-size: .92rem; }
+  .pf-menu a::after { left: .42rem; right: .42rem; }
+  .pf-marchio-sub { display: none; }
+}
 @media (max-width: 960px) {
   .pf-menu-apri { display: inline-grid; margin-left: auto; }
   .pf-menu {

@@ -13,7 +13,7 @@ Documento vincolante per tutti gli agenti che costruiscono il sito. Lingua del s
 /home/claude/playfair-sito/
   index.html            home: macchina a vapore di Sankey animata + annotazioni blueprint
   personaggi.html       Playfair e Sankey
-  playfair-s.html  playfair-e.html  playfair-t.html  playfair-m.html  playfair-c.html
+  playfair-s.html  playfair-e.html  playfair-t.html  playfair-m.html  playfair-g.html  playfair-c.html
   sankey.html           editor di diagrammi a blocchi
   assets/tema.css       SOLO variabili (colori, font, raggi, ombre): è il "CSS modificabile"
   assets/sito.css       testata, menu, tooltip, piè di pagina, zone di trascinamento, componenti comuni
@@ -41,7 +41,7 @@ Font: `--testo` e `--titoli` (+ `--mono`). Raggi: `--raggio`. Tutto ciò che è 
 ```
 e prima di `</body>`: `<script src="assets/sito.js" defer></script>` (sempre dopo gli script della pagina oppure con defer).
 
-## Testata (IDENTICA in ogni pagina; cambia solo `aria-current="page"` sulla voce attiva)
+## Testata (IDENTICA in ogni pagina, 9 voci; cambia solo `aria-current="page"` sulla voce attiva; in 404.html i link sono assoluti `/…`)
 ```html
 <header class="pf-testata">
   <a class="pf-marchio" href="index.html" aria-label="Playfair, home">Playfair<span class="pf-marchio-sub">.statocritico</span></a>
@@ -51,9 +51,11 @@ e prima di `</body>`: `<script src="assets/sito.js" defer></script>` (sempre dop
     <a href="playfair-e.html" data-tip="Electric — curve di carico elettriche quartorarie: profili, mappe orarie, picchi e base">Playfair-E</a>
     <a href="playfair-t.html" data-tip="Thermal — consumi termici ed elettrici, simulazione di cogenerazione e valutazione economica">Playfair-T</a>
     <a href="playfair-m.html" data-tip="Money — confronto di investimenti energetici: VAN, TIR, ROI, WACC e flussi di cassa">Playfair-M</a>
+    <a href="playfair-g.html" data-tip="Group — analisi di un gruppo di sedi: consumo specifico, incidenza sul totale, Pareto e mappa a 4 quadranti">Playfair-G</a>
     <a href="playfair-c.html" data-tip="Cusum — regressione, residui e carta CUSUM secondo ISO 50006">Playfair-C</a>
     <a href="sankey.html" data-tip="Sankey — disegna diagrammi di flusso energetico a blocchi e verifica i bilanci">Sankey</a>
     <a href="personaggi.html" data-tip="William Playfair e Matthew H. P. R. Sankey: chi erano">Personaggi</a>
+    <a href="link.html" data-tip="Link — Stato Critico, EuGEnio, Pseudomania, Bordo Vasca e i corsi Festo Academy">Link</a>
   </nav>
   <button class="pf-tema" type="button" aria-label="Cambia tema chiaro/scuro">◐</button>
 </header>
@@ -72,6 +74,7 @@ Piè di pagina comune: `<footer class="pf-piede">` con: "Playfair · un progetto
 | playfair-e.html | Playfair-E (Electric) — consumi elettrici | N_curva_di_carico.csv |
 | playfair-t.html | Playfair-T (Thermal) — termico e cogenerazione | N_curva_di_carico.csv + termico_sito_N.csv |
 | playfair-m.html | Playfair-M (Money) — analisi economiche | investimenti_energetici_v2.csv |
+| playfair-g.html | Playfair-G (Group) — analisi di un gruppo di sedi | /home/claude/esempi/sedi_gruppo_esempio.csv, sedi_gruppo_unita_virgola.csv |
 | playfair-c.html | Playfair-C (Cusum) — CUSUM ISO 50006 | consumo_cusum.csv |
 CSV d'esempio (6 set, N=1..6) in `/mnt/user-data/uploads/playfair/N/` — servono solo per i test, NON vanno copiati nel sito.
 
@@ -83,3 +86,9 @@ verde = kWh elettrici; arancione = Sm³ gas e MWh termici; azzurro = m³ acqua; 
 - Accessibilità: contrasti come EuGEnio, focus visibile, `prefers-reduced-motion` rispettato (animazioni ferme o ridotte).
 - Ogni pagina: `<html lang="it">`, `<meta name="viewport">`, `<title>` "Playfair-X — … · Playfair", meta description, favicon `img/favicon.svg`.
 - Testare con Chrome headless (`/usr/bin/google-chrome`, Python playwright disponibile).
+
+## Playfair-G (Group) — convenzioni
+- CSV: `codice;denominazione;dimensione;consumo` (nomi simili riconosciuti; unità dall'intestazione o da una 2ª riga di unità; separatore `;` `,` tab; formato numeri automatico o forzato). Sedi con dimensione 0/mancante: segnalate, contano nel totale, nell'incidenza e nel Pareto, escluse da consumo specifico e quadranti.
+- Consumo specifico = consumo/dimensione; del gruppo = Σconsumi/Σdimensioni (sedi con dimensione valida). Incidenza = consumo sede/Σconsumi. Sedi "nell'80%" = insieme minimo, in ordine decrescente, la cui cumulata raggiunge l'80%.
+- Quadranti: X = consumo specifico, Y = incidenza %; soglie sulla media (X: specifico del gruppo; Y: incidenza media = 100/N) o sulla mediana; valori uguali alla soglia vanno in basso/sinistra.
+- Nella home è il riquadro 08 «Radiation · le perdite» (parte `radiation`: tutte le perdite per irraggiamento, tratti grigi sottili).

@@ -1,0 +1,847 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Playfair-G — Analisi di un gruppo di sedi · Playfair</title>
+<meta name="description" content="Playfair-G: analisi di un gruppo di sedi con consumo specifico, incidenza sul totale, diagramma di Pareto 80/20 e mappa a quattro quadranti delle priorità.">
+<link rel="icon" href="img/favicon.svg" type="image/svg+xml">
+<script>try{var t=localStorage.getItem('pf-tema');if(t)document.documentElement.dataset.theme=t;}catch(e){}</script>
+<link rel="stylesheet" href="assets/tema.css">
+<link rel="stylesheet" href="assets/sito.css">
+<link rel="stylesheet" href="assets/strumenti.css">
+<style>
+.pf-app.g .panel{padding:14px}
+.pf-app.g .panel-title{margin-bottom:10px;border-bottom:1px solid var(--linea);padding-bottom:6px;display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.pf-app.g .row{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end}
+.pf-app.g .field{min-width:130px;flex:0 1 auto}
+.pf-app.g .field.largo{flex:1 1 260px}
+.pf-app.g .pf-drop{min-height:5.5rem}
+.pf-app.g #msg{margin-top:8px;font-size:13px;color:var(--tenue);line-height:1.5}
+.pf-app.g #msg b{color:var(--inchiostro)}
+.pf-app.g .avviso{margin-top:8px;padding:8px 10px;border-radius:4px;font-size:13px;line-height:1.5;background:var(--attenzione-fondo);color:var(--inchiostro);border-left:3px solid var(--attenzione)}
+.pf-app.g .avviso.errore{background:var(--errore-fondo);border-left-color:var(--errore)}
+.pf-app.g .avviso ul{margin:4px 0 0 18px}
+.pf-app.g .kpi{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px}
+.pf-app.g .kpi > div{background:var(--rialzo);border-radius:var(--raggio,6px);padding:9px 12px}
+.pf-app.g .kpi .k-et{font-size:12px;color:var(--tenue);margin-bottom:3px}
+.pf-app.g .kpi .k-val{font:600 19px/1.2 var(--titoli);font-variant-numeric:tabular-nums;color:var(--inchiostro)}
+.pf-app.g .kpi .k-val small{font:400 12px var(--testo);color:var(--tenue);margin-left:3px}
+.pf-app.g .kpi .k-nota{font-size:11.5px;color:var(--tenue);margin-top:2px}
+.pf-app.g .kpi .evid{background:var(--tinta)}
+.pf-app.g .kpi .evid .k-val{color:var(--profondo)}
+.pf-app.g .tabs{display:flex;gap:2px;border-bottom:1px solid var(--linea);margin-bottom:12px;flex-wrap:wrap}
+.pf-app.g .tab{padding:7px 14px;cursor:pointer;font:600 14px/1.2 var(--titoli);color:var(--tenue);border:0;border-bottom:3px solid transparent;margin-bottom:-1px;border-radius:0;background:transparent}
+.pf-app.g .tab:hover{color:var(--inchiostro);border-bottom-color:var(--linea);background:transparent}
+.pf-app.g .tab[aria-selected="true"]{color:var(--inchiostro);border-bottom-color:var(--primario)}
+.pf-app.g .tab-content{display:none}
+.pf-app.g .tab-content.active{display:block}
+.pf-app.g .barra{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:10px;font-size:13px;color:var(--tenue)}
+.pf-app.g .barra .spazio{flex:1}
+.pf-app.g .barra label{display:inline-flex;gap:6px;align-items:center}
+.pf-app.g .sintesi{font-size:14px;line-height:1.5;margin-bottom:10px;color:var(--inchiostro)}
+.pf-app.g .sintesi b{color:var(--profondo)}
+.pf-app.g .scorre{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.pf-app.g .chart-wrap{position:relative;width:100%}
+.pf-app.g .vuoto{display:flex;align-items:center;justify-content:center;min-height:180px;font-size:13px;color:var(--tenue);border:1px dashed var(--bordo);border-radius:4px;text-align:center;padding:16px}
+.pf-app.g .legge{margin-top:12px;padding:10px 14px;background:var(--rialzo);border:1px solid var(--linea);border-left:3px solid var(--segno);border-radius:4px;font-size:13px;line-height:1.6;color:var(--inchiostro)}
+.pf-app.g .legge h3{font:600 13px/1.3 var(--titoli);text-transform:uppercase;letter-spacing:.06em;color:var(--tenue);margin-bottom:4px}
+.pf-app.g .legge ul{margin:4px 0 0 18px}
+.pf-app.g .legge p + p{margin-top:4px}
+.pf-app.g .quadri{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:12px}
+.pf-app.g .quadro{border:1px solid var(--linea);border-radius:var(--raggio,6px);padding:9px 12px;background:var(--foglio);border-top:4px solid var(--q)}
+.pf-app.g .quadro h4{margin:0 0 4px;font:600 14px/1.3 var(--titoli);color:var(--inchiostro)}
+.pf-app.g .quadro h4 small{font:400 12px var(--testo);color:var(--tenue);margin-left:4px}
+.pf-app.g .quadro p{font-size:12px;color:var(--tenue);margin-bottom:4px;line-height:1.45}
+.pf-app.g .quadro ul{list-style:none;font-size:12.5px;line-height:1.55;font-variant-numeric:tabular-nums}
+.pf-app.g .quadro li code{font-size:11.5px;margin-right:4px}
+.pf-app.g .quadro li span{color:var(--tenue)}
+.pf-app.g .tab-wrap{overflow-x:auto;max-height:620px;overflow-y:auto;border:1px solid var(--linea);border-radius:4px}
+.pf-app.g table.tg{border-collapse:collapse;width:100%;font-size:13px;font-variant-numeric:tabular-nums}
+.pf-app.g table.tg th,.pf-app.g table.tg td{border-bottom:1px solid var(--linea);padding:5px 9px;white-space:nowrap;text-align:right}
+.pf-app.g table.tg td.t,.pf-app.g table.tg th.t{text-align:left}
+.pf-app.g table.tg td.nome{white-space:normal;min-width:180px}
+.pf-app.g table.tg thead th{position:sticky;top:0;z-index:1;background:var(--rialzo);font:600 12px/1.3 var(--titoli);color:var(--inchiostro);padding:0}
+.pf-app.g table.tg thead th button{all:unset;box-sizing:border-box;display:block;width:100%;padding:7px 9px;cursor:pointer;text-align:inherit}
+.pf-app.g table.tg thead th button:focus-visible{outline:2px solid var(--primario);outline-offset:-2px}
+.pf-app.g table.tg thead th button::after{content:" ↕";color:var(--tenue);font-weight:400}
+.pf-app.g table.tg thead th[aria-sort="ascending"] button::after{content:" ▲";color:var(--primario)}
+.pf-app.g table.tg thead th[aria-sort="descending"] button::after{content:" ▼";color:var(--primario)}
+.pf-app.g table.tg tbody tr:hover > *{background:var(--rialzo)}
+.pf-app.g table.tg tr.p80 td:first-child{box-shadow:inset 3px 0 0 var(--primario)}
+.pf-app.g table.tg tr.zero td{color:var(--tenue)}
+.pf-app.g table.tg tfoot td{font-weight:600;background:var(--rialzo);border-top:1px solid var(--bordo)}
+.pf-app.g .alto{color:var(--errore);font-weight:600}
+.pf-app.g .basso{color:var(--successo);font-weight:600}
+.pf-app.g .qtag{display:inline-block;padding:1px 7px;border-radius:999px;font-size:11.5px;border:1px solid var(--q);color:var(--inchiostro);background:color-mix(in srgb,var(--q) 14%,transparent)}
+@media (max-width:700px){
+  .pf-app.g .quadri{grid-template-columns:1fr}
+  .pf-app.g .tab{padding:7px 10px;font-size:13px}
+}
+</style>
+</head>
+<body class="pf-pagina-strumento">
+<a class="pf-salta" href="#contenuto">Vai al contenuto</a>
+<header class="pf-testata">
+  <a class="pf-marchio" href="index.html" aria-label="Playfair, home">Playfair<span class="pf-marchio-sub">.statocritico</span></a>
+  <button class="pf-menu-apri" aria-expanded="false" aria-controls="pf-menu">Menu</button>
+  <nav class="pf-menu" id="pf-menu" aria-label="Strumenti">
+    <a href="playfair-s.html" data-tip="Site — analisi del singolo sito: costi e consumi di elettricità, gas, calore e acqua">Playfair-S</a>
+    <a href="playfair-e.html" data-tip="Electric — curve di carico elettriche quartorarie: profili, mappe orarie, picchi e base">Playfair-E</a>
+    <a href="playfair-t.html" data-tip="Thermal — consumi termici ed elettrici, simulazione di cogenerazione e valutazione economica">Playfair-T</a>
+    <a href="playfair-m.html" data-tip="Money — confronto di investimenti energetici: VAN, TIR, ROI, WACC e flussi di cassa">Playfair-M</a>
+    <a href="playfair-g.html" aria-current="page" data-tip="Group — analisi di un gruppo di sedi: consumo specifico, incidenza sul totale, Pareto e mappa a 4 quadranti">Playfair-G</a>
+    <a href="playfair-c.html" data-tip="Cusum — regressione, residui e carta CUSUM secondo ISO 50006">Playfair-C</a>
+    <a href="sankey.html" data-tip="Sankey — disegna diagrammi di flusso energetico a blocchi e verifica i bilanci">Sankey</a>
+    <a href="personaggi.html" data-tip="William Playfair e Matthew H. P. R. Sankey: chi erano">Personaggi</a>
+    <a href="link.html" data-tip="Link — Stato Critico, EuGEnio, Pseudomania, Bordo Vasca e i corsi Festo Academy">Link</a>
+  </nav>
+  <button class="pf-tema" type="button" aria-label="Cambia tema chiaro/scuro">◐</button>
+</header>
+
+<main class="pf-strumento" id="contenuto">
+<section class="pf-intro" aria-labelledby="titolo-strumento">
+  <p class="pf-occhiello">Strumento · Group</p>
+  <h1 id="titolo-strumento">Playfair-G <span class="pf-sotto">— analisi di un gruppo di sedi</span> <small>v1.0</small></h1>
+  <p class="pf-sommario">Prima della diagnosi energetica serve orientarsi nel patrimonio senza analizzarlo tutto: per ogni sede il consumo specifico (consumo ÷ dimensione) e l’incidenza sul consumo del gruppo, il diagramma di Pareto con la soglia dell’80% e la mappa a quattro quadranti delle priorità.</p>
+  <p class="pf-file"><b>File accettato:</b> un CSV con una riga per sede, tutte riferite allo stesso periodo (es. un anno). Colonne: <code>codice</code>, <code>denominazione</code>, <code>dimensione</code> (superficie m², volume, posti letto… è l’energy driver) e <code>consumo</code> (kWh, MWh, Sm³…). Separatore <code>;</code>, <code>,</code> o tabulazione; decimali con la virgola o con il punto, migliaia con il punto. Le unità si leggono dall’intestazione (<code>superficie m²</code>, <code>consumo [kWh]</code>) o da una seconda riga di unità, oppure si scrivono qui sotto.</p>
+  <details class="pf-come">
+    <summary>Come si usa</summary>
+    <ol>
+      <li>Trascina il CSV in un punto qualsiasi della pagina oppure sceglilo nella zona «File dati». Righe vuote ignorate; le sedi con dimensione nulla o mancante sono segnalate ed escluse dal consumo specifico e dalla mappa.</li>
+      <li>Controlla in «File dati» le colonne riconosciute, le unità di misura e il formato dei numeri (se l’automatico sbaglia, forzalo).</li>
+      <li>Leggi gli indicatori del gruppo: totali, consumo specifico del gruppo (totale ÷ totale), mediana e quante sedi fanno l’80% del consumo.</li>
+      <li>Nelle schede: <b>Pareto</b> (le sedi da guardare per prime), <b>Incidenza</b> (quanto pesa ogni sede e quanto è efficiente), <b>Quadranti</b> (priorità d’intervento). Ogni scheda ha il suo riquadro «Come si legge».</li>
+      <li>Nella tabella fai clic sulle intestazioni per ordinare; «Scarica CSV» salva la tabella calcolata (separatore <code>;</code>, decimali con la virgola), «Scarica PNG» salva il grafico della scheda.</li>
+    </ol>
+  </details>
+</section>
+
+<div class="pf-app fam-a g">
+
+<!-- FILE -->
+<div class="panel">
+  <div class="panel-title">File dati</div>
+  <div class="row">
+    <div class="field largo">
+      <label class="pf-drop" for="csv-file">
+        <input type="file" id="csv-file" accept=".csv,.txt,text/csv" aria-label="File CSV delle sedi del gruppo">
+        <span class="pf-drop-titolo">Scegli il CSV delle sedi o trascinalo qui</span>
+        <span class="pf-drop-nome">nessun file scelto</span>
+      </label>
+    </div>
+    <div class="field"><label for="f-numeri">Formato dei numeri</label>
+      <select id="f-numeri">
+        <option value="auto">automatico</option>
+        <option value="it">italiano: 1.234,5</option>
+        <option value="en">internazionale: 1234.5</option>
+      </select></div>
+    <div class="field"><label for="u-dim">Dimensione: nome e unità</label>
+      <div style="display:flex;gap:4px"><input type="text" id="n-dim" value="Superficie" style="width:150px" aria-label="Nome della dimensione"><input type="text" id="u-dim" value="m²" style="width:70px" aria-label="Unità della dimensione"></div></div>
+    <div class="field"><label for="u-cons">Consumo: nome e unità</label>
+      <div style="display:flex;gap:4px"><input type="text" id="n-cons" value="Consumo" style="width:150px" aria-label="Nome del consumo"><input type="text" id="u-cons" value="kWh" style="width:70px" aria-label="Unità del consumo"></div></div>
+  </div>
+  <div id="msg">Nessun file caricato. I dati restano nel browser.</div>
+  <div id="avvisi"></div>
+</div>
+
+<!-- KPI -->
+<div class="panel">
+  <div class="panel-title">Il gruppo in cifre <span id="kpi-periodo" style="text-transform:none;letter-spacing:0;font-weight:400"></span></div>
+  <div class="kpi" id="kpi"><div><div class="k-et">Sedi</div><div class="k-val">–</div></div><div><div class="k-et">Consumo totale</div><div class="k-val">–</div></div><div><div class="k-et">Dimensione totale</div><div class="k-val">–</div></div><div><div class="k-et">Consumo specifico del gruppo</div><div class="k-val">–</div></div><div><div class="k-et">Mediana del consumo specifico</div><div class="k-val">–</div></div><div><div class="k-et">Sedi che fanno l’80%</div><div class="k-val">–</div></div></div>
+</div>
+
+<!-- SCHEDE -->
+<div class="panel">
+  <div class="panel-title">Analisi del gruppo</div>
+  <div class="tabs" role="tablist" aria-label="Schede di analisi">
+    <button class="tab" role="tab" id="t-pareto" aria-controls="tab-pareto" aria-selected="true">Diagramma di Pareto</button>
+    <button class="tab" role="tab" id="t-incid" aria-controls="tab-incid" aria-selected="false" tabindex="-1">Analisi di incidenza</button>
+    <button class="tab" role="tab" id="t-quad" aria-controls="tab-quad" aria-selected="false" tabindex="-1">Mappa a 4 quadranti</button>
+  </div>
+
+  <div id="tab-pareto" class="tab-content active" role="tabpanel" aria-labelledby="t-pareto">
+    <div class="barra"><span class="spazio"></span><button type="button" data-png="pareto">Scarica PNG</button></div>
+    <p class="sintesi" id="sint-pareto"></p>
+    <div class="scorre"><div class="chart-wrap" id="w-pareto" style="height:440px"><div class="vuoto">Carica un CSV per disegnare il diagramma di Pareto.</div></div></div>
+    <div class="legge">
+      <h3>Come si legge</h3>
+      <p>Le barre sono i consumi delle sedi in ordine decrescente (asse sinistro); la linea è la <b>percentuale cumulata</b> del consumo del gruppo (asse destro, 0–100%). La retta orizzontale all’80% richiama il <b>principio di Pareto</b>: l’80% degli effetti è determinato dal 20% delle cause.</p>
+      <p>Le barre colorate sono le sedi che servono per arrivare all’80% del consumo: sono quelle da guardare per prime, perché ogni punto percentuale risparmiato lì vale di più. Una curva che sale ripida indica un gruppo concentrato (poche sedi pesano molto); una curva quasi diagonale indica consumi distribuiti in modo uniforme.</p>
+    </div>
+  </div>
+
+  <div id="tab-incid" class="tab-content" role="tabpanel" aria-labelledby="t-incid" hidden>
+    <div class="barra">
+      <label><input type="checkbox" id="o-quota" checked> mostra la quota di dimensione</label>
+      <span class="spazio"></span><button type="button" data-png="incid">Scarica PNG</button>
+    </div>
+    <p class="sintesi" id="sint-incid"></p>
+    <div class="scorre"><div class="chart-wrap" id="w-incid" style="height:460px"><div class="vuoto">Carica un CSV per l’analisi di incidenza.</div></div></div>
+    <div class="legge">
+      <h3>Come si legge</h3>
+      <p>Per ogni sede, ordinata per incidenza: la barra piena è l’<b>incidenza sul totale</b> (consumo della sede ÷ consumo del gruppo, %); la barra chiara è la <b>quota di dimensione</b> (dimensione della sede ÷ dimensione del gruppo, %); i rombi sono il <b>consumo specifico</b> (asse destro) e la retta tratteggiata è il consumo specifico del gruppo (totale ÷ totale), il riferimento.</p>
+      <ul>
+        <li>Barra piena più alta della chiara ⇔ rombo sopra la retta: la sede consuma <b>più della media per unità di dimensione</b> (rombo rosso). Barra piena più bassa ⇔ rombo sotto: è più efficiente del gruppo (rombo verde).</li>
+        <li>Una sede può pesare molto solo perché è grande (incidenza alta, specifico nella media): lì contano gestione e manutenzione. Una sede piccola con specifico alto pesa poco sul totale ma ha margini di miglioramento in proporzione maggiori.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div id="tab-quad" class="tab-content" role="tabpanel" aria-labelledby="t-quad" hidden>
+    <div class="barra">
+      <label>Linee di separazione sulla <select id="o-soglia"><option value="media">media</option><option value="mediana">mediana</option></select></label>
+      <label><input type="checkbox" id="o-bolle" checked> punti proporzionali alla dimensione</label>
+      <label><input type="checkbox" id="o-etich" checked> codici</label>
+      <span class="spazio"></span><button type="button" data-png="quad">Scarica PNG</button>
+    </div>
+    <p class="sintesi" id="sint-quad"></p>
+    <div class="chart-wrap" id="w-quad" style="height:560px"><div class="vuoto">Carica un CSV per la mappa a quattro quadranti.</div></div>
+    <div class="quadri" id="quadri"></div>
+    <div class="legge">
+      <h3>Come si legge</h3>
+      <p>Asse X: <b>consumo specifico</b> (consumo ÷ dimensione), cioè quanto la sede è efficiente. Asse Y: <b>incidenza sul totale</b> (%), cioè quanto pesa sul consumo del gruppo. Le linee dividono il piano sulla <b>media</b> (consumo specifico del gruppo, totale ÷ totale; incidenza media = 100% ÷ numero di sedi) o sulla <b>mediana</b> di ciascun asse. Con la media in X la linea verticale è la stessa retta di riferimento della scheda «Incidenza».</p>
+      <ul>
+        <li><b>Alto a destra — Priorità: grandi e inefficienti.</b> Pesano molto e consumano più della media per unità: diagnosi energetica e interventi strutturali per primi.</li>
+        <li><b>Alto a sinistra — Grandi consumatori efficienti: interventi di gestione.</b> Pesano per le dimensioni, non per l’inefficienza: monitoraggio, regolazione, contratti, manutenzione.</li>
+        <li><b>Basso a destra — Piccoli inefficienti: interventi mirati.</b> Poco peso sul totale ma specifico alto: interventi puntuali e poco costosi, o verificare i dati (dimensione corretta? usi particolari?).</li>
+        <li><b>Basso a sinistra — Bassa priorità.</b> Piccoli ed efficienti: basta tenerli sotto controllo.</li>
+      </ul>
+      <p>Il consumo specifico va confrontato tra sedi omogenee per uso (un ospedale non è un poliambulatorio): se il gruppo è misto, leggi la mappa per tipologia o usa un driver più adatto (posti letto, volume, ore di apertura).</p>
+    </div>
+  </div>
+</div>
+
+<!-- TABELLA -->
+<div class="panel">
+  <div class="panel-title">Tabella calcolata <button type="button" class="primary" id="b-csv" disabled>Scarica CSV</button></div>
+  <div id="tabella"><div class="empty-state">Nessuna sede caricata</div></div>
+</div>
+</div>
+</main>
+
+<footer class="pf-piede">
+  <p>Playfair · un progetto di <a href="https://statocritico.it">Stato Critico</a> · <a href="guida-rapida.pdf">Guida rapida</a> · Immagini storiche: pubblico dominio (Wikimedia Commons)</p>
+  <p>I dati caricati restano nel browser: nulla viene inviato a server.</p>
+</footer>
+
+<script src="assets/vendor/chart.umd.js"></script>
+<script src="assets/vendor/chartjs-plugin-annotation.min.js"></script>
+<script src="assets/vendor/papaparse.min.js"></script>
+<script src="assets/strumenti.js"></script>
+<script>
+/* =====================================================================================
+   Playfair-G (Group) — analisi di un gruppo di sedi.
+   Tutto in locale: il file è letto con FileReader, nessun dato esce dal browser.
+   ===================================================================================== */
+(function () {
+'use strict';
+var $ = function (id) { return document.getElementById(id); };
+var S = { sedi: [], file: '', testo: '', sep: ';', formato: 'it', mappa: null, avvisi: [], scartate: [] };
+var R = null;                     // risultati dei calcoli
+var ORD = { col: 'consumo', dir: -1 };
+var charts = {};
+var COL = PF.tavolozza({
+  p80: ['--primario', '#c43c12'], resto: function () { return PF.mescola(PF.c('--tenue'), PF.c('--foglio'), .45); },
+  cum: ['--segno', '#3f4bd0'], soglia: ['--attenzione', '#8a5a00'], quota: function () { return PF.rgba(PF.c('--serie-2'), .45); },
+  alto: ['--errore', '#a8133c'], basso: ['--successo', '#2e7a34'], ink: ['--inchiostro', '#1c1820'], foglio: ['--foglio', '#fff'],
+  qPri: ['--errore', '#a8133c'], qGes: ['--attenzione', '#8a5a00'], qMir: ['--serie-2', '#1f6fb4'], qBas: ['--successo', '#2e7a34']
+});
+var QUAD = {
+  pri: { nome: 'Priorità: grandi e inefficienti', pos: 'alto a destra', col: 'qPri', css: '--errore' },
+  ges: { nome: 'Grandi consumatori efficienti: interventi di gestione', pos: 'alto a sinistra', col: 'qGes', css: '--attenzione' },
+  mir: { nome: 'Piccoli inefficienti: interventi mirati', pos: 'basso a destra', col: 'qMir', css: '--serie-2' },
+  bas: { nome: 'Bassa priorità', pos: 'basso a sinistra', col: 'qBas', css: '--successo' }
+};
+
+/* ---------------------------------------------------------------- formato italiano */
+/* separatore delle migliaia anche sotto 10.000 (in it-IT Intl lo omette per 4 cifre) */
+var NF = {};
+function num(v, d) {
+  d = d || 0;
+  if (!NF[d]) { try { NF[d] = new Intl.NumberFormat('it-IT', { minimumFractionDigits: d, maximumFractionDigits: d, useGrouping: 'always' }); } catch (e) { NF[d] = null; } }
+  var t = NF[d] ? NF[d].format(v) : PF.num(v, d);
+  if (/^-?\d{4}(,|$)/.test(t)) t = t.replace(/^(-?\d)(\d{3})/, '$1.$2');
+  return t;
+}
+function fN(v, d) { return (v === null || v === undefined || !isFinite(v)) ? '–' : num(v, d); }
+function fCS(v) { if (v === null || !isFinite(v)) return '–'; var a = Math.abs(v); return num(v, a >= 1000 ? 0 : a >= 10 ? 1 : a >= 1 ? 2 : 3); }
+function fP(v, d) { return (v === null || !isFinite(v)) ? '–' : num(v, d === undefined ? 1 : d) + '%'; }
+function uC() { return $('u-cons').value.trim(); }
+function uD() { return $('u-dim').value.trim(); }
+function nD() { return $('n-dim').value.trim() || 'Dimensione'; }
+function nC() { return $('n-cons').value.trim() || 'Consumo'; }
+function uS() { var c = uC(), d = uD(); return (c || '') + (d ? '/' + d : ''); }
+function conU(v, u) { return u ? v + ' ' + u : v; }
+function esc(s) { return String(s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+
+/* ---------------------------------------------------------------- lettura del file */
+$('csv-file').addEventListener('change', function () {
+  var f = this.files && this.files[0];
+  if (!f) return;
+  var r = new FileReader();
+  r.onload = function () {
+    var testo;
+    try { testo = new TextDecoder('utf-8', { fatal: true }).decode(r.result); }
+    catch (e) { testo = new TextDecoder('windows-1252').decode(r.result); }   // CSV salvati da Excel
+    S.file = f.name; S.testo = testo;
+    analizza();
+  };
+  r.onerror = function () { mostraErrore('Impossibile leggere il file.'); };
+  r.readAsArrayBuffer(f);
+});
+$('f-numeri').addEventListener('change', function () { if (S.testo) analizza(); });
+['u-dim', 'u-cons', 'n-dim', 'n-cons'].forEach(function (id) { $(id).addEventListener('input', function () { if (R) disegnaTutto(); }); });
+
+var RUOLI = {
+  codice: /^(cod(ice)?|id|sigla|n\.?|num(ero)?)\b|^cod(ice)?[\s_.-]|codice/i,
+  consumo: /consum|kwh|mwh|gwh|energia|smc|sm3|sm³|\bgas\b|elettric|termic|tep|\bgj\b/i,
+  dimensione: /dimens|superfic|\bsup\b|\bm2\b|m²|\bmq\b|volum|\bm3\b|m³|\bmc\b|posti|letti|\bpl\b|addett|utent|area|driver|\bsul\b|\bslp\b/i,
+  nome: /denomin|nome|sede|descri|struttur|edific|immobil|presidi|stabil/i
+};
+var UNITA = /(m²|m2|mq|m³|m3|mc|kwh|mwh|gwh|wh|sm³|sm3|smc|tep|gj|mj|posti letto|letti|addetti|utenti)/i;
+function unitaDa(h) {
+  var m = /[\[(]([^\])]+)[\])]/.exec(h);
+  if (m) return normU(m[1]);
+  m = UNITA.exec(h);
+  return m ? normU(m[1]) : '';
+}
+function normU(u) {
+  u = u.trim();
+  var t = { m2: 'm²', mq: 'm²', m3: 'm³', mc: 'm³', sm3: 'Sm³', smc: 'Sm³', kwh: 'kWh', mwh: 'MWh', gwh: 'GWh', wh: 'Wh', tep: 'tep', gj: 'GJ', mj: 'MJ' };
+  return t[u.toLowerCase()] || u;
+}
+function nomeDa(h, ruolo) {
+  var s = h.replace(/[\[(][^\])]*[\])]/g, '').replace(UNITA, '').replace(/[_]+/g, ' ').trim();
+  if (!s) return ruolo === 'consumo' ? 'Consumo' : 'Dimensione';
+  return s.charAt(0).toUpperCase() + s.slice(1);
+}
+function separatore(testo) {
+  var riga = (testo.split(/\r?\n/).filter(function (l) { return l.trim(); })[0] || '');
+  var fuori = riga.replace(/"[^"]*"/g, '');
+  var n = { ';': (fuori.match(/;/g) || []).length, '\t': (fuori.match(/\t/g) || []).length, ',': (fuori.match(/,/g) || []).length };
+  if (n[';']) return ';';
+  if (n['\t']) return '\t';
+  if (n[',']) return ',';
+  return ';';
+}
+function pulisci(v) { return String(v === undefined || v === null ? '' : v).replace(/[\s  ']/g, '') }
+/* decide se in una colonna il punto è separatore delle migliaia (it) o decimale (en) */
+function decidiFormato(valori, sep) {
+  var v = valori.map(pulisci).filter(function (x) { return /\d/.test(x); });
+  if (!v.length) return null;
+  if (v.every(function (x) { return !/,/.test(x) || /^[-+]?\d{1,3}(,\d{3})+(\.\d+)?$/.test(x); }) && v.some(function (x) { return /,/.test(x); }) && v.some(function (x) { return /\.\d+$/.test(x) && /,/.test(x); })) return 'en';
+  if (v.some(function (x) { return /,/.test(x); })) return 'it';            // virgola = decimale
+  var conPunto = v.filter(function (x) { return /\./.test(x); });
+  if (!conPunto.length) return null;                                      // solo interi: indifferente
+  if (conPunto.some(function (x) { return (x.match(/\./g) || []).length > 1; })) return 'it';
+  if (sep === ',') return 'en';                                            // CSV "all'inglese"
+  return conPunto.every(function (x) { return /^[-+]?\d{1,3}(\.\d{3})+$/.test(x); }) ? 'it' : 'en';
+}
+function numero(v, fmt) {
+  var s = pulisci(v);
+  if (!/^[-+]?[\d.,]*\d[\d.,]*([eE][-+]?\d+)?$/.test(s)) return NaN;
+  if (fmt === 'it') s = s.replace(/\./g, '').replace(',', '.');
+  else s = s.replace(/,/g, '');
+  var n = Number(s);
+  return isFinite(n) ? n : NaN;
+}
+
+function mostraErrore(t) {
+  $('avvisi').innerHTML = '<div class="avviso errore">' + esc(t) + '</div>';
+}
+
+function analizza() {
+  var testo = S.testo.replace(/^﻿/, '');
+  var sep = separatore(testo);
+  var p = Papa.parse(testo, { delimiter: sep, skipEmptyLines: 'greedy' });
+  var righe = p.data.map(function (r) { return r.map(function (c) { return String(c).trim(); }); })
+    .filter(function (r) { return r.some(function (c) { return c !== ''; }); });
+  S.sep = sep; S.avvisi = []; S.scartate = [];
+  if (righe.length < 2) { mostraErrore('Il file non contiene abbastanza righe: servono un’intestazione e almeno una sede.'); return; }
+
+  /* intestazione e ruoli delle colonne */
+  var h = righe[0], nc = Math.max.apply(null, righe.map(function (r) { return r.length; }));
+  var numericiR0 = h.filter(function (c) { return !isNaN(numero(c, 'it')); }).length;
+  var conIntestazione = numericiR0 < 2;
+  var ruoli = {}, preso = {};
+  if (conIntestazione) {
+    ['codice', 'consumo', 'dimensione', 'nome'].forEach(function (ru) {
+      for (var i = 0; i < h.length; i++) {
+        if (preso[i]) continue;
+        if (RUOLI[ru].test(h[i])) { ruoli[ru] = i; preso[i] = 1; break; }
+      }
+    });
+  }
+  /* colonne non riconosciute: posizione standard codice;denominazione;dimensione;consumo */
+  var liberi = []; for (var i = 0; i < nc; i++) if (!preso[i]) liberi.push(i);
+  if (ruoli.consumo === undefined || ruoli.dimensione === undefined) {
+    // scelgo tra le colonne libere quelle prevalentemente numeriche, da destra
+    var corpo = righe.slice(conIntestazione ? 1 : 0);
+    var num = liberi.filter(function (c) {
+      var k = corpo.filter(function (r) { return !isNaN(numero(r[c], 'it')); }).length;
+      return k >= corpo.length * 0.5;
+    });
+    if (ruoli.consumo === undefined && num.length) { ruoli.consumo = num.pop(); preso[ruoli.consumo] = 1; }
+    if (ruoli.dimensione === undefined && num.length) { ruoli.dimensione = num.pop(); preso[ruoli.dimensione] = 1; }
+    liberi = liberi.filter(function (c) { return !preso[c]; });
+  }
+  if (ruoli.codice === undefined && liberi.length && (ruoli.nome === undefined ? liberi.length > 1 : true)) { ruoli.codice = liberi.shift(); }
+  if (ruoli.nome === undefined && liberi.length) { ruoli.nome = liberi.shift(); }
+  if (ruoli.consumo === undefined || ruoli.dimensione === undefined) {
+    mostraErrore('Non trovo le colonne numeriche di dimensione e consumo. Servono almeno due colonne con valori numerici (es. superficie e kWh).');
+    return;
+  }
+  S.mappa = ruoli;
+
+  /* unità: dall'intestazione o da una seconda riga di unità */
+  var inizio = conIntestazione ? 1 : 0, uDim = '', uCons = '';
+  if (conIntestazione) { uDim = unitaDa(h[ruoli.dimensione]); uCons = unitaDa(h[ruoli.consumo]); }
+  var r1 = righe[inizio];
+  if (r1 && isNaN(numero(r1[ruoli.consumo], 'it')) && isNaN(numero(r1[ruoli.dimensione], 'it')) && (r1[ruoli.consumo] || r1[ruoli.dimensione])) {
+    if (r1[ruoli.dimensione]) uDim = normU(r1[ruoli.dimensione]);
+    if (r1[ruoli.consumo]) uCons = normU(r1[ruoli.consumo]);
+    inizio++;
+  }
+  if (conIntestazione) { $('n-dim').value = nomeDa(h[ruoli.dimensione], 'dimensione'); $('n-cons').value = nomeDa(h[ruoli.consumo], 'consumo'); }
+  if (uDim) $('u-dim').value = uDim;
+  if (uCons) $('u-cons').value = uCons;
+
+  /* formato dei numeri */
+  var corpo = righe.slice(inizio);
+  var forz = $('f-numeri').value;
+  var fD = forz !== 'auto' ? forz : decidiFormato(corpo.map(function (r) { return r[ruoli.dimensione]; }), sep);
+  var fC = forz !== 'auto' ? forz : decidiFormato(corpo.map(function (r) { return r[ruoli.consumo]; }), sep);
+  if (!fD) fD = fC || (sep === ',' ? 'en' : 'it');
+  if (!fC) fC = fD;
+  S.formato = fD === fC ? fD : 'misto';
+
+  /* sedi */
+  var sedi = [], visti = {};
+  corpo.forEach(function (r, j) {
+    var nRiga = righe.indexOf(r) + 1;
+    var cod = ruoli.codice !== undefined ? (r[ruoli.codice] || '') : '';
+    var nome = ruoli.nome !== undefined ? (r[ruoli.nome] || '') : '';
+    var d = numero(r[ruoli.dimensione], fD), c = numero(r[ruoli.consumo], fC);
+    if (!cod) cod = 'S' + String(sedi.length + 1).padStart(2, '0');
+    if (!nome) nome = cod;
+    if (isNaN(c)) { S.scartate.push('riga ' + nRiga + ' (' + cod + '): consumo mancante o non numerico «' + (r[ruoli.consumo] || '') + '»'); return; }
+    if (c < 0) { S.scartate.push('riga ' + nRiga + ' (' + cod + '): consumo negativo'); return; }
+    if (visti[cod]) { S.avvisi.push('codice ' + cod + ' ripetuto (riga ' + nRiga + '): le sedi sono tenute distinte'); cod = cod + '·' + (++visti[cod]); } else visti[cod] = 1;
+    var zero = isNaN(d) || d <= 0;
+    sedi.push({ codice: cod, nome: nome, dim: zero ? 0 : d, cons: c, zero: zero, riga: nRiga });
+  });
+  if (!sedi.length) { mostraErrore('Nessuna sede valida nel file.'); return; }
+  S.sedi = sedi;
+  calcola();
+
+  /* messaggio */
+  var nomi = { codice: 'codice', nome: 'denominazione', dimensione: 'dimensione', consumo: 'consumo' };
+  var ric = Object.keys(nomi).map(function (k) { return ruoli[k] === undefined ? nomi[k] + ': <i>assente</i>' : nomi[k] + ': «' + esc(conIntestazione ? h[ruoli[k]] : 'col. ' + (ruoli[k] + 1)) + '»'; }).join(' · ');
+  var sepN = { ';': 'punto e virgola', ',': 'virgola', '\t': 'tabulazione' }[sep];
+  $('msg').innerHTML = '<b>' + esc(S.file) + '</b>: ' + sedi.length + ' sedi lette · separatore ' + sepN + ' · numeri ' +
+    ({ it: 'all’italiana (1.234,5)', en: 'col punto decimale (1234.5)', misto: 'dimensione ' + fD + ', consumo ' + fC }[S.formato]) +
+    (forz === 'auto' ? ' (automatico)' : ' (forzato)') + '<br>Colonne riconosciute — ' + ric;
+  var zeri = sedi.filter(function (s) { return s.zero; });
+  var av = '';
+  if (zeri.length) av += '<div class="avviso"><b>' + zeri.length + (zeri.length === 1 ? ' sede' : ' sedi') + ' con dimensione nulla o mancante</b> (contano nel consumo totale, nell’incidenza e nel Pareto, ma sono escluse dal consumo specifico e dalla mappa a quadranti): ' +
+    zeri.map(function (s) { return esc(s.codice) + ' — ' + esc(s.nome); }).join('; ') + '</div>';
+  if (S.scartate.length || S.avvisi.length) av += '<div class="avviso"><b>Righe da controllare</b><ul>' + S.scartate.concat(S.avvisi).map(function (t) { return '<li>' + esc(t) + '</li>'; }).join('') + '</ul></div>';
+  $('avvisi').innerHTML = av;
+  disegnaTutto();
+  if (window.Playfair && Playfair.annuncia) Playfair.annuncia(sedi.length + ' sedi caricate');
+}
+
+/* ---------------------------------------------------------------- calcoli */
+function mediana(a) {
+  var v = a.slice().sort(function (x, y) { return x - y; }), n = v.length;
+  if (!n) return null;
+  return n % 2 ? v[(n - 1) / 2] : (v[n / 2 - 1] + v[n / 2]) / 2;
+}
+function calcola() {
+  var sedi = S.sedi;
+  var totC = 0, totD = 0, totCv = 0;
+  sedi.forEach(function (s) { totC += s.cons; if (!s.zero) { totD += s.dim; totCv += s.cons; } });
+  sedi.forEach(function (s) {
+    s.cs = s.zero ? null : s.cons / s.dim;
+    s.inc = totC > 0 ? s.cons / totC * 100 : 0;
+    s.quota = s.zero || totD <= 0 ? null : s.dim / totD * 100;
+  });
+  var csG = totD > 0 ? totCv / totD : null;
+  sedi.forEach(function (s) { s.scost = s.cs === null || !csG ? null : (s.cs / csG - 1) * 100; });
+  var ord = sedi.slice().sort(function (a, b) { return b.cons - a.cons || (a.codice < b.codice ? -1 : 1); });
+  var cum = 0, k80 = 0;
+  ord.forEach(function (s, i) {
+    s.rango = i + 1;
+    s.p80 = cum < 80 - 1e-9;          // la sede serve per raggiungere l'80%
+    cum += s.inc; s.cum = cum;
+    if (s.p80) k80 = i + 1;
+  });
+  var valide = sedi.filter(function (s) { return !s.zero; });
+  var csM = mediana(valide.map(function (s) { return s.cs; }));
+  var incMedia = valide.length ? valide.reduce(function (a, s) { return a + s.inc; }, 0) / valide.length : null;
+  var incMed = mediana(valide.map(function (s) { return s.inc; }));
+  R = { totC: totC, totD: totD, totCv: totCv, csG: csG, csM: csM, incMedia: incMedia, incMed: incMed, ord: ord, k80: k80,
+        cum80: ord.length ? ord[k80 - 1].cum : 0, n: sedi.length, nValide: valide.length };
+  quadranti();
+}
+function soglie() {
+  var med = $('o-soglia').value === 'mediana';
+  return { x: med ? R.csM : R.csG, y: med ? R.incMed : R.incMedia, tipo: med ? 'mediana' : 'media' };
+}
+function quadranti() {
+  var t = soglie();
+  S.sedi.forEach(function (s) {
+    if (s.zero) { s.quad = null; return; }
+    var alto = s.inc > t.y, destra = s.cs > t.x;
+    s.quad = alto ? (destra ? 'pri' : 'ges') : (destra ? 'mir' : 'bas');
+  });
+}
+
+/* ---------------------------------------------------------------- KPI */
+function kpi() {
+  var pct = R.k80 / R.n * 100;
+  var box = function (et, val, u, nota, cls) { return '<div' + (cls ? ' class="' + cls + '"' : '') + '><div class="k-et">' + et + '</div><div class="k-val">' + val + (u ? '<small>' + esc(u) + '</small>' : '') + '</div>' + (nota ? '<div class="k-nota">' + nota + '</div>' : '') + '</div>'; };
+  $('kpi').innerHTML =
+    box('Sedi', fN(R.n), '', R.n - R.nValide ? (R.n - R.nValide) + ' con dimensione nulla' : 'tutte con dimensione valida') +
+    box('Consumo totale', fN(R.totC), uC()) +
+    box(esc(nD()) + ' totale', fN(R.totD), uD()) +
+    box('Consumo specifico del gruppo', fCS(R.csG), uS(), 'totale ÷ totale', 'evid') +
+    box('Mediana del consumo specifico', fCS(R.csM), uS(), 'media semplice: ' + fCS(R.nValide ? S.sedi.filter(function (s) { return !s.zero; }).reduce(function (a, s) { return a + s.cs; }, 0) / R.nValide : null)) +
+    box('Sedi che fanno l’80%', R.k80 + ' su ' + R.n, '', fP(pct) + ' delle sedi · cumulata ' + fP(R.cum80), 'evid');
+  $('kpi-periodo').textContent = S.file ? '· ' + S.file : '';
+}
+
+/* ---------------------------------------------------------------- grafici: utilità comuni */
+var sfondo = { id: 'pfSfondo', beforeDraw: function (ch) { var c = ch.ctx; c.save(); c.fillStyle = COL.foglio; c.fillRect(0, 0, ch.width, ch.height); c.restore(); } };
+function tela(idWrap, chiave, minW) {
+  if (charts[chiave]) { charts[chiave].destroy(); charts[chiave] = null; }
+  var w = $(idWrap);
+  w.innerHTML = '<canvas role="img"></canvas>';
+  if (minW) w.style.minWidth = minW + 'px';
+  return w.firstChild;
+}
+function titoloSede(s) { return s.codice + ' — ' + s.nome; }
+function righeSede(s) {
+  return [
+    nC() + ': ' + conU(fN(s.cons), uC()),
+    nD() + ': ' + (s.zero ? 'nulla (esclusa)' : conU(fN(s.dim), uD())),
+    'Consumo specifico: ' + (s.zero ? '–' : conU(fCS(s.cs), uS())) + (s.scost === null ? '' : ' (' + (s.scost >= 0 ? '+' : '') + fN(s.scost, 1) + '% sul gruppo)'),
+    'Incidenza sul totale: ' + fP(s.inc, 2) + ' · cumulata ' + fP(s.cum),
+    'Posizione nel Pareto: ' + s.rango + 'ª' + (s.p80 ? ' (nell’80%)' : '')
+  ];
+}
+function asseTitolo(t, col) { return { display: true, text: t, color: col || PF.tenue(), font: { size: 12 } }; }
+
+/* ---------------------------------------------------------------- 1. Pareto */
+function pareto() {
+  var o = R.ord;
+  var cv = tela('w-pareto', 'pareto', Math.max(0, o.length * 24 + 120));
+  cv.setAttribute('aria-label', 'Diagramma di Pareto dei consumi delle ' + o.length + ' sedi; ' + R.k80 + ' sedi fanno l’80% del consumo');
+  var bordo = o.map(function (s) { return s.p80 ? COL.p80 : PF.mescola(COL.resto, PF.c('--inchiostro'), .25); });
+  charts.pareto = new Chart(cv, {
+    data: {
+      labels: o.map(function (s) { return s.codice; }),
+      datasets: [
+        { type: 'line', label: 'Cumulata (%)', data: o.map(function (s) { return s.cum; }), yAxisID: 'y2', borderColor: COL.cum, backgroundColor: COL.cum,
+          borderWidth: 2, pointRadius: 3.5, pointHoverRadius: 6, tension: 0, order: 0 },
+        { type: 'bar', label: nC() + (uC() ? ' (' + uC() + ')' : ''), data: o.map(function (s) { return s.cons; }), yAxisID: 'y',
+          backgroundColor: o.map(function (s) { return s.p80 ? PF.rgba(COL.p80, .78) : COL.resto; }), borderColor: bordo, borderWidth: 1, borderRadius: 2,
+          categoryPercentage: .82, barPercentage: .9, order: 1 }
+      ]
+    },
+    plugins: [sfondo],
+    options: {
+      responsive: true, maintainAspectRatio: false, animation: { duration: 300 },
+      interaction: { mode: 'index', intersect: false },
+      plugins: {
+        legend: { display: true, position: 'top', align: 'end', labels: { boxWidth: 14, boxHeight: 10, color: PF.tenue() } },
+        title: { display: true, text: 'Diagramma di Pareto — ' + nC().toLowerCase() + ' per sede', color: PF.c('--profondo'), font: { size: 15, weight: '600' }, align: 'start', padding: { bottom: 4 } },
+        tooltip: { callbacks: {
+          title: function (it) { return titoloSede(o[it[0].dataIndex]); },
+          label: function () { return null; },
+          afterBody: function (it) { return righeSede(o[it[0].dataIndex]); } } },
+        annotation: { annotations: {
+          l80: { type: 'line', yScaleID: 'y2', yMin: 80, yMax: 80, borderColor: COL.soglia, borderWidth: 2, borderDash: [7, 4],
+            label: { display: true, content: '80%', position: 'end', backgroundColor: COL.soglia, color: PF.c('--foglio'), font: { size: 11, weight: '600' }, padding: { x: 5, y: 2 } } },
+          k80: { type: 'line', xScaleID: 'x', xMin: R.k80 - 0.5, xMax: R.k80 - 0.5, borderColor: PF.rgba(COL.p80, .9), borderWidth: 1.5, borderDash: [3, 3],
+            label: { display: true, content: R.k80 + ' sedi su ' + R.n + ' → 80%', position: 'start', yAdjust: 6, backgroundColor: PF.rgba(COL.p80, .92), color: PF.c('--su-primario'), font: { size: 11, weight: '600' }, padding: { x: 6, y: 3 } } }
+        } }
+      },
+      scales: {
+        x: { grid: { display: false }, ticks: { autoSkip: false, maxRotation: 60, minRotation: o.length > 14 ? 45 : 0, font: { size: 11 } } },
+        y: { beginAtZero: true, grid: { color: PF.griglia() }, ticks: { callback: function (v) { return fN(v); } }, title: asseTitolo(nC() + (uC() ? ' [' + uC() + ']' : '')) },
+        y2: { position: 'right', min: 0, max: 100, grid: { display: false }, ticks: { stepSize: 10, callback: function (v) { return v + '%'; }, color: COL.cum }, title: asseTitolo('Cumulata [%]', COL.cum) }
+      }
+    }
+  });
+  var pct = R.k80 / R.n * 100;
+  $('sint-pareto').innerHTML = '<b>' + R.k80 + ' sedi su ' + R.n + ' = ' + fP(pct) + ' delle sedi fanno l’80% dei consumi</b> (cumulata reale ' + fP(R.cum80) + '). ' +
+    (pct <= 30 ? 'Il gruppo è molto concentrato: il principio di Pareto vale quasi alla lettera.' : pct <= 50 ? 'Concentrazione media: le prime sedi pesano più della loro numerosità.' : 'Consumi poco concentrati: le priorità vanno cercate anche nel consumo specifico.') +
+    ' La prima sede da sola vale ' + fP(R.ord[0].inc) + ' del totale.';
+}
+
+/* ---------------------------------------------------------------- 2. Incidenza */
+function incidenza() {
+  var o = R.ord, quota = $('o-quota').checked;
+  var cv = tela('w-incid', 'incid', Math.max(0, o.length * (quota ? 30 : 24) + 140));
+  cv.setAttribute('aria-label', 'Incidenza sul totale e consumo specifico per sede, ordinate per incidenza');
+  var colPunto = o.map(function (s) { return s.cs === null ? 'transparent' : s.cs > R.csG ? COL.alto : COL.basso; });
+  var ds = [
+    { type: 'line', label: 'Consumo specifico (' + uS() + ')', data: o.map(function (s) { return s.cs; }), yAxisID: 'y2', showLine: false,
+      pointStyle: 'rectRot', pointRadius: 6, pointHoverRadius: 8, pointBackgroundColor: colPunto, pointBorderColor: PF.c('--foglio'), pointBorderWidth: 1.2,
+      backgroundColor: COL.alto, borderColor: COL.alto, order: 0 },
+    { type: 'bar', label: 'Incidenza sul consumo (%)', data: o.map(function (s) { return s.inc; }), yAxisID: 'y', backgroundColor: PF.rgba(COL.p80, .8), borderColor: COL.p80, borderWidth: 1, borderRadius: 2, order: 2, categoryPercentage: .8, barPercentage: .92 }
+  ];
+  if (quota) ds.push({ type: 'bar', label: 'Quota di ' + nD().toLowerCase() + ' (%)', data: o.map(function (s) { return s.quota; }), yAxisID: 'y', backgroundColor: COL.quota, borderColor: PF.c('--serie-2'), borderWidth: 1, borderRadius: 2, order: 3, categoryPercentage: .8, barPercentage: .92 });
+  var maxInc = Math.max.apply(null, o.map(function (s) { return Math.max(s.inc, s.quota || 0); }));
+  var maxCs = Math.max.apply(null, o.map(function (s) { return s.cs || 0; }));
+  charts.incid = new Chart(cv, {
+    data: { labels: o.map(function (s) { return s.codice; }), datasets: ds },
+    plugins: [sfondo],
+    options: {
+      responsive: true, maintainAspectRatio: false, animation: { duration: 300 },
+      interaction: { mode: 'index', intersect: false },
+      plugins: {
+        legend: { position: 'top', align: 'end', labels: { boxWidth: 14, boxHeight: 10, color: PF.tenue(), usePointStyle: false } },
+        title: { display: true, text: 'Incidenza sul totale e consumo specifico', color: PF.c('--profondo'), font: { size: 15, weight: '600' }, align: 'start', padding: { bottom: 4 } },
+        tooltip: { callbacks: {
+          title: function (it) { return titoloSede(o[it[0].dataIndex]); },
+          label: function () { return null; },
+          afterBody: function (it) { var s = o[it[0].dataIndex]; var r = righeSede(s); if (s.quota !== null) r.splice(4, 0, 'Quota di ' + nD().toLowerCase() + ': ' + fP(s.quota, 2)); return r; } } },
+        annotation: { annotations: {
+          csG: { type: 'line', yScaleID: 'y2', yMin: R.csG, yMax: R.csG, borderColor: COL.ink, borderWidth: 1.5, borderDash: [6, 4],
+            label: { display: true, content: 'gruppo: ' + fCS(R.csG) + ' ' + uS(), position: 'end', backgroundColor: PF.rgba(COL.ink, .85), color: PF.c('--foglio'), font: { size: 11 }, padding: { x: 5, y: 2 } } },
+          incM: { type: 'line', yScaleID: 'y', yMin: R.incMedia, yMax: R.incMedia, borderColor: PF.rgba(COL.p80, .7), borderWidth: 1, borderDash: [2, 3],
+            label: { display: true, content: 'incidenza media ' + fP(R.incMedia, 2), position: 'center', backgroundColor: 'transparent', color: COL.p80, font: { size: 10.5 }, yAdjust: -9 } }
+        } }
+      },
+      scales: {
+        x: { grid: { display: false }, ticks: { autoSkip: false, maxRotation: 60, minRotation: o.length > 14 ? 45 : 0, font: { size: 11 } } },
+        y: { beginAtZero: true, suggestedMax: maxInc * 1.08, grid: { color: PF.griglia() }, ticks: { callback: function (v) { return fN(v, v < 10 && v % 1 ? 1 : 0) + '%'; } }, title: asseTitolo('Incidenza e quota [%]') },
+        y2: { position: 'right', beginAtZero: true, suggestedMax: maxCs * 1.08, grid: { display: false }, ticks: { callback: function (v) { return fN(v); } }, title: asseTitolo('Consumo specifico [' + uS() + ']') }
+      }
+    }
+  });
+  var sopra = o.filter(function (s) { return s.cs !== null && s.cs > R.csG; });
+  var incSopra = sopra.reduce(function (a, s) { return a + s.inc; }, 0);
+  $('sint-incid').innerHTML = '<b>' + sopra.length + ' sedi su ' + R.nValide + '</b> hanno un consumo specifico superiore a quello del gruppo (' + fCS(R.csG) + ' ' + esc(uS()) + ') e insieme valgono <b>' + fP(incSopra) + '</b> del consumo. ' +
+    'Se si portassero tutte al valore del gruppo il consumo scenderebbe di circa <b>' + conU(fN(sopra.reduce(function (a, s) { return a + (s.cs - R.csG) * s.dim; }, 0)), uC()) + '</b> (' + fP(sopra.reduce(function (a, s) { return a + (s.cs - R.csG) * s.dim; }, 0) / R.totC * 100) + ' del totale): è un ordine di grandezza, non una stima di risparmio.';
+}
+
+/* ---------------------------------------------------------------- 3. Quadranti */
+var etichette = {
+  id: 'pfEtichette',
+  afterDatasetsDraw: function (ch) {
+    if (!$('o-etich').checked) return;
+    var c = ch.ctx, meta = ch.getDatasetMeta(0), dati = ch.data.datasets[0].data, occupati = [];
+    var area = ch.chartArea;
+    c.save(); c.font = '600 10.5px ' + (getComputedStyle(document.documentElement).getPropertyValue('--mono') || 'monospace'); c.textBaseline = 'middle';
+    // prima le etichette dei punti più grandi
+    var idx = dati.map(function (d, i) { return i; }).sort(function (a, b) { return dati[b].s.inc - dati[a].s.inc; });
+    meta.data.forEach(function (p) { occupati.push({ x0: p.x - p.options.radius, x1: p.x + p.options.radius, y0: p.y - p.options.radius, y1: p.y + p.options.radius, punto: true }); });
+    idx.forEach(function (i) {
+      var p = meta.data[i], t = dati[i].s.codice, w = c.measureText(t).width + 4, h = 13, r = p.options.radius + 3;
+      var prove = [[r, 0, 'left'], [-r, 0, 'right'], [0, -r - 6, 'center'], [0, r + 6, 'center'], [r * .75, -r * .75 - 4, 'left'], [-r * .75, -r * .75 - 4, 'right']];
+      for (var k = 0; k < prove.length; k++) {
+        var x = p.x + prove[k][0], y = p.y + prove[k][1], al = prove[k][2];
+        var x0 = al === 'left' ? x : al === 'right' ? x - w : x - w / 2, b = { x0: x0, x1: x0 + w, y0: y - h / 2, y1: y + h / 2 };
+        if (b.x0 < area.left || b.x1 > area.right || b.y0 < area.top || b.y1 > area.bottom) continue;
+        var urta = occupati.some(function (o) { return !(b.x1 < o.x0 || b.x0 > o.x1 || b.y1 < o.y0 || b.y0 > o.y1) && !(o.punto && o.x0 === p.x - p.options.radius && o.y0 === p.y - p.options.radius); });
+        if (urta) continue;
+        occupati.push(b);
+        c.textAlign = al; c.fillStyle = PF.rgba(PF.c('--foglio'), .75); c.fillRect(b.x0, b.y0, w, h);
+        c.fillStyle = PF.testo(); c.fillText(t, al === 'left' ? x + 2 : al === 'right' ? x - 2 : x, y);
+        break;
+      }
+    });
+    c.restore();
+  }
+};
+function mappa() {
+  quadranti();
+  var t = soglie(), bolle = $('o-bolle').checked;
+  var valide = S.sedi.filter(function (s) { return !s.zero; });
+  var cv = tela('w-quad', 'quad');
+  var stretto = $('w-quad').clientWidth < 600;
+  var CORTI = { pri: 'Priorità', ges: 'Gestione', mir: 'Mirati', bas: 'Bassa priorità' };
+  cv.setAttribute('aria-label', 'Mappa a quattro quadranti: consumo specifico in ascissa, incidenza sul totale in ordinata');
+  var maxD = Math.max.apply(null, valide.map(function (s) { return s.dim; }));
+  var raggio = function (s) { return bolle ? (stretto ? 3 : 4) + (stretto ? 11 : 18) * Math.sqrt(s.dim / maxD) : (stretto ? 4.5 : 6); };
+  var maxX = Math.max.apply(null, valide.map(function (s) { return s.cs; })), maxY = Math.max.apply(null, valide.map(function (s) { return s.inc; }));
+  var xMax = Math.max(maxX, t.x) * 1.1, yMax = Math.max(maxY, t.y) * 1.12;
+  var tinta = function (k, a) { return PF.rgba(COL[QUAD[k].col], a); };
+  var etQ = function (k, pos) {
+    var tl = PF.scuroAttivo() ? .07 : .06;
+    return { type: 'box', drawTime: 'beforeDatasetsDraw', backgroundColor: tinta(k, k === 'bas' ? tl * .8 : tl * 1.6), borderWidth: 0,
+      label: { display: true, content: stretto ? CORTI[k] : QUAD[k].nome.split(': '), position: pos, color: PF.mescola(COL[QUAD[k].col], PF.testo(), .25), font: { size: stretto ? 10.5 : 12, weight: '600' }, padding: stretto ? 4 : 8, textAlign: pos.x === 'end' ? 'right' : 'left' } };
+  };
+  var a = {
+    pri: Object.assign(etQ('pri', { x: 'end', y: 'start' }), { xMin: t.x, yMin: t.y }),
+    ges: Object.assign(etQ('ges', { x: 'start', y: 'start' }), { xMin: 0, xMax: t.x, yMin: t.y }),
+    mir: Object.assign(etQ('mir', { x: 'end', y: 'start' }), { xMin: t.x, yMin: 0, yMax: t.y }),
+    bas: Object.assign(etQ('bas', { x: 'start', y: 'end' }), { xMin: 0, xMax: t.x, yMin: 0, yMax: t.y }),
+    lx: { type: 'line', xMin: t.x, xMax: t.x, borderColor: PF.rgba(COL.ink, .6), borderWidth: 1.5, borderDash: [6, 4], drawTime: 'beforeDatasetsDraw',
+      label: { display: !stretto, content: t.tipo + ' ' + fCS(t.x) + ' ' + uS(), position: 'end', rotation: -90, xAdjust: -9, backgroundColor: 'transparent', color: PF.tenue(), font: { size: 10.5 } } },
+    ly: { type: 'line', yMin: t.y, yMax: t.y, borderColor: PF.rgba(COL.ink, .6), borderWidth: 1.5, borderDash: [6, 4], drawTime: 'beforeDatasetsDraw',
+      label: { display: true, content: t.tipo + ' ' + fP(t.y, 2), position: 'center', yAdjust: -9, backgroundColor: 'transparent', color: PF.tenue(), font: { size: 10.5 } } }
+  };
+  charts.quad = new Chart(cv, {
+    type: 'scatter',
+    data: { datasets: [{ label: 'Sedi', data: valide.map(function (s) { return { x: s.cs, y: s.inc, s: s }; }),
+      pointRadius: valide.map(raggio), pointHoverRadius: valide.map(function (s) { return raggio(s) + 2; }),
+      backgroundColor: valide.map(function (s) { return tinta(s.quad, .55); }), borderColor: valide.map(function (s) { return COL[QUAD[s.quad].col]; }), borderWidth: 1.5 }] },
+    plugins: [sfondo, etichette],
+    options: {
+      responsive: true, maintainAspectRatio: false, animation: { duration: 300 },
+      plugins: {
+        legend: { display: false },
+        title: { display: true, text: stretto ? 'Mappa a quattro quadranti' : 'Mappa a quattro quadranti — consumo specifico e incidenza sul totale', color: PF.c('--profondo'), font: { size: 15, weight: '600' }, align: 'start', padding: { bottom: 8 } },
+        tooltip: { callbacks: {
+          title: function (it) { return titoloSede(it[0].raw.s); },
+          label: function () { return null; },
+          afterBody: function (it) { var s = it[0].raw.s; return righeSede(s).concat(['Quadrante: ' + QUAD[s.quad].nome]); } } },
+        annotation: { annotations: a }
+      },
+      scales: {
+        x: { type: 'linear', min: 0, suggestedMax: xMax, grid: { color: PF.griglia() }, ticks: { callback: function (v) { return fN(v, v % 1 ? 1 : 0); } }, title: asseTitolo('Consumo specifico [' + uS() + '] → meno efficiente') },
+        y: { min: 0, suggestedMax: yMax, grid: { color: PF.griglia() }, ticks: { callback: function (v) { return fN(v, v % 1 ? 1 : 0) + '%'; } }, title: asseTitolo('Incidenza sul consumo del gruppo [%] → pesa di più') }
+      }
+    }
+  });
+  /* elenchi per quadrante */
+  var h = '';
+  ['pri', 'ges', 'mir', 'bas'].forEach(function (k) {
+    var l = valide.filter(function (s) { return s.quad === k; }).sort(function (a, b) { return b.inc - a.inc; });
+    var inc = l.reduce(function (x, s) { return x + s.inc; }, 0);
+    h += '<div class="quadro" style="--q:var(' + QUAD[k].css + ')"><h4>' + esc(QUAD[k].nome) + '<small>' + QUAD[k].pos + '</small></h4>' +
+      '<p>' + l.length + (l.length === 1 ? ' sede' : ' sedi') + ' · ' + fP(inc) + ' del consumo del gruppo</p><ul>' +
+      (l.length ? l.map(function (s) { return '<li><code>' + esc(s.codice) + '</code>' + esc(s.nome) + ' <span>· ' + fP(s.inc) + ' · ' + fCS(s.cs) + ' ' + esc(uS()) + '</span></li>'; }).join('') : '<li><span>nessuna sede</span></li>') +
+      '</ul></div>';
+  });
+  $('quadri').innerHTML = h;
+  var pri = valide.filter(function (s) { return s.quad === 'pri'; });
+  $('sint-quad').innerHTML = 'Separazione sulla <b>' + t.tipo + '</b>: consumo specifico ' + fCS(t.x) + ' ' + esc(uS()) + ', incidenza ' + fP(t.y, 2) + '. ' +
+    '<b>' + pri.length + (pri.length === 1 ? ' sede' : ' sedi') + ' in priorità</b> (grandi e inefficienti), pari a ' + fP(pri.reduce(function (x, s) { return x + s.inc; }, 0)) + ' del consumo.' +
+    (R.n > R.nValide ? ' Escluse ' + (R.n - R.nValide) + ' sedi con dimensione nulla.' : '');
+}
+
+/* ---------------------------------------------------------------- tabella */
+var COLONNE = [
+  { k: 'rango', t: 'N.', f: function (s) { return s.rango; } },
+  { k: 'codice', t: 'Codice', testo: 1, f: function (s) { return esc(s.codice); } },
+  { k: 'nome', t: 'Denominazione', testo: 1, f: function (s) { return esc(s.nome); }, cls: 'nome' },
+  { k: 'dim', t: function () { return nD() + (uD() ? ' [' + uD() + ']' : ''); }, f: function (s) { return s.zero ? '<span class="alto" title="dimensione nulla o mancante">0 ⚠</span>' : fN(s.dim, s.dim % 1 ? 1 : 0); } },
+  { k: 'cons', t: function () { return nC() + (uC() ? ' [' + uC() + ']' : ''); }, f: function (s) { return fN(s.cons, s.cons % 1 && s.cons < 1000 ? 2 : 0); } },
+  { k: 'cs', t: function () { return 'Cons. specifico [' + uS() + ']'; }, f: function (s) { return s.cs === null ? '–' : '<span class="' + (s.cs > R.csG ? 'alto' : 'basso') + '">' + fCS(s.cs) + '</span>'; } },
+  { k: 'scost', t: 'Δ sul gruppo', f: function (s) { return s.scost === null ? '–' : (s.scost > 0 ? '+' : '') + fN(s.scost, 1) + '%'; } },
+  { k: 'inc', t: 'Incidenza', f: function (s) { return fP(s.inc, 2); } },
+  { k: 'quota', t: function () { return 'Quota ' + nD().toLowerCase(); }, f: function (s) { return fP(s.quota, 2); } },
+  { k: 'cum', t: 'Cumulata', f: function (s) { return fP(s.cum, 1); } },
+  { k: 'p80', t: 'Nell’80%', testo: 1, f: function (s) { return s.p80 ? 'sì' : 'no'; } },
+  { k: 'quad', t: 'Quadrante', testo: 1, f: function (s) { return s.quad ? '<span class="qtag" style="--q:var(' + QUAD[s.quad].css + ')">' + esc(QUAD[s.quad].nome) + '</span>' : '<span style="color:var(--tenue)">escluso</span>'; } }
+];
+function tt(c) { return typeof c.t === 'function' ? c.t() : c.t; }
+function tabella() {
+  var col = COLONNE.filter(function (c) { return c.k === ORD.col; })[0] || COLONNE[4];
+  var v = function (s) { var x = s[col.k === 'cons' ? 'cons' : col.k]; if (col.k === 'quad') x = s.quad ? ['pri', 'ges', 'mir', 'bas'].indexOf(s.quad) : 9; if (col.k === 'p80') x = s.p80 ? 0 : 1; return x; };
+  var righe = S.sedi.slice().sort(function (a, b) {
+    var x = v(a), y = v(b);
+    if (x === null || x === undefined) return 1; if (y === null || y === undefined) return -1;
+    if (typeof x === 'string') return x.localeCompare(y, 'it', { numeric: true }) * ORD.dir;
+    return (x - y) * ORD.dir;
+  });
+  var h = '<div class="tab-wrap"><table class="tg"><caption class="solo-lettori">Sedi del gruppo con consumo specifico, incidenza e quadrante; fai clic sulle intestazioni per ordinare</caption><thead><tr>';
+  COLONNE.forEach(function (c) {
+    var s = c.k === ORD.col ? (ORD.dir > 0 ? 'ascending' : 'descending') : 'none';
+    h += '<th scope="col" class="' + (c.testo ? 't' : '') + '" aria-sort="' + s + '"><button type="button" data-ord="' + c.k + '">' + esc(tt(c)) + '</button></th>';
+  });
+  h += '</tr></thead><tbody>';
+  righe.forEach(function (s) {
+    h += '<tr class="' + (s.p80 ? 'p80' : '') + (s.zero ? ' zero' : '') + '">' + COLONNE.map(function (c) { return '<td class="' + (c.testo ? 't ' : '') + (c.cls || '') + '">' + c.f(s) + '</td>'; }).join('') + '</tr>';
+  });
+  h += '</tbody><tfoot><tr><td></td><td class="t">Gruppo</td><td class="t">' + R.n + ' sedi</td><td>' + fN(R.totD) + '</td><td>' + fN(R.totC) + '</td><td>' + fCS(R.csG) + '</td><td>–</td><td>100,00%</td><td>100,00%</td><td></td><td class="t">' + R.k80 + ' sedi</td><td></td></tr></tfoot></table></div>';
+  $('tabella').innerHTML = h;
+  $('b-csv').disabled = false;
+}
+$('tabella').addEventListener('click', function (e) {
+  var b = e.target.closest('button[data-ord]'); if (!b) return;
+  var k = b.dataset.ord;
+  if (ORD.col === k) ORD.dir = -ORD.dir; else { ORD.col = k; ORD.dir = (k === 'codice' || k === 'nome' || k === 'rango' || k === 'quad' || k === 'p80') ? 1 : -1; }
+  tabella();
+  var nb = $('tabella').querySelector('button[data-ord="' + k + '"]'); if (nb) nb.focus();
+});
+
+/* ---------------------------------------------------------------- esportazioni */
+function scarica(blob, nome) {
+  var url = URL.createObjectURL(blob), a = document.createElement('a');
+  a.href = url; a.download = nome; document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+}
+function base() { return (S.file || 'gruppo').replace(/\.[^.]+$/, '').replace(/[^\w\-]+/g, '_'); }
+function nCsv(v, d) { return v === null || v === undefined || !isFinite(v) ? '' : (d === undefined ? String(+v.toFixed(6)) : v.toFixed(d)).replace('.', ','); }
+function cCsv(s) { s = String(s); return /[;"\n\r]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s; }
+$('b-csv').addEventListener('click', function () {
+  if (!R) return;
+  var t = soglie();
+  var intest = ['rango', 'codice', 'denominazione', nD() + (uD() ? ' [' + uD() + ']' : ''), nC() + (uC() ? ' [' + uC() + ']' : ''), 'consumo specifico [' + uS() + ']',
+    'scostamento dal gruppo [%]', 'incidenza sul totale [%]', 'quota ' + nD().toLowerCase() + ' [%]', 'cumulata [%]', 'nell_80%', 'quadrante (' + t.tipo + ')'];
+  var righe = [intest.map(cCsv).join(';')];
+  R.ord.forEach(function (s) {
+    righe.push([s.rango, s.codice, s.nome, s.zero ? '0' : nCsv(s.dim), nCsv(s.cons), nCsv(s.cs, 4), nCsv(s.scost, 2), nCsv(s.inc, 4), nCsv(s.quota, 4), nCsv(s.cum, 4),
+      s.p80 ? 'sì' : 'no', s.quad ? QUAD[s.quad].nome : 'escluso (dimensione nulla)'].map(cCsv).join(';'));
+  });
+  righe.push(['', 'GRUPPO', R.n + ' sedi', nCsv(R.totD), nCsv(R.totC), nCsv(R.csG, 4), '', '100', '100', '', R.k80 + ' sedi', ''].map(cCsv).join(';'));
+  scarica(new Blob(['﻿' + righe.join('\r\n') + '\r\n'], { type: 'text/csv;charset=utf-8' }), 'playfair-g_' + base() + '.csv');
+});
+document.querySelectorAll('[data-png]').forEach(function (b) {
+  b.addEventListener('click', function () {
+    var ch = charts[b.dataset.png]; if (!ch) return;
+    var url = ch.toBase64Image('image/png', 1);
+    var a = document.createElement('a'); a.href = url; a.download = 'playfair-g_' + base() + '_' + b.dataset.png + '.png';
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  });
+});
+
+/* ---------------------------------------------------------------- schede */
+var TABS = Array.prototype.slice.call(document.querySelectorAll('.pf-app.g .tab'));
+function attiva(tab, fuoco) {
+  TABS.forEach(function (t) {
+    var on = t === tab, p = $(t.getAttribute('aria-controls'));
+    t.setAttribute('aria-selected', on ? 'true' : 'false'); t.tabIndex = on ? 0 : -1;
+    p.classList.toggle('active', on); p.hidden = !on;
+  });
+  if (fuoco) tab.focus();
+  if (R) disegnaScheda();
+}
+TABS.forEach(function (t, i) {
+  t.addEventListener('click', function () { attiva(t); });
+  t.addEventListener('keydown', function (e) {
+    var j = e.key === 'ArrowRight' ? i + 1 : e.key === 'ArrowLeft' ? i - 1 : e.key === 'Home' ? 0 : e.key === 'End' ? TABS.length - 1 : null;
+    if (j === null) return; e.preventDefault(); attiva(TABS[(j + TABS.length) % TABS.length], true);
+  });
+});
+function schedaAttiva() { return TABS.filter(function (t) { return t.getAttribute('aria-selected') === 'true'; })[0].id; }
+function disegnaScheda() {
+  var id = schedaAttiva();
+  if (id === 't-pareto') pareto(); else if (id === 't-incid') incidenza(); else mappa();
+}
+$('o-quota').addEventListener('change', function () { if (R) incidenza(); });
+$('o-soglia').addEventListener('change', function () { if (R) { mappa(); tabella(); } });
+$('o-bolle').addEventListener('change', function () { if (R) mappa(); });
+$('o-etich').addEventListener('change', function () { if (charts.quad) charts.quad.update('none'); });
+
+function disegnaTutto() {
+  if (!R) return;
+  quadranti(); kpi(); tabella(); disegnaScheda();
+}
+PF.alCambioTema(function () { if (R) { kpi(); disegnaScheda(); } });
+
+/* per i test automatici: risultati in sola lettura */
+window.PlayfairG = { risultati: function () { return R && { gruppo: { totC: R.totC, totD: R.totD, csG: R.csG, csM: R.csM, incMedia: R.incMedia, incMed: R.incMed, k80: R.k80, cum80: R.cum80, n: R.n, nValide: R.nValide, soglie: soglie() },
+  sedi: S.sedi.map(function (s) { return { codice: s.codice, nome: s.nome, dim: s.dim, cons: s.cons, zero: s.zero, cs: s.cs, inc: s.inc, quota: s.quota, cum: s.cum, rango: s.rango, p80: s.p80, quad: s.quad }; }) }; } };
+})();
+</script>
+<script src="assets/sito.js" defer></script>
+</body>
+</html>

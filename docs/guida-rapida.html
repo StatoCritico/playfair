@@ -46,13 +46,13 @@
   figcaption { font-size: 7.6pt; color: var(--tenue); margin-top: .8mm; line-height: 1.25; }
 
   /* tabella strumenti */
-  table { width: 100%; border-collapse: collapse; font-size: 8.9pt; table-layout: fixed; }
-  th, td { text-align: left; vertical-align: top; padding: 1mm 1.6mm; border-bottom: 1px solid var(--linea); }
+  table { width: 100%; border-collapse: collapse; font-size: 8.5pt; line-height: 1.22; table-layout: fixed; }
+  th, td { text-align: left; vertical-align: top; padding: .65mm 1.6mm; border-bottom: 1px solid var(--linea); }
   thead th { background: var(--rialzo); font-family: var(--titoli); font-weight: 700; font-size: 9pt;
              text-transform: uppercase; letter-spacing: .04em; color: var(--tenue); border-bottom: 1.2pt solid var(--bordo); }
   td.nome { font-family: var(--titoli); font-weight: 700; font-size: 10.5pt; white-space: nowrap; color: var(--primario-forte); }
-  td.nome small { display: block; font-family: var(--testo); font-weight: 400; font-size: 7.8pt; color: var(--tenue); }
-  th.c1 { width: 23mm; } th.c3 { width: 66mm; }
+  td.nome small { display: inline; margin-left: 1mm; font-family: var(--testo); font-weight: 400; font-size: 7.8pt; color: var(--tenue); }
+  th.c1 { width: 31mm; } th.c3 { width: 70mm; }
   td code { font-weight: 600; overflow-wrap: anywhere; }
   tbody tr:nth-child(even) td { background: color-mix(in srgb, var(--rialzo) 45%, transparent); }
 
@@ -124,6 +124,9 @@
       <tr><td class="nome">Playfair-M<small>Money</small></td>
         <td>Confronto di investimenti: VAN, TIR, MIRR, ROI, payback, PI, DSCR, LLCR; tasso di sconto o WACC, eventi di cassa, grafico log-log.</td>
         <td class="file"><code>investimenti_energetici_v2.csv</code> — <code>nome;<wbr>capex;<wbr>costi_annuali;<wbr>ricavi_annuali;<wbr>durata_anni<wbr>[;tasso_sconto]</code>; numeri col <strong>punto</strong> decimale.</td></tr>
+      <tr><td class="nome">Playfair-G<small>Group</small></td>
+        <td>Gruppo di sedi: consumo specifico (consumo ÷ dimensione), incidenza sul totale, Pareto 80/20 e mappa a 4 quadranti delle priorità; tabella ordinabile, CSV e PNG.</td>
+        <td class="file">Una riga per sede: <code>codice;<wbr>denominazione;<wbr>dimensione;<wbr>consumo</code> (es. m² e kWh); unità nell'intestazione o in una 2ª riga.</td></tr>
       <tr><td class="nome">Playfair-C<small>Cusum</small></td>
         <td>Monitoraggio secondo ISO 50006: regressione consumo/driver, residui e carta CUSUM.</td>
         <td class="file"><code>consumo_cusum.csv</code> — 2 colonne: consumo e driver; la seconda riga contiene le unità.</td></tr>
