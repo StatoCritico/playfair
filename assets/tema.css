@@ -48,6 +48,7 @@
   --flusso-acqua: #4cc6f5;   /* azzurro: m³ d'acqua, ritorni */
   --flusso-co2: #c4946a;     /* marrone: t CO₂ */
   --flusso-altro: #9b96a6;   /* grigio: perdite, altro */
+  --flusso-tep: #c58af0;     /* viola: tep, energia primaria */
   /* blueprint (tavola della home) */
   --bp-fondo: #0a1830;       /* blu notte */
   --bp-fondo-2: #0f2140;     /* riquadri di annotazione */
@@ -71,7 +72,7 @@
   --attenzione: #8a5a00; --attenzione-fondo: #fbf0d6;
   --errore: #a8133c;     --errore-fondo: #fbe5ea;
   --serie-1: #c43c12; --serie-2: #1f6fb4; --serie-3: #a87800; --serie-4: #b3418a; --serie-5: #4f7f22; --serie-6: #6b625d;
-  --flusso-el: #1b8a45; --flusso-th: #d45a00; --flusso-acqua: #1272b0; --flusso-co2: #7a4a26; --flusso-altro: #706a7a;
+  --flusso-el: #1b8a45; --flusso-th: #d45a00; --flusso-acqua: #1272b0; --flusso-co2: #7a4a26; --flusso-altro: #706a7a; --flusso-tep: #7b2fa8;
   --bp-fondo: #e8eff8; --bp-fondo-2: #f6f9fd; --bp-linea: #23477e; --bp-luce: #0069b4;
   --bp-griglia: rgb(35 71 126 / .07); --bp-testo: #0f2547; --bp-tenue: #44618a;
   --ombra-1: 0 1px 2px rgb(42 29 25 / .08);

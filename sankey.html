@@ -23,6 +23,7 @@
     <a href="playfair-c.html" data-tip="Cusum — regressione, residui e carta CUSUM secondo ISO 50006">Playfair-C</a>
     <a href="sankey.html" aria-current="page" data-tip="Sankey — disegna diagrammi di flusso energetico a blocchi e verifica i bilanci">Sankey</a>
     <a href="personaggi.html" data-tip="William Playfair e Matthew H. P. R. Sankey: chi erano">Personaggi</a>
+    <a href="link.html" data-tip="Link — Stato Critico, EuGEnio, Pseudomania, Bordo Vasca e i corsi Festo Academy">Link</a>
   </nav>
   <button class="pf-tema" type="button" aria-label="Cambia tema chiaro/scuro">◐</button>
 </header>
@@ -40,6 +41,9 @@
         </button>
         <button type="button" class="sk-btn sk-prim" data-modo="blocco" aria-pressed="false" data-tip="Blocco: clicca nell'area di disegno per creare un blocco (B). Esc per uscire">
           <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="6.5" width="17" height="11" rx="2"/></svg><span>Blocco</span><kbd>B</kbd>
+        </button>
+        <button type="button" class="sk-btn sk-prim" data-modo="conversione" aria-pressed="false" data-tip="Conversione: clicca nell'area per creare un blocco che trasforma un vettore in un altro, es. kWh → t CO₂, Sm³ → MWh, kWh → tep (C). Esc per uscire">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="4.5" width="20" height="15" rx="2.5"/><rect x="4.5" y="7" width="15" height="10" rx="1.2" stroke-width="1.2"/><path d="M7.5 10.5h8M13.5 8.5l2 2-2 2M16.5 13.5h-8M10.5 11.5l-2 2 2 2" stroke-width="1.5"/></svg><span>Conversione</span><kbd>C</kbd>
         </button>
         <button type="button" class="sk-btn sk-prim" data-modo="collegamento" aria-pressed="false" data-tip="Collegamento: clicca il dato di partenza e poi quello di arrivo (L). Esc per uscire">
           <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="4" width="6" height="6" rx="1"/><rect x="16" y="14" width="6" height="6" rx="1"/><path d="M8 7h4a2 2 0 0 1 2 2v6a2 2 0 0 0 2 2" fill="none"/></svg><span>Collegamento</span><kbd>L</kbd>
@@ -75,8 +79,13 @@
       <label class="sk-campo-inline" for="sk-esempio">Esempi</label>
       <div class="sk-colonna-ctl">
         <select id="sk-esempio" aria-label="Esempio da caricare">
-          <option value="cogenerazione">Centrale di cogenerazione</option>
-          <option value="ospedale">Ospedale: elettricità, gas, acqua, CO₂</option>
+          <option value="cogenerazione">Centrale di cogenerazione (sito 1)</option>
+          <option value="ospedale">Ospedale (sito 4): elettricità, gas, acqua, CO₂, TEP</option>
+          <option value="sito1">Sito 1 (2025)</option>
+          <option value="sito2">Sito 2 (2025)</option>
+          <option value="sito3">Sito 3 (2025)</option>
+          <option value="sito45">Sito 4 e 5 (2025)</option>
+          <option value="sito6">Sito 6 (2025)</option>
           <option value="vapore">Macchina a vapore (Sankey, 1898)</option>
           <option value="minimo">Esempio minimo A → B → C, D</option>
         </select>
@@ -104,7 +113,7 @@
       <details class="sk-tasti">
         <summary>Scorciatoie da tastiera</summary>
         <dl>
-          <dt>B · L · V</dt><dd>Blocco · Collegamento · Seleziona</dd>
+          <dt>B · C · L · V</dt><dd>Blocco · Conversione · Collegamento · Seleziona</dd>
           <dt>A</dt><dd>Aggiorna</dd>
           <dt>Canc</dt><dd>Elimina selezione</dd>
           <dt>Esc</dt><dd>Esci dalla modalità / deseleziona</dd>
@@ -129,7 +138,7 @@
       <button type="button" class="sk-btn sk-piccolo sk-pannello-apri" id="sk-pannello-apri" aria-controls="sk-pannello" aria-expanded="false">Proprietà</button>
     </div>
     <div class="sk-tela-box" id="sk-tela-box">
-      <svg id="sk-tela" class="sk-tela modo-seleziona" tabindex="0" role="application" aria-roledescription="area di disegno" aria-label="Diagramma di Sankey. Usa B per creare blocchi, L per i collegamenti, Tab per spostarti tra gli elementi." aria-describedby="sk-stato-testo" xmlns="http://www.w3.org/2000/svg">
+      <svg id="sk-tela" class="sk-tela modo-seleziona" tabindex="0" role="application" aria-roledescription="area di disegno" aria-label="Diagramma di Sankey. Usa B per creare blocchi, C per i blocchi di conversione, L per i collegamenti, Tab per spostarti tra gli elementi." aria-describedby="sk-stato-testo" xmlns="http://www.w3.org/2000/svg">
         <defs>
           <pattern id="sk-griglia-fine" width="10" height="10" patternUnits="userSpaceOnUse"><path d="M10 0H0V10" class="sk-griglia-l1"/></pattern>
           <pattern id="sk-griglia-grossa" width="100" height="100" patternUnits="userSpaceOnUse"><rect width="100" height="100" fill="url(#sk-griglia-fine)"/><path d="M100 0H0V100" class="sk-griglia-l2"/></pattern>
@@ -170,7 +179,7 @@
 
 <dialog class="sk-dialogo" id="sk-tutorial" aria-labelledby="sk-tut-tit">
   <form method="dialog" class="sk-tut">
-    <p class="sk-tut-passo" id="sk-tut-passo">1 / 5</p>
+    <p class="sk-tut-passo" id="sk-tut-passo">1 / 6</p>
     <h2 id="sk-tut-tit">Benvenuto nell'editor Sankey</h2>
     <div id="sk-tut-testo"></div>
     <div class="sk-tut-azioni">

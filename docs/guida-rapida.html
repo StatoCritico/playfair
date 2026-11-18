@@ -15,7 +15,7 @@
     font-family: var(--testo); font-size: 9pt; line-height: 1.28;
     color: var(--inchiostro); background: var(--foglio);
     -webkit-print-color-adjust: exact; print-color-adjust: exact;
-    display: flex; flex-direction: column; gap: 2.6mm;
+    display: flex; flex-direction: column; gap: 2.2mm;
   }
   h1, h2, h3 { font-family: var(--titoli); margin: 0; line-height: 1.1; }
   a { color: var(--primario-forte); text-decoration: none; }
@@ -62,11 +62,11 @@
             background: var(--bp-fondo-2); }
   .sankey h2 { color: var(--bp-linea); }
   .sankey ol { padding-left: 0; list-style: none; counter-reset: p; }
-  .sankey ol li { counter-increment: p; position: relative; padding-left: 6.2mm; margin-bottom: .9mm; }
+  .sankey ol li { counter-increment: p; position: relative; padding-left: 6.2mm; margin-bottom: .6mm; }
   .sankey ol li::before { content: counter(p); position: absolute; left: 0; top: .2mm; width: 4.4mm; height: 4.4mm;
        border-radius: 50%; background: var(--bp-linea); color: #fff; font: 700 7.8pt/4.4mm var(--titoli); text-align: center; }
   .el { color: var(--flusso-el); font-weight: 700; } .th { color: var(--flusso-th); font-weight: 700; }
-  .ac { color: var(--flusso-acqua); font-weight: 700; } .co { color: var(--flusso-co2); font-weight: 700; }
+  .ac { color: var(--flusso-acqua); font-weight: 700; } .co { color: var(--flusso-co2); font-weight: 700; } .tp { color: var(--flusso-tep); font-weight: 700; }
   .ok { color: var(--successo); font-weight: 700; } .ko { color: var(--errore); font-weight: 700; }
   .calc { color: var(--segno); font-style: italic; }
   .scorc { margin-top: 0; padding-top: 1.4mm; border-top: 1px dashed var(--bp-tenue); font-size: 8.6pt; line-height: 1.55; }
@@ -138,22 +138,22 @@
       <li><strong>Blocco</strong> <kbd>B</kbd>, poi clic nell'area per creare i blocchi; trascinali per spostarli.</li>
       <li><strong>Clic sul blocco:</strong> nel pannello a destra scrivi il nome e le righe di dati con etichetta, valore e unità. Lascia <strong>vuoto</strong> il valore per farlo calcolare.</li>
       <li><strong>Collegamento</strong> <kbd>L</kbd>: clic sulla riga di dati di partenza, poi su quella di arrivo. Il tubo prende il colore del vettore:
-        <span class="el">verde</span> kWh elettrici, <span class="th">arancione</span> Sm³/MWh termici, <span class="ac">azzurro</span> m³ d'acqua, <span class="co">marrone</span> t CO₂.</li>
+        <span class="el">verde</span> kWh elettrici, <span class="th">arancione</span> Sm³/MWh termici, <span class="ac">azzurro</span> m³ d'acqua, <span class="co">marrone</span> t CO₂, <span class="tp">viola</span> tep.</li>
+      <li><strong>Conversione</strong> <kbd>C</kbd>: blocco a doppio bordo ⇄, uscita = <em>fattore × ingresso</em> (Sm³ → MWh, kWh → t CO₂ o tep; acqua esclusa). Un blocco a una riga <strong>somma</strong> i tubi: emissioni totali (t CO₂), energia primaria totale (TEP).</li>
       <li><strong>Aggiorna</strong> <kbd>A</kbd>: tubi proporzionali ai valori; blocchi <span class="ok">verdi</span> o <span class="ko">rossi</span> secondo il bilancio
         (ingressi = uscite + perdite, tolleranza 0,1%); le caselle vuote vengono compilate <span class="calc">in corsivo</span> — «Fissa» per tenerle.</li>
-      <li><strong>Rotella</strong> per lo zoom, trascina lo sfondo per spostarti, <kbd>0</kbd> adatta la vista, <kbd>Ctrl</kbd>+<kbd>Z</kbd> annulla.</li>
       <li><strong>Esporta</strong> in JPG, PDF o SVG; <strong>salva il progetto</strong> in .json (trascinalo sulla pagina per riaprirlo). Il lavoro è salvato anche nel browser.</li>
     </ol>
   </div>
   <figure>
-    <img src="guida-img/sankey.jpg" alt="L'editor Sankey con l'esempio Ospedale caricato e i bilanci verificati">
-    <figcaption>Esempio «Ospedale» (menu Progetto › Esempi) dopo Aggiorna: tutti i bilanci tornano, i valori calcolati sono in corsivo.</figcaption>
+    <img src="guida-img/sankey.jpg" alt="L'editor Sankey con l'esempio Sito 1 caricato e i bilanci verificati">
+    <figcaption>Esempio «Sito 1 (2025)» dopo Aggiorna: forniture → utenze → CO₂ e tep → totali.</figcaption>
   </figure>
   <p class="scorc" style="grid-column: 1 / -1">
     <b>Scorciatoie</b>
     <kbd>B</kbd> <kbd>L</kbd> <kbd>V</kbd> blocco · collegamento · seleziona &nbsp;·&nbsp; <kbd>A</kbd> aggiorna &nbsp;·&nbsp; <kbd>Canc</kbd> elimina &nbsp;·&nbsp; <kbd>Esc</kbd> esci / deseleziona &nbsp;·&nbsp;
     <kbd>←↑→↓</kbd> sposta (<kbd>Maiusc</kbd> ×5) &nbsp;·&nbsp; <kbd>Ctrl</kbd>+<kbd>Z</kbd>/<kbd>Y</kbd>/<kbd>D</kbd>/<kbd>A</kbd>/<kbd>S</kbd> annulla · ripeti · duplica · seleziona tutto · salva &nbsp;·&nbsp;
-    <kbd>+</kbd> <kbd>−</kbd> <kbd>0</kbd> zoom &nbsp;·&nbsp; <kbd>Spazio</kbd>+trascina sposta la vista &nbsp;·&nbsp; <kbd>Invio</kbd>/<kbd>F2</kbd> modifica il blocco
+    <kbd>C</kbd> conversione &nbsp;·&nbsp; rotella o <kbd>+</kbd> <kbd>−</kbd> <kbd>0</kbd> zoom &nbsp;·&nbsp; <kbd>Spazio</kbd>+trascina sposta la vista &nbsp;·&nbsp; <kbd>Invio</kbd>/<kbd>F2</kbd> modifica il blocco
   </p>
 </section>
 

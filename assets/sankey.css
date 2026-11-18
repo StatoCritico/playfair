@@ -102,7 +102,7 @@
 .sk-tela-box { position: relative; min-height: 0; overflow: hidden; background: var(--carta, #19171c); }
 .sk-tela { display: block; width: 100%; height: 100%; touch-action: none; user-select: none; -webkit-user-select: none; outline: none; font-family: var(--testo, system-ui, sans-serif); }
 .sk-tela:focus-visible { box-shadow: inset 0 0 0 3px var(--segno, #8f9bff); }
-.sk-tela.modo-blocco { cursor: crosshair; }
+.sk-tela.modo-blocco, .sk-tela.modo-conversione { cursor: crosshair; }
 .sk-tela.modo-collegamento { cursor: alias; }
 .sk-tela.pan, .sk-tela.spazio { cursor: grab; }
 .sk-tela.pan-attivo { cursor: grabbing; }
@@ -127,6 +127,13 @@
 .sk-blocco.st-err .sk-blocco-fondo, .sk-blocco.st-err .sk-blocco-testa { fill: var(--errore-fondo, #361a1c); }
 .sk-blocco.obsoleto .sk-badge { opacity: .45; }
 .sk-blocco-testa { fill: var(--rialzo, #2d2932); }
+/* blocco di conversione: doppio bordo e icona ⇄ */
+.sk-blocco-dentro { fill: none; stroke: var(--bordo, #7b7385); stroke-width: 1; pointer-events: none; }
+.sk-conv-icona { fill: none; stroke: var(--inchiostro, #f3eff4); stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+.sk-blocco.conv.st-ok .sk-blocco-dentro { stroke: var(--successo, #8fcf86); }
+.sk-blocco.conv.st-warn .sk-blocco-dentro { stroke: var(--attenzione, #f2c14e); }
+.sk-blocco.conv.st-err .sk-blocco-dentro { stroke: var(--errore, #ff8a8a); }
+.sk-riga-fx { fill: var(--tenue, #b5adbd); font-size: 10.5px; font-style: italic; }
 .sk-blocco-nome { fill: var(--inchiostro, #f3eff4); font-weight: 700; font-size: 13px; }
 .sk-riga-etich { fill: var(--inchiostro, #f3eff4); font-size: 12px; }
 .sk-riga-val { fill: var(--inchiostro, #f3eff4); font-size: 12px; font-weight: 600; font-variant-numeric: tabular-nums; }
@@ -204,6 +211,13 @@ kbd { font-family: var(--mono, ui-monospace, monospace); font-size: .85em; borde
 .sk-val-calc { grid-column: 1 / -1; display: flex; align-items: center; gap: .4rem; font-size: .8rem; color: var(--segno, #8f9bff); font-style: italic; }
 .sk-val-calc .sk-btn { font-style: normal; min-height: 1.7rem; padding: .1rem .5rem; font-size: .75rem; margin-left: auto; }
 input.sk-num { text-align: right; font-variant-numeric: tabular-nums; }
+.sk-fattore { display: flex; align-items: center; gap: .35rem; }
+.sk-fattore input { flex: 1; min-width: 0; }
+.sk-fattore-u { font-size: .78rem; color: var(--inchiostro, #f3eff4); white-space: nowrap; font-weight: 600; }
+.sk-pannello textarea { width: 100%; resize: vertical; line-height: 1.4; }
+.sk-libreria { display: flex; flex-direction: column; gap: .3rem; }
+.sk-lib-voce { display: grid; grid-template-columns: 1fr 9.5rem; gap: .35rem; align-items: center; font-size: .76rem; color: var(--tenue, #b5adbd); }
+.sk-lib-voce .sk-fattore-u { font-size: .7rem; font-weight: 500; min-width: 3.6rem; }
 input.sk-num.calc::placeholder { color: var(--segno, #8f9bff); font-style: italic; opacity: 1; }
 .sk-azioni { display: flex; flex-wrap: wrap; gap: .4rem; margin-top: .7rem; }
 .sk-elenco { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: .3rem; }

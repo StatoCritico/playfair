@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Link — gli altri progetti di Stato Critico · Playfair</title>
+<meta name="description" content="Gli altri progetti di Stato Critico: il sito generale, EuGEnio, Pseudomania, Bordo Vasca i corsi Festo Academy.">
+<link rel="icon" href="img/favicon.svg" type="image/svg+xml">
+<meta property="og:title" content="Link — gli altri progetti di Stato Critico">
+<meta property="og:image" content="https://playfair.statocritico.it/img/macchina-sankey.gif">
+<script>try{var t=localStorage.getItem('pf-tema');if(t)document.documentElement.dataset.theme=t;}catch(e){}</script>
+<link rel="stylesheet" href="assets/tema.css">
+<link rel="stylesheet" href="assets/sito.css">
+<style>
+.link-griglia { list-style: none; margin: 0 0 var(--s7); padding: 0; display: grid; gap: var(--s5); grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr)); }
+.link-scheda { position: relative; display: grid; gap: var(--s3); padding: var(--s5) var(--s5) var(--s6); background: var(--foglio); border: 1px solid var(--linea); border-radius: var(--raggio); transition: border-color .15s, transform .15s, box-shadow .15s; }
+.link-scheda:hover, .link-scheda:focus-within { border-color: var(--primario); transform: translateY(-2px); box-shadow: var(--ombra-2); }
+.link-scheda h2 { margin: 0; font-size: 1.5rem; }
+.link-scheda h2 a { color: var(--inchiostro); text-decoration: none; }
+.link-scheda h2 a::after { content: ""; position: absolute; inset: 0; border-radius: inherit; }
+.link-scheda h2 a:focus-visible { outline: none; }
+.link-scheda:focus-within { outline: 2px solid var(--primario); outline-offset: 2px; }
+.link-url { margin: 0; font: 500 var(--c-s)/1.3 var(--mono); color: var(--primario); letter-spacing: .02em; word-break: break-all; }
+.link-scheda p { margin: 0; color: var(--tenue); max-width: 60ch; }
+.link-tipo { font: 600 var(--c-xs)/1 var(--mono); letter-spacing: .12em; text-transform: uppercase; color: var(--tenue); }
+</style>
+</head>
+<body>
+<a class="pf-salta" href="#contenuto">Vai al contenuto</a>
+<header class="pf-testata">
+  <a class="pf-marchio" href="index.html" aria-label="Playfair, home">Playfair<span class="pf-marchio-sub">.statocritico</span></a>
+  <button class="pf-menu-apri" aria-expanded="false" aria-controls="pf-menu">Menu</button>
+  <nav class="pf-menu" id="pf-menu" aria-label="Strumenti">
+    <a href="playfair-s.html" data-tip="Site — analisi del singolo sito: costi e consumi di elettricità, gas, calore e acqua">Playfair-S</a>
+    <a href="playfair-e.html" data-tip="Electric — curve di carico elettriche quartorarie: profili, mappe orarie, picchi e base">Playfair-E</a>
+    <a href="playfair-t.html" data-tip="Thermal — consumi termici ed elettrici, simulazione di cogenerazione e valutazione economica">Playfair-T</a>
+    <a href="playfair-m.html" data-tip="Money — confronto di investimenti energetici: VAN, TIR, ROI, WACC e flussi di cassa">Playfair-M</a>
+    <a href="playfair-c.html" data-tip="Cusum — regressione, residui e carta CUSUM secondo ISO 50006">Playfair-C</a>
+    <a href="sankey.html" data-tip="Sankey — disegna diagrammi di flusso energetico a blocchi e verifica i bilanci">Sankey</a>
+    <a href="personaggi.html" data-tip="William Playfair e Matthew H. P. R. Sankey: chi erano">Personaggi</a>
+    <a href="link.html" aria-current="page" data-tip="Link — Stato Critico, EuGEnio, Pseudomania, Bordo Vasca e i corsi Festo Academy">Link</a>
+  </nav>
+  <button class="pf-tema" type="button" aria-label="Cambia tema chiaro/scuro">◐</button>
+</header>
+
+<main id="contenuto" class="pf-contenitore">
+  <header class="pf-intestazione">
+    <p class="pf-sopratitolo">Link</p>
+    <h1>La famiglia di Stato Critico</h1>
+    <p>Playfair è uno dei progetti di Stato Critico, energy management, sanità, IA e altre cose serie. Qui trovi gli altri, e i corsi in cui questi strumenti vengono usati.</p>
+  </header>
+
+  <ul class="link-griglia">
+    <li class="link-scheda">
+      <span class="link-tipo">Sito generale</span>
+      <h2><a href="https://statocritico.it">statocritico.it</a></h2>
+      <p class="link-url">statocritico.it</p>
+      <p>La casa di tutti i progetti: chi siamo, di cosa ci occupiamo e l'elenco aggiornato degli strumenti e dei siti collegati.</p>
+    </li>
+    <li class="link-scheda">
+      <span class="link-tipo">Strumento open source</span>
+      <h2><a href="https://eugenio.statocritico.it">EuGEnio</a></h2>
+      <p class="link-url">eugenio.statocritico.it</p>
+      <p>Previsione dei consumi energetici di un edificio a partire dai tuoi dati e dal meteo del comune: gradi giorno, clima storico, edifici e indicatori. Progetto open source.</p>
+    </li>
+    <li class="link-scheda">
+      <span class="link-tipo">Software libero · privacy</span>
+      <h2><a href="https://pseudomania.statocritico.it">Pseudomania</a></h2>
+      <p class="link-url">pseudomania.statocritico.it</p>
+      <p>Pseudonimizzazione al volo per usare Claude in Google Chrome senza consegnargli i dati personali: un modello open source sostituisce nomi, codici fiscali, IBAN e indirizzi con segnaposto prima dell'invio e rimette i valori reali nella risposta, anche negli allegati. Software libero (AGPL) pensato per PA e professionisti, per mitigare il rischio sulla riservatezza dei dati.</p>
+    </li>
+    <li class="link-scheda">
+      <span class="link-tipo">Blog</span>
+      <h2><a href="https://bordovasca.statocritico.it">Bordo Vasca</a></h2>
+      <p class="link-url">bordovasca.statocritico.it</p>
+      <p>Pensieri di un tecnico in controcorrente: articoli e riflessioni sul mondo delle piscine, dalla ventilazione delle sale vasche alla gestione degli impianti.</p>
+    </li>
+    <li class="link-scheda">
+      <span class="link-tipo">Formazione</span>
+      <h2><a href="https://www.festocte.it/academy/">Festo Academy</a></h2>
+      <p class="link-url">festocte.it/academy</p>
+      <p>La scuola di formazione manageriale e tecnica di Festo. L'autore di Playfair è docente nel master su manutenzione e gestione degli asset e nel percorso per energy manager: gli strumenti di questo sito nascono anche per le loro esercitazioni.</p>
+    </li>
+  </ul>
+</main>
+
+<footer class="pf-piede">
+  <p>Playfair · un progetto di <a href="https://statocritico.it">Stato Critico</a> · <a href="guida-rapida.pdf">Guida rapida</a> · Immagini storiche: pubblico dominio (Wikimedia Commons)</p>
+  <p class="pf-piede-nota">I dati caricati restano nel browser: nulla viene inviato a server.</p>
+</footer>
+<script src="assets/sito.js" defer></script>
+</body>
+</html>

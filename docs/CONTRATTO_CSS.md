@@ -72,6 +72,7 @@ sempre `var(--nome)`. Così sostituendo solo `tema.css` cambia l'aspetto di tutt
 | `--flusso-acqua` | `#4cc6f5` | `#1272b0` | azzurro: m³ d'acqua, ritorni |
 | `--flusso-co2` | `#c4946a` | `#7a4a26` | marrone: t CO₂ |
 | `--flusso-altro` | `#9b96a6` | `#706a7a` | grigio: perdite, altro |
+| `--flusso-tep` | `#c58af0` | `#7b2fa8` | viola: tep, energia primaria (blocchi di conversione del Sankey) |
 
 ### Blueprint (tavola della home)
 | Variabile | Scuro | Chiaro | Uso |

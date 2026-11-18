@@ -16,26 +16,48 @@
   const CHIAVE_DOC = 'pf-sankey-progetto', CHIAVE_TUT = 'pf-sankey-guida-vista';
   const FONT_EXP = 'Helvetica, Arial, "Liberation Sans", sans-serif';
 
+  /* dim e s: dimensione fisica e scala rispetto all'unità base della dimensione
+     (energia → kWh, CO₂ → kg): servono ai blocchi di conversione per gestire da soli i prefissi. */
   const UNITA = {
-    kWh:    { etichetta: 'kWh (elettrici)', breve: 'kWh',     vettore: 'el',    f: 1,    nomeDato: 'Elettricità' },
-    MWh_el: { etichetta: 'MWh el.',         breve: 'MWh el.', vettore: 'el',    f: 1000, nomeDato: 'Elettricità' },
-    Sm3:    { etichetta: 'Sm³ (gas)',       breve: 'Sm³',     vettore: 'th',    f: null, nomeDato: 'Gas naturale' },
-    MWh_th: { etichetta: 'MWh termici',     breve: 'MWh th',  vettore: 'th',    f: 1000, nomeDato: 'Calore' },
-    kWh_th: { etichetta: 'kWh termici',     breve: 'kWh th',  vettore: 'th',    f: 1,    nomeDato: 'Calore' },
-    m3:     { etichetta: 'm³ acqua',        breve: 'm³',      vettore: 'acqua', f: 1,    nomeDato: 'Acqua' },
-    tCO2:   { etichetta: 't CO₂',           breve: 't CO₂',   vettore: 'co2',   f: 1,    nomeDato: 'CO₂' },
-    altro:  { etichetta: 'altro (libera)…', breve: '',        vettore: 'altro', f: 1,    nomeDato: 'Dato' }
+    kWh:    { etichetta: 'kWh (elettrici)', breve: 'kWh',     vettore: 'el',    f: 1,    nomeDato: 'Elettricità',      dim: 'energia', s: 1 },
+    MWh_el: { etichetta: 'MWh el.',         breve: 'MWh el.', vettore: 'el',    f: 1000, nomeDato: 'Elettricità',      dim: 'energia', s: 1000 },
+    Sm3:    { etichetta: 'Sm³ (gas)',       breve: 'Sm³',     vettore: 'th',    f: null, nomeDato: 'Gas naturale',     dim: 'gas',     s: 1 },
+    MWh_th: { etichetta: 'MWh termici',     breve: 'MWh th',  vettore: 'th',    f: 1000, nomeDato: 'Calore',           dim: 'energia', s: 1000 },
+    kWh_th: { etichetta: 'kWh termici',     breve: 'kWh th',  vettore: 'th',    f: 1,    nomeDato: 'Calore',           dim: 'energia', s: 1 },
+    m3:     { etichetta: 'm³ acqua',        breve: 'm³',      vettore: 'acqua', f: 1,    nomeDato: 'Acqua',            dim: 'acqua',   s: 1 },
+    tCO2:   { etichetta: 't CO₂',           breve: 't CO₂',   vettore: 'co2',   f: 1,    nomeDato: 'CO₂',              dim: 'co2',     s: 1000 },
+    kgCO2:  { etichetta: 'kg CO₂',          breve: 'kg CO₂',  vettore: 'co2',   f: 1,    nomeDato: 'CO₂',              dim: 'co2',     s: 1 },
+    tep:    { etichetta: 'tep (energia primaria)', breve: 'tep', vettore: 'tep', f: 1,   nomeDato: 'Energia primaria', dim: 'tep',     s: 1 },
+    kg:     { etichetta: 'kg (combustibile solido)', breve: 'kg', vettore: 'altro', f: 1, nomeDato: 'Combustibile',    dim: 'massa',   s: 1 },
+    altro:  { etichetta: 'altro (libera)…', breve: '',        vettore: 'altro', f: 1,    nomeDato: 'Dato',             dim: 'altro',   s: 1 }
   };
-  const ORDINE_UNITA = ['kWh', 'MWh_el', 'Sm3', 'MWh_th', 'kWh_th', 'm3', 'tCO2', 'altro'];
+  const ORDINE_UNITA = ['kWh', 'MWh_el', 'Sm3', 'MWh_th', 'kWh_th', 'm3', 'tCO2', 'kgCO2', 'tep', 'kg', 'altro'];
   const VETTORI = {
     el:    { nome: 'Elettricità (kWh, MWh el.)',          v: 'flusso-el' },
     th:    { nome: 'Gas e calore (Sm³, MWh e kWh termici)', v: 'flusso-th' },
     acqua: { nome: 'Acqua (m³)',                          v: 'flusso-acqua' },
-    co2:   { nome: 'CO₂ (t)',                             v: 'flusso-co2' },
-    altro: { nome: 'Altro / senza unità',                 v: 'flusso-altro' }
+    co2:   { nome: 'CO₂ (t, kg)',                         v: 'flusso-co2' },
+    tep:   { nome: 'Energia primaria (tep)',              v: 'flusso-tep' },
+    altro: { nome: 'Altro (kg di combustibile, unità libere)', v: 'flusso-altro' }
   };
-  const NOMI_COLORI = ['carta', 'foglio', 'rialzo', 'linea', 'bordo', 'inchiostro', 'tenue', 'primario', 'segno', 'successo', 'errore', 'errore-fondo', 'attenzione', 'flusso-el', 'flusso-th', 'flusso-acqua', 'flusso-co2', 'flusso-altro'];
-  const RISERVA_CHIARA = { carta: '#ffffff', foglio: '#ffffff', rialzo: '#efedf1', linea: '#e1dde6', bordo: '#847c8e', inchiostro: '#1c1820', tenue: '#5f5868', primario: '#c4452b', segno: '#3f4fd6', successo: '#2e7d32', errore: '#c62828', 'errore-fondo': '#fdecec', attenzione: '#b7791f', 'flusso-el': '#2e9e4f', 'flusso-th': '#e8870e', 'flusso-acqua': '#2f9fd8', 'flusso-co2': '#8b5a2b', 'flusso-altro': '#8d8d8d' };
+  /** Libreria «Fattore tipico» (coerente con Playfair-S): uscita [num] = f × ingresso [den].
+      Copiata in ogni progetto (doc.fattori) e modificabile dal pannello «Diagramma». */
+  const FATTORI_TIPICI = [
+    { id: 'el-tep',    nome: 'Elettricità → TEP',                       f: 0.187,    num: 'tep',    den: 'MWh_el' },
+    { id: 'gas-tep',   nome: 'Gas naturale → TEP',                      f: 0.000836, num: 'tep',    den: 'Sm3' },
+    { id: 'th-tep',    nome: 'Calore / teleriscaldamento → TEP',        f: 0.086,    num: 'tep',    den: 'MWh_th' },
+    { id: 'el-co2',    nome: 'Elettricità → CO₂',                       f: 0.216,    num: 'kgCO2',  den: 'kWh' },
+    { id: 'gas-co2',   nome: 'Gas naturale → CO₂',                      f: 1.96,     num: 'kgCO2',  den: 'Sm3' },
+    { id: 'th-co2',    nome: 'Teleriscaldamento → CO₂',                 f: 106,      num: 'kgCO2',  den: 'MWh_th' },
+    { id: 'gas-pci',   nome: 'Gas naturale → energia termica (PCI)',    f: 9.59,     num: 'kWh_th', den: 'Sm3' },
+    { id: 'kwh-mwh',   nome: 'kWh → MWh',                               f: 0.001,    num: 'MWh_el', den: 'kWh' },
+    { id: 'mwh-kwh',   nome: 'MWh → kWh',                               f: 1000,     num: 'kWh',    den: 'MWh_el' },
+    { id: 'carb-pci',  nome: 'Carbone → energia termica (PCI 7.000 kcal/kg)', f: 8.14, num: 'kWh_th', den: 'kg' },
+    { id: 'carb-tep',  nome: 'Carbone → TEP',                           f: 0.0007,   num: 'tep',    den: 'kg' }
+  ];
+  const copiaFattori = () => FATTORI_TIPICI.map((x) => ({ ...x }));
+  const NOMI_COLORI = ['carta', 'foglio', 'rialzo', 'linea', 'bordo', 'inchiostro', 'tenue', 'primario', 'segno', 'successo', 'errore', 'errore-fondo', 'attenzione', 'flusso-el', 'flusso-th', 'flusso-acqua', 'flusso-co2', 'flusso-tep', 'flusso-altro'];
+  const RISERVA_CHIARA = { carta: '#ffffff', foglio: '#ffffff', rialzo: '#efedf1', linea: '#e1dde6', bordo: '#847c8e', inchiostro: '#1c1820', tenue: '#5f5868', primario: '#c4452b', segno: '#3f4fd6', successo: '#2e7d32', errore: '#c62828', 'errore-fondo': '#fdecec', attenzione: '#b7791f', 'flusso-el': '#2e9e4f', 'flusso-th': '#e8870e', 'flusso-acqua': '#2f9fd8', 'flusso-co2': '#8b5a2b', 'flusso-tep': '#7b2fa8', 'flusso-altro': '#8d8d8d' };
 
   const $ = (s, r = document) => r.querySelector(s);
   const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
@@ -85,8 +107,22 @@
     if (u === 'Sm3') return conv ? { g: 'energia', f: pci, base: 'kWh', nome: 'energia' } : { g: 'Sm3', f: 1, base: 'Sm³', nome: 'gas (Sm³)' };
     if (def.vettore === 'th') return conv ? { g: 'energia', f: def.f, base: 'kWh', nome: 'energia' } : { g: 'th', f: def.f, base: 'kWh th', nome: 'energia termica' };
     if (u === 'm3') return { g: 'm3', f: 1, base: 'm³', nome: 'acqua' };
-    return { g: 'tCO2', f: 1, base: 't CO₂', nome: 'CO₂' };
+    if (u === 'tep') return { g: 'tep', f: 1, base: 'tep', nome: 'energia primaria (tep)' };
+    if (u === 'kg') return { g: 'kg', f: 1, base: 'kg', nome: 'combustibile (kg)' };
+    return { g: 'tCO2', f: u === 'kgCO2' ? 0.001 : 1, base: 't CO₂', nome: 'CO₂' };
   }
+  /** Fattore con molte cifre decimali, all'italiana (0,000836 · 0,216 · 9,59 · 106). */
+  function fmtFattore(v) {
+    if (v == null || !isFinite(v)) return '—';
+    if (v === 0) return '0';
+    const dec = clamp(3 - Math.floor(Math.log10(Math.abs(v))), 0, 9);
+    return numIt(v, dec);
+  }
+  const breveU = (u, ua) => (u === 'altro' ? (String(ua || '').trim() || '?') : (UNITA[u] ? UNITA[u].breve : '?'));
+  const dimU = (u, ua) => (u === 'altro' ? 'altro:' + String(ua || '').trim().toLowerCase() : (UNITA[u] ? UNITA[u].dim : ''));
+  /** Unità consigliata per la riga d'uscita quando si sceglie un fattore tipico (kg CO₂ → t CO₂, più leggibile nei bilanci). */
+  const unitaUscitaPreferita = (num) => (num === 'kgCO2' ? 'tCO2' : num);
+
   function fmtBase(v, G) {
     if ((G.base === 'kWh' || G.base === 'kWh th') && Math.abs(v) >= 10000) {
       return fmt(v / 1000) + (G.g === 'th' ? ' MWh th' : G.g === 'el' ? ' MWh el.' : ' MWh');
@@ -94,35 +130,65 @@
     return fmt(v) + (G.base ? ' ' + G.base : '');
   }
 
-  /* ================= 2. MODELLO DATI E STORIA ================= */
+  /* ================= 2. MODELLO DATI E STORIA =================
+     Formato JSON versione 2 (la versione 1 viene migrata in automatico da normalizza()):
+       doc   { formato, versione: 2, titolo, nota, blocchi[], collegamenti[], opzioni{}, fattori[] }
+       blocco{ id, nome, x, y, tipo: 'bilancio' | 'conversione', dati[] }
+       dato  { id, etichetta, valore, calc, u, ua, ruolo, conv }
+       conv  null | { da: id della riga d'ingresso, f: fattore, num, den: unità del fattore, lib: id del fattore tipico }
+     Nei blocchi di conversione: riga con conv → valore = f × riga «da» (prefissi gestiti da coefConversione). */
+  const VERSIONE = 2;
   function docVuoto() {
     return {
-      formato: 'playfair-sankey', versione: 1, titolo: 'Diagramma di Sankey',
+      formato: 'playfair-sankey', versione: VERSIONE, titolo: 'Diagramma di Sankey', nota: '',
       blocchi: [], collegamenti: [],
-      opzioni: { conversione: false, pci: 9.59, spessoreMax: 40, proporzionale: false, aggancio: true }
+      opzioni: { conversione: false, pci: 9.59, spessoreMax: 40, proporzionale: false, aggancio: true },
+      fattori: copiaFattori()
     };
   }
   function nuovoDato(p) {
     p = p || {};
     const u = p.u !== undefined ? p.u : 'kWh';
-    return { id: uid('d'), etichetta: p.etichetta != null ? p.etichetta : (UNITA[u] ? UNITA[u].nomeDato : 'Dato'), valore: p.valore != null ? p.valore : null, calc: null, u, ua: p.ua || '', ruolo: p.ruolo === 'perdita' ? 'perdita' : 'valore' };
+    return { id: uid('d'), etichetta: p.etichetta != null ? p.etichetta : (UNITA[u] ? UNITA[u].nomeDato : 'Dato'), valore: p.valore != null ? p.valore : null, calc: null, u, ua: p.ua || '', ruolo: p.ruolo === 'perdita' ? 'perdita' : 'valore', conv: null };
   }
   const pulisciId = (s, p) => { s = String(s == null ? '' : s).replace(/[^\w-]/g, ''); return s || uid(p); };
   const numONull = (v) => (v === null || v === undefined || v === '' || !isFinite(Number(v))) ? null : Number(v);
+  const unitaONull = (u) => (UNITA[u] ? u : null);
+
+  /** Migrazione dei progetti salvati con versioni precedenti (oggetto grezzo → oggetto in versione 2). */
+  function migra(o) {
+    const v = Number(o.versione) || 1;
+    if (v > VERSIONE) throw new Error(`il progetto è in un formato più recente (versione ${v}) di quello supportato (${VERSIONE})`);
+    if (v < 2) {
+      // v1 → v2: blocchi tutti «bilancio», nessuna conversione, libreria dei fattori tipici, nota vuota
+      o = { ...o, versione: 2, nota: '', fattori: copiaFattori() };
+      o.blocchi = (o.blocchi || []).map((b) => ({ ...b, tipo: 'bilancio', dati: (b && Array.isArray(b.dati) ? b.dati : []).map((x) => ({ ...x, conv: null })) }));
+      o.migrato = v;
+    }
+    return o;
+  }
 
   /** Valida e normalizza un progetto caricato da file o da localStorage. */
   function normalizza(o) {
     if (!o || typeof o !== 'object') throw new Error('il file non contiene un progetto valido');
     if (o.doc && Array.isArray(o.doc.blocchi)) o = o.doc;
     if (!Array.isArray(o.blocchi)) throw new Error('il file non contiene blocchi: non sembra un progetto Sankey di Playfair');
+    o = migra(o);
     const d = docVuoto();
     d.titolo = String(o.titolo || d.titolo).slice(0, 120);
+    d.nota = String(o.nota || '').slice(0, 2000);
     const op = o.opzioni || {};
     d.opzioni.conversione = !!op.conversione;
     if (isFinite(op.pci) && op.pci > 0) d.opzioni.pci = Number(op.pci);
     if (isFinite(op.spessoreMax)) d.opzioni.spessoreMax = clamp(Number(op.spessoreMax), 6, 120);
     d.opzioni.proporzionale = !!op.proporzionale;
     d.opzioni.aggancio = op.aggancio !== false;
+    if (Array.isArray(o.fattori)) {
+      // libreria: si parte dai tipici e si sovrascrivono i valori salvati; i fattori aggiunti dall'utente restano
+      const salvati = new Map(o.fattori.filter((x) => x && x.id).map((x) => [String(x.id), x]));
+      d.fattori.forEach((x) => { const y = salvati.get(x.id); if (y && isFinite(y.f) && Number(y.f) > 0) x.f = Number(y.f); salvati.delete(x.id); });
+      salvati.forEach((y, id) => { if (isFinite(y.f) && unitaONull(y.num) && unitaONull(y.den)) d.fattori.push({ id: pulisciId(id, 'f'), nome: String(y.nome || id).slice(0, 80), f: Number(y.f), num: y.num, den: y.den }); });
+    }
     const idB = new Set();
     o.blocchi.forEach((b) => {
       if (!b || typeof b !== 'object') return;
@@ -130,9 +196,14 @@
       const idD = new Set();
       const dati = (Array.isArray(b.dati) ? b.dati : []).filter((x) => x && typeof x === 'object').map((x) => {
         let did = pulisciId(x.id, 'd'); if (idD.has(did)) did = uid('d'); idD.add(did);
-        return { id: did, etichetta: String(x.etichetta == null ? '' : x.etichetta).slice(0, 80), valore: numONull(x.valore), calc: numONull(x.calc), u: UNITA[x.u] ? x.u : '', ua: String(x.ua || '').slice(0, 30), ruolo: x.ruolo === 'perdita' ? 'perdita' : 'valore' };
+        const c = x.conv && typeof x.conv === 'object' ? x.conv : null;
+        const conv = c ? { da: c.da ? String(c.da) : null, f: numONull(c.f), num: unitaONull(c.num), den: unitaONull(c.den), lib: String(c.lib || '').slice(0, 40) } : null;
+        return { id: did, etichetta: String(x.etichetta == null ? '' : x.etichetta).slice(0, 80), valore: numONull(x.valore), calc: numONull(x.calc), u: UNITA[x.u] ? x.u : '', ua: String(x.ua || '').slice(0, 30), ruolo: x.ruolo === 'perdita' ? 'perdita' : 'valore', conv, _vecchioId: x.id };
       });
-      d.blocchi.push({ id, nome: String(b.nome == null ? 'Blocco' : b.nome).slice(0, 80), x: Number(b.x) || 0, y: Number(b.y) || 0, dati });
+      // i riferimenti «da» delle conversioni seguono gli id eventualmente rinominati
+      const rinomina = new Map(dati.map((x) => [String(x._vecchioId), x.id]));
+      dati.forEach((x) => { if (x.conv) { x.conv.da = rinomina.get(x.conv.da) || null; if (x.conv.da === x.id) x.conv.da = null; } delete x._vecchioId; });
+      d.blocchi.push({ id, nome: String(b.nome == null ? 'Blocco' : b.nome).slice(0, 80), x: Number(b.x) || 0, y: Number(b.y) || 0, tipo: b.tipo === 'conversione' ? 'conversione' : 'bilancio', dati });
     });
     const mb = new Map(d.blocchi.map((b) => [b.id, b]));
     const idL = new Set();
@@ -147,6 +218,7 @@
       });
     });
     if (o.vista && isFinite(o.vista.s) && isFinite(o.vista.tx) && isFinite(o.vista.ty)) d.vista = { tx: +o.vista.tx, ty: +o.vista.ty, s: clamp(+o.vista.s, 0.15, 4) };
+    if (o.migrato) d.migrato = o.migrato;
     return d;
   }
 
@@ -220,6 +292,9 @@
          se ha sia ingressi sia uscite, Σ ingressi = Σ uscite + Σ dati con ruolo «Perdita».
          Senza ingressi è una sorgente, senza uscite un'utenza: nessun vincolo di blocco.
      (3) Dati senza collegamenti (e non «Perdita") sono informativi.
+     (4) Blocco di CONVERSIONE: niente bilancio (2) tra unità diverse; per ogni riga d'uscita
+         vale  uscita = k × riga d'ingresso, con k = fattore riportato alle unità delle due righe
+         (kg↔t, kWh↔MWh). Le righe in m³ d'acqua sono trascurate con un avviso.
      Le caselle vuote sono incognite: il sistema lineare viene ridotto a scala (Gauss-Jordan)
      e si ricavano solo le incognite determinate in modo univoco. */
   function risolviSistema(A, b, n) {
@@ -249,6 +324,18 @@
     return val;
   }
 
+  /** Coefficiente effettivo di una conversione tra le unità delle righe: k = f · s(ingresso)/s(den) · s(num)/s(uscita). */
+  function coefConversione(conv, src, dt) {
+    const num = conv.num && conv.num !== 'altro' ? conv.num : dt.u, numUa = num === 'altro' ? dt.ua : '';
+    const den = conv.den && conv.den !== 'altro' ? conv.den : src.u, denUa = den === 'altro' ? src.ua : '';
+    const testo = breveU(num, numUa) + '/' + breveU(den, denUa);
+    if (dimU(den, denUa) !== dimU(src.u, src.ua)) return { err: `il fattore è espresso in ${testo} ma la riga d'ingresso «${src.etichetta}» è in ${breveU(src.u, src.ua)}: scegli un fattore adatto o cambia l'unità.`, testo };
+    if (dimU(num, numUa) !== dimU(dt.u, dt.ua)) return { err: `il fattore è espresso in ${testo} ma la riga «${dt.etichetta}» è in ${breveU(dt.u, dt.ua)}: scegli un fattore adatto o cambia l'unità.`, testo };
+    const sc = (u) => (UNITA[u] ? UNITA[u].s : 1);
+    const k = conv.f * sc(src.u) / sc(den) * sc(num) / sc(dt.u);
+    return { k, testo, num, den };
+  }
+
   function analizza(d) {
     const opz = d.opzioni; const mb = mappaBlocchi(d);
     const vars = [], idxVar = new Map(), eqs = [];
@@ -269,6 +356,18 @@
       }
       return t;
     }
+    /** Termine con coefficiente «grezzo» (nelle unità del dato), stessa incognita delle equazioni di riga. */
+    function termineGrezzo(dt, coef, bid) {
+      const t = { coef, tipo: 'd', id: dt.id };
+      if (dt.valore != null && isFinite(dt.valore)) t.val = dt.valore;
+      else {
+        const k = 'd:' + dt.id;
+        if (!idxVar.has(k)) { idxVar.set(k, vars.length); vars.push({ tipo: 'd', id: dt.id, b: bid, ogg: dt }); }
+        t.v = idxVar.get(k);
+      }
+      return t;
+    }
+    const alzaDopo = [];
     links.forEach((l) => { if (!unL.get(l.id)) nota(msgL, l.id, 'warn', 'Collegamento senza unità di misura: escluso dai bilanci.'); });
 
     d.blocchi.forEach((b) => {
@@ -293,6 +392,27 @@
           eqs.push({ b: b.id, tipo: 'riga', verso, dato: dt, G: Gd, termini });
         });
       });
+      // (4) blocco di conversione: equazioni uscita = k × ingresso, nessun bilancio tra unità diverse
+      if (b.tipo === 'conversione') {
+        const ACQUA = 'L\'acqua (m³) non è convertibile in energia né in emissioni';
+        b.dati.forEach((dt) => {
+          const collegata = links.some((l) => (l.a.b === b.id && l.a.d === dt.id) || (l.da.b === b.id && l.da.d === dt.id));
+          if (dt.u === 'm3' && (collegata || (dt.conv && dt.conv.da))) { nota(msgB, b.id, 'warn', `${ACQUA}: la riga «${dt.etichetta}» è trascurata dal blocco di conversione.`); alzaDopo.push(b.id); }
+          if (!dt.conv || !dt.conv.da) {
+            if (dt.ruolo === 'perdita' && unitaOk(dt.u, dt.ua) && dt.u !== 'm3') nota(msgB, b.id, 'info', `«${dt.etichetta}» è una perdita senza fattore: in un blocco di conversione indicala come uscita = fattore × ingresso.`);
+            return;
+          }
+          const src = b.dati.find((x) => x.id === dt.conv.da);
+          if (!src || src === dt) { nota(msgB, b.id, 'warn', `«${dt.etichetta}»: la riga d'ingresso della conversione non esiste più.`); alzaDopo.push(b.id); return; }
+          if (dt.u === 'm3' || src.u === 'm3') { if (src.u === 'm3' && dt.u !== 'm3') { nota(msgB, b.id, 'warn', `${ACQUA}: «${dt.etichetta}» non può essere ottenuta da «${src.etichetta}» ed è trascurata.`); alzaDopo.push(b.id); } return; }
+          if (!unitaOk(dt.u, dt.ua) || !unitaOk(src.u, src.ua)) { nota(msgB, b.id, 'warn', `«${dt.etichetta}»: scegli l'unità di misura della riga e di quella d'ingresso.`); alzaDopo.push(b.id); return; }
+          if (dt.conv.f == null) { nota(msgB, b.id, 'warn', `«${dt.etichetta}»: manca il fattore di conversione.`); alzaDopo.push(b.id); return; }
+          const c = coefConversione(dt.conv, src, dt);
+          if (c.err) { nota(msgB, b.id, 'err', `«${dt.etichetta}»: ${c.err}`); return; }
+          eqs.push({ b: b.id, tipo: 'conv', dato: dt, src, k: c.k, fattore: dt.conv.f, unitaF: c.testo, termini: [termineGrezzo(dt, 1, b.id), termineGrezzo(src, -c.k, b.id)] });
+        });
+        return;
+      }
       // (2) equazioni di blocco per gruppo
       const gr = new Map();
       const prendi = (G) => { if (!gr.has(G.g)) gr.set(G.g, { G, ins: [], outs: [], perdite: [] }); return gr.get(G.g); };
@@ -339,7 +459,10 @@
       alza(stB, eq.b, 'err');
       const somma = (f) => eq.termini.filter(f).reduce((s, t) => s + Math.abs(t.coef * valT(t)), 0);
       let testo;
-      if (eq.tipo === 'riga') {
+      if (eq.tipo === 'conv') {
+        const vs = valT(eq.termini[1]), vd = valT(eq.termini[0]); const ud = testoUnita(eq.dato.u, eq.dato.ua);
+        testo = `Conversione incoerente: «${eq.dato.etichetta}» = ${fmtFattore(eq.fattore)} ${eq.unitaF} × «${eq.src.etichetta}» ${fmt(vs)} ${testoUnita(eq.src.u, eq.src.ua)} = ${fmt(eq.k * vs)} ${ud}, ma vale ${fmt(vd)} ${ud} (scarto ${numIt(Math.abs(res) / Math.max(Math.abs(eq.k * vs), Math.abs(vd), 1e-12) * 100, 2)}%).`;
+      } else if (eq.tipo === 'riga') {
         const sl = somma((t) => t.tipo === 'l'), sd = somma((t) => t.tipo === 'd');
         testo = `«${eq.dato.etichetta}»: ${eq.verso === 'in' ? 'entrano' : 'escono'} ${fmtBase(sl, eq.G)} ma il dato vale ${fmtBase(sd, eq.G)} (scarto ${fmtBase(Math.abs(res), eq.G)}).`;
       } else {
@@ -367,6 +490,7 @@
         else { alza(stB, dove, 'warn'); nota(msgB, dove, 'warn', `«${v.ogg.etichetta}»: valore calcolato negativo (${fmt(x)}), controlla i dati.`); }
       }
     });
+    alzaDopo.forEach((id) => alza(stB, id, 'warn'));
     // errori di unità
     msgB.forEach((l, id) => l.forEach((m) => { if (m.liv === 'err') alza(stB, id, 'err'); }));
     msgL.forEach((l, id) => l.forEach((m) => { if (m.liv === 'err') alza(stL, id, 'err'); else if (m.liv === 'warn') alza(stL, id, 'warn'); }));
@@ -395,16 +519,28 @@
     return { testo: ut ? '? ' + ut : '—', cls: 'vuoto' };
   }
 
+  /** Testo del fattore accanto all'etichetta di una riga d'uscita di un blocco di conversione. */
+  function testoFattoreRiga(b, dt) {
+    if (b.tipo !== 'conversione') return '';
+    if (dt.u === 'm3') return '(non convertibile)';
+    if (!dt.conv || !dt.conv.da || dt.conv.f == null) return '';
+    const src = b.dati.find((x) => x.id === dt.conv.da); if (!src) return '';
+    const num = dt.conv.num || dt.u, den = dt.conv.den || src.u;
+    return '× ' + fmtFattore(dt.conv.f) + ' ' + breveU(num, dt.ua) + '/' + breveU(den, src.ua);
+  }
+  const ICONA_CONV = 'M0 3.5H12M9 0.5L12 3.5L9 6.5M14 9.5H2M5 6.5L2 9.5L5 12.5';
+
   /** Dimensioni automatiche: 1 dato → più largo che alto; 2 → quadrato; 3+ → più alto che largo. */
   function geometriaBlocco(b, fasci, M) {
-    const n = b.dati.length;
+    const n = b.dati.length; const conv = b.tipo === 'conversione';
     const fa = (k) => fasci.get(b.id + '|' + k) || { L: 0, R: 0 };
-    let cw = M(b.nome || 'Blocco', 700, 13) + 2 * PADX + 14;
+    let cw = M(b.nome || 'Blocco', 700, 13) + 2 * PADX + 14 + (conv ? 26 : 0);
     const righe = b.dati.map((dt) => {
-      const et = dt.etichetta || '—'; const tv = testoValoreDato(dt);
-      cw = Math.max(cw, PADX + 14 + M(et, 400, 12) + 18 + M(tv.testo, 600, 12) + PADX);
+      const et = dt.etichetta || '—'; const tv = testoValoreDato(dt); const fx = testoFattoreRiga(b, dt);
+      cw = Math.max(cw, PADX + 14 + M(et, 400, 12) + (fx ? 6 + M(fx, 400, 10.5) : 0) + 18 + M(tv.testo, 600, 12) + PADX);
       const f = fa(dt.id);
-      return { dt, et, tv, p: Math.max(RIGA, Math.max(f.L, f.R) + 8) };
+      const uscita = conv && !!(dt.conv && dt.conv.da && b.dati.some((x) => x.id === dt.conv.da));
+      return { dt, et, tv, fx, uscita, p: Math.max(RIGA, Math.max(f.L, f.R) + 8) };
     });
     cw = Math.max(LARG_MIN, cw);
     const fc = fa('_'); const minC = Math.max(fc.L, fc.R) + 16;
@@ -461,7 +597,7 @@
       L += Math.abs(a.x - b.x) + Math.abs(a.y - b.y);
       for (const o of ost) {
         let inf;
-        if ((o.id === idA && i === 0) || (o.id === idB && i === ns - 1)) inf = -1;
+        if ((o.id === idA && i <= 1) || (o.id === idB && i >= ns - 2)) inf = -1;
         else if (o.id === idA || o.id === idB) inf = 3 + w / 2;
         else inf = 8 + w / 2;
         if (segInRett(a, b, o, inf)) colpi++;
@@ -470,9 +606,10 @@
     return L + (pts.length - 2) * 25 + colpi * 10000;
   }
   /** Percorsi ortogonali candidati tra porta P (lato sA) e porta Q (lato sB). */
-  function candidati(P, sA, Q, sB, rA, rB, w) {
+  function candidati(P, sA, Q, sB, rA, rB, w, ost) {
     const dA = sA === 'R' ? 1 : -1, dB = sB === 'L' ? 1 : -1;
-    const P1 = P.x + dA * STUB, Q1 = Q.x - dB * STUB;
+    const st = STUB + w / 2 + 2; // il tratto verticale non deve sfiorare il blocco
+    const P1 = P.x + dA * st, Q1 = Q.x - dB * st;
     const out = [];
     if (dA === dB) {
       if ((Q1 - P1) * dA >= 0) {
@@ -488,6 +625,9 @@
       const ys = [top, bot, top - 50, bot + 50, top - 120, bot + 120, top - 220, bot + 220];
       if (rA.y + rA.h < rB.y) ys.push((rA.y + rA.h + rB.y) / 2);
       if (rB.y + rB.h < rA.y) ys.push((rB.y + rB.h + rA.y) / 2);
+      // giri attorno ai blocchi intermedi (sopra e sotto ciascuno), così un tubo lungo non passa dietro un blocco
+      const xl = Math.min(P1, Q1), xr = Math.max(P1, Q1);
+      (ost || []).forEach((o) => { if (o.id !== rA.id && o.id !== rB.id && o.x < xr && o.x + o.w > xl) { ys.push(o.y - m, o.y + o.h + m); } });
       ys.forEach((y) => out.push({ pts: [P, { x: P1, y: P.y }, { x: P1, y }, { x: Q1, y }, { x: Q1, y: Q.y }, Q], pen: 0 }));
     } else {
       const base = dA > 0 ? Math.max(P1, Q1) + 6 : Math.min(P1, Q1) - 6;
@@ -497,7 +637,7 @@
   }
   function migliorRotta(P, sA, Q, sB, rA, rB, ost, w) {
     let best = null;
-    for (const c of candidati(P, sA, Q, sB, rA, rB, w)) {
+    for (const c of candidati(P, sA, Q, sB, rA, rB, w, ost)) {
       const k = costoRotta(c.pts, ost, rA.id, rB.id, w) + c.pen;
       if (!best || k < best.costo) best = { pts: c.pts.map((p) => ({ x: p.x, y: p.y })), costo: k };
     }
@@ -658,12 +798,10 @@
     const scTubi = rotte.map((r) => {
       const pts = semplifica(r.pts); const info = tubi.get(r.l.id);
       const ops = operazioniPercorso(pts, r.w);
-      const info0 = tubi.get(r.l.id); const ut0 = info0.un ? testoUnita(info0.un.u, info0.un.ua) : '';
-      const lungTesto = M((r.l.etichetta ? r.l.etichetta + ': ' : '') + (info0.v != null ? fmt(info0.v) : '?') + ' ' + ut0, 600, 11.5);
       let best = null;
       for (let i = 0; i < pts.length - 1; i++) {
         const a = pts[i], b = pts[i + 1]; const len = Math.abs(a.x - b.x) + Math.abs(a.y - b.y);
-        const oriz = Math.abs(a.y - b.y) < 0.01; let k = len * (oriz ? (len >= lungTesto + 2 * Math.max(8, 1.25 * r.w) ? 1.6 : 0.3) : 1);
+        const oriz = Math.abs(a.y - b.y) < 0.01; let k = len * (oriz ? 1.6 : 1);
         if ((i === 0 && affollato.get(r.l.id + '|da')) || (i === pts.length - 2 && affollato.get(r.l.id + '|a'))) k *= 0.45;
         if (!best || k > best.k) best = { k, a, b, len, oriz };
       }
@@ -674,8 +812,7 @@
       if (info.v != null) testo = fmt(info.v) + (ut ? ' ' + ut : '');
       else if (ut) testo = '? ' + ut;
       if (r.l.etichetta) testo = r.l.etichetta + (testo ? ': ' + testo : '');
-      const etich = testo ? (best.oriz ? { x: mid.x, y: mid.y - r.w / 2 - 6, anc: 'middle', testo } : { x: mid.x + r.w / 2 + 6, y: mid.y, anc: 'start', testo }) : null;
-      if (etich) etich.calc = info.calc;
+      const etich = testo ? { testo, calc: info.calc, tw: M(testo, 600, 11.5) } : null;
       let freccia = null;
       if (r.w >= 5 && best.len > 46) {
         const s = clamp(r.w * 0.32, 3, 9), px = -dir.y, py = dir.x;
@@ -684,8 +821,76 @@
       }
       return { l: r.l, pts, w: r.w, ops, d: opsInD(ops), vettore: info.un ? vettoreDi(info.un.u) : 'altro', mancante: info.v == null, etich, freccia, attraversa: r.attraversa };
     });
+    piazzaEtichette(scTubi, ost, affollato);
     const scBlocchi = d.blocchi.map((b) => ({ b, g: geo.get(b.id) }));
     return { blocchi: scBlocchi, tubi: scTubi, geo };
+  }
+
+  /** Colloca le etichette dei tubi evitando blocchi, altre etichette e (se possibile) gli altri tubi:
+      per ogni tubo si provano più posizioni (sopra/sotto i tratti orizzontali, a destra/sinistra dei verticali)
+      e si sceglie quella con il costo minore; i tubi più spessi scelgono per primi. */
+  function piazzaEtichette(tubi, blocchi, affollato) {
+    const sovrap = (p, q) => p.x1 < q.x2 && p.x2 > q.x1 && p.y1 < q.y2 && p.y2 > q.y1;
+    const segRett = tubi.map((t) => {
+      const out = [];
+      for (let i = 0; i < t.pts.length - 1; i++) {
+        const a = t.pts[i], b = t.pts[i + 1], m = t.w / 2 + 1;
+        out.push({ x1: Math.min(a.x, b.x) - m, x2: Math.max(a.x, b.x) + m, y1: Math.min(a.y, b.y) - m, y2: Math.max(a.y, b.y) + m });
+      }
+      return out;
+    });
+    const rettB = blocchi.map((o) => ({ x1: o.x - 3, y1: o.y - 3, x2: o.x + o.w + 3, y2: o.y + o.h + 3 }));
+    const piazzate = [];
+    const ordine = tubi.map((t, i) => i).filter((i) => tubi[i].etich).sort((i, j) => tubi[j].w - tubi[i].w);
+    ordine.forEach((ti) => {
+      const t = tubi[ti], e = t.etich, tw = e.tw, w = t.w, n = t.pts.length - 1;
+      let best = null;
+      for (let i = 0; i < n; i++) {
+        const a = t.pts[i], b = t.pts[i + 1]; const len = Math.abs(a.x - b.x) + Math.abs(a.y - b.y);
+        if (len < 4) continue;
+        const oriz = Math.abs(a.y - b.y) < 0.01; const rc = Math.max(8, 1.25 * w);
+        const estremo = (i === 0 && affollato.get(t.l.id + '|da')) || (i === n - 1 && affollato.get(t.l.id + '|a'));
+        const prove = [];
+        if (oriz) {
+          const ci = len >= tw + 2 * rc;
+          [0.5, 0.32, 0.68, 0.18, 0.82].forEach((f) => {
+            const x = a.x + (b.x - a.x) * f; const lo = Math.min(a.x, b.x), hi = Math.max(a.x, b.x);
+            if (ci && (x - tw / 2 < lo + rc - 0.5 || x + tw / 2 > hi - rc + 0.5)) return;
+            if (!ci && f !== 0.5) return;
+            const pen = (ci ? 0 : 500) + Math.abs(f - 0.5) * 90 - Math.min(len, 500) * 0.12 + (estremo ? 140 : 0);
+            const ys = a.y - w / 2 - 6, yg = a.y + w / 2 + 14;
+            prove.push({ x, y: ys, anc: 'middle', bl: 'auto', box: { x1: x - tw / 2 - 2, x2: x + tw / 2 + 2, y1: ys - 11, y2: ys + 3 }, pen });
+            prove.push({ x, y: yg, anc: 'middle', bl: 'auto', box: { x1: x - tw / 2 - 2, x2: x + tw / 2 + 2, y1: yg - 11, y2: yg + 3 }, pen: pen + 25 });
+          });
+          // accanto al blocco di partenza o d'arrivo: lì di solito non passano altri tubi
+          if (len >= tw + 12 && (i === 0 || i === n - 1)) {
+            const verso = Math.sign(b.x - a.x) || 1, ys = a.y - w / 2 - 6;
+            const x = i === n - 1 ? b.x - verso * 5 : a.x + verso * 5;
+            const anc = (i === n - 1) === (verso > 0) ? 'end' : 'start';
+            const x1 = anc === 'end' ? x - tw - 2 : x - 2, x2 = anc === 'end' ? x + 2 : x + tw + 2;
+            prove.push({ x, y: ys, anc, bl: 'auto', box: { x1, x2, y1: ys - 11, y2: ys + 3 }, pen: 35 - Math.min(len, 500) * 0.12 + (estremo ? 60 : 0) });
+          }
+        } else if (len >= 26) {
+          [0.5, 0.3, 0.7].forEach((f) => {
+            const y = a.y + (b.y - a.y) * f;
+            const pen = 70 + Math.abs(f - 0.5) * 90 - Math.min(len, 400) * 0.06 + (estremo ? 140 : 0);
+            const xd = a.x + w / 2 + 6, xs = a.x - w / 2 - 6;
+            prove.push({ x: xd, y, anc: 'start', bl: 'central', box: { x1: xd - 2, x2: xd + tw + 2, y1: y - 8, y2: y + 8 }, pen });
+            prove.push({ x: xs, y, anc: 'end', bl: 'central', box: { x1: xs - tw - 2, x2: xs + 2, y1: y - 8, y2: y + 8 }, pen: pen + 20 });
+          });
+        }
+        prove.forEach((c) => {
+          let k = c.pen;
+          rettB.forEach((r) => { if (sovrap(c.box, r)) k += 4000; });
+          piazzate.forEach((r) => { if (sovrap(c.box, r)) k += 6000; });
+          segRett.forEach((lista, j) => lista.forEach((r, si) => { if ((j !== ti || (si !== i)) && sovrap(c.box, r)) k += j === ti ? 300 : 900; }));
+          if (!best || k < best.k) best = { ...c, k };
+        });
+      }
+      if (!best) { const a = t.pts[0], b = t.pts[n]; const x = (a.x + b.x) / 2, y = (a.y + b.y) / 2 - w / 2 - 6; best = { x, y, anc: 'middle', bl: 'auto', box: { x1: x - tw / 2, x2: x + tw / 2, y1: y - 11, y2: y + 3 } }; }
+      Object.assign(e, { x: best.x, y: best.y, anc: best.anc, bl: best.bl, box: best.box });
+      piazzate.push(best.box);
+    });
   }
 
   function confiniScena(sc) {
@@ -693,7 +898,7 @@
     sc.blocchi.forEach(({ b, g }) => { x1 = Math.min(x1, b.x - 12); y1 = Math.min(y1, b.y - 12); x2 = Math.max(x2, b.x + g.w + 12); y2 = Math.max(y2, b.y + g.h + 12); });
     sc.tubi.forEach((t) => {
       t.pts.forEach((p) => { x1 = Math.min(x1, p.x - t.w / 2); y1 = Math.min(y1, p.y - t.w / 2); x2 = Math.max(x2, p.x + t.w / 2); y2 = Math.max(y2, p.y + t.w / 2); });
-      if (t.etich) { y1 = Math.min(y1, t.etich.y - 14); x2 = Math.max(x2, t.etich.x + (t.etich.anc === 'start' ? t.etich.testo.length * 7 : t.etich.testo.length * 3.5)); x1 = Math.min(x1, t.etich.x - (t.etich.anc === 'middle' ? t.etich.testo.length * 3.5 : 0)); }
+      if (t.etich && t.etich.box) { const bx = t.etich.box; x1 = Math.min(x1, bx.x1); y1 = Math.min(y1, bx.y1); x2 = Math.max(x2, bx.x2); y2 = Math.max(y2, bx.y2); }
     });
     if (!isFinite(x1)) return null;
     return { x: x1, y: y1, w: x2 - x1, h: y2 - y1 };
@@ -722,23 +927,25 @@
     });
     s += '</g><g class="sk-etichette">';
     sc.tubi.forEach((t) => {
-      if (t.etich) s += `<text class="sk-tubo-etich${t.etich.calc ? ' calc' : ''}" x="${r2(t.etich.x)}" y="${r2(t.etich.y)}" text-anchor="${t.etich.anc}" dominant-baseline="${t.etich.anc === 'middle' ? 'auto' : 'central'}">${esc(t.etich.testo)}</text>`;
+      if (t.etich) s += `<text class="sk-tubo-etich${t.etich.calc ? ' calc' : ''}" x="${r2(t.etich.x)}" y="${r2(t.etich.y)}" text-anchor="${t.etich.anc}" dominant-baseline="${t.etich.bl}">${esc(t.etich.testo)}</text>`;
     });
     s += '</g><g class="sk-blocchi">';
     sc.blocchi.forEach(({ b, g }) => {
       const st = ver && ver.r.stB.get(b.id);
       const sel = schermo && stato.selB.has(b.id);
       const sorg = schermo && stato.collega && stato.collega.b === b.id;
-      const cls = 'sk-blocco' + (sel ? ' sel' : '') + (st ? ' st-' + st : '') + (sorg ? ' sorgente' : '') + (ver && stato.obsoleto ? ' obsoleto' : '');
+      const conv = b.tipo === 'conversione';
+      const cls = 'sk-blocco' + (conv ? ' conv' : '') + (sel ? ' sel' : '') + (st ? ' st-' + st : '') + (sorg ? ' sorgente' : '') + (ver && stato.obsoleto ? ' obsoleto' : '');
       const msgs = ver ? (ver.r.msgB.get(b.id) || []) : [];
       const descr = st === 'ok' ? 'bilancio coerente' : st === 'err' ? 'bilancio incoerente' : st === 'warn' ? 'valori non determinabili' : '';
-      const aria = schermo ? ` tabindex="0" role="button" aria-label="Blocco ${esc(b.nome)}, ${b.dati.length} dati${descr ? ', ' + descr : ''}"` : '';
+      const aria = schermo ? ` tabindex="0" role="button" aria-label="${conv ? 'Blocco di conversione' : 'Blocco'} ${esc(b.nome)}, ${b.dati.length} dati${descr ? ', ' + descr : ''}"` : '';
       s += `<g class="${cls}" data-blocco="${b.id}" transform="translate(${r2(b.x)} ${r2(b.y)})"${aria}>`;
       if (schermo && msgs.length) s += `<title>${esc(msgs.map((m) => m.testo).join('\n'))}</title>`;
       if (schermo) s += `<rect class="sk-blocco-sel" x="-5" y="-5" width="${g.w + 10}" height="${g.h + 10}" rx="11"/>`;
       s += `<rect class="sk-blocco-fondo" width="${g.w}" height="${g.h}" rx="8"/>`;
       if (b.dati.length) s += `<path class="sk-blocco-testa" d="M0 8a8 8 0 0 1 8-8h${g.w - 16}a8 8 0 0 1 8 8v${TESTA - 8}H0z"/><line class="sk-blocco-div" x1="0" x2="${g.w}" y1="${TESTA}" y2="${TESTA}"/>`;
       s += `<rect class="sk-blocco-corpo" width="${g.w}" height="${g.h}" rx="8"/>`;
+      if (conv) s += `<rect class="sk-blocco-dentro" x="3.5" y="3.5" width="${g.w - 7}" height="${g.h - 7}" rx="5"/><path class="sk-conv-icona" transform="translate(${g.w - PADX - 18} ${b.dati.length ? TESTA / 2 - 6.5 : g.h / 2 - 6.5})" d="${ICONA_CONV}"><title>Blocco di conversione</title></path>`;
       if (b.dati.length) s += `<text class="sk-blocco-nome" x="${PADX}" y="${TESTA / 2 + 1}" dominant-baseline="central">${esc(b.nome)}</text>`;
       else s += `<text class="sk-blocco-nome" x="${g.w / 2}" y="${g.h / 2}" text-anchor="middle" dominant-baseline="central">${esc(b.nome)}</text>`;
       g.righe.forEach((r) => {
@@ -746,10 +953,12 @@
         const attiva = schermo && stato.collega && stato.collega.b === b.id && stato.collega.d === r.dt.id;
         s += `<g class="sk-riga${attiva ? ' sorgente' : ''}" data-dato="${r.dt.id}">`;
         if (schermo) s += `<rect class="sk-riga-hit" x="2" y="${r2(r.cy - r.alto / 2)}" width="${g.w - 4}" height="${r2(r.alto)}" rx="4"/>`;
-        s += r.dt.ruolo === 'perdita'
+        const vuoto = r.dt.ruolo === 'perdita';
+        if (r.uscita) s += `<path d="M${PADX + 4} ${r2(r.cy - 5)}l5 5-5 5-5-5z" style="${vuoto ? `fill:none;stroke:${c};stroke-width:1.6px` : `fill:${c}`}"/>`;
+        else s += vuoto
           ? `<circle cx="${PADX + 4}" cy="${r2(r.cy)}" r="3.6" style="fill:none;stroke:${c};stroke-width:1.8px"/>`
           : `<circle cx="${PADX + 4}" cy="${r2(r.cy)}" r="4.2" style="fill:${c}"/>`;
-        s += `<text class="sk-riga-etich" x="${PADX + 14}" y="${r2(r.cy)}" dominant-baseline="central">${esc(r.et)}</text>`;
+        s += `<text class="sk-riga-etich" x="${PADX + 14}" y="${r2(r.cy)}" dominant-baseline="central">${esc(r.et)}${r.fx ? `<tspan class="sk-riga-fx" dx="6">${esc(r.fx)}</tspan>` : ''}</text>`;
         s += `<text class="sk-riga-val ${r.tv.cls}" x="${g.w - PADX}" y="${r2(r.cy)}" text-anchor="end" dominant-baseline="central">${esc(r.tv.testo)}</text></g>`;
       });
       if (st) {
@@ -814,6 +1023,7 @@
     doc.blocchi.forEach((b) => b.dati.forEach((dt) => { if (unitaOk(dt.u, dt.ua)) presenti.add(vettoreDi(dt.u)); }));
     const chiavi = Object.keys(VETTORI).filter((k) => presenti.size === 0 || presenti.has(k));
     let h = chiavi.map((k) => `<span><i style="background:var(--${VETTORI[k].v})"></i>${esc(VETTORI[k].nome)}</span>`).join('');
+    if (doc.blocchi.some((b) => b.tipo === 'conversione')) h += '<span class="sk-leg-nota">doppio bordo ⇄ = conversione · ◆ = riga convertita</span>';
     h += '<span class="sk-leg-nota">tratteggio = valore mancante</span><span class="sk-leg-calc">corsivo = calcolato</span>';
     $('#sk-legenda').innerHTML = h;
   }
@@ -862,12 +1072,13 @@
   }
   function aggiornaModo() {
     document.querySelectorAll('.sk-prim').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.modo === stato.modo)));
-    tela.classList.remove('modo-seleziona', 'modo-blocco', 'modo-collegamento');
+    tela.classList.remove('modo-seleziona', 'modo-blocco', 'modo-collegamento', 'modo-conversione');
     tela.classList.add('modo-' + stato.modo);
     mostraSuggerimento(true);
   }
   function suggerimento() {
     if (stato.modo === 'blocco') return 'Modalità Blocco: clicca nell\'area per creare un blocco · trascina i blocchi per spostarli · Esc per uscire';
+    if (stato.modo === 'conversione') return 'Modalità Conversione: clicca nell\'area per creare un blocco di conversione (uscita = fattore × ingresso) · Esc per uscire';
     if (stato.modo === 'collegamento') {
       if (!stato.collega) return 'Modalità Collegamento: clicca la riga del dato (o il blocco) da cui PARTE il flusso · Esc per uscire';
       const b = doc.blocchi.find((x) => x.id === stato.collega.b); const dt = datoDi(b, stato.collega.d);
@@ -903,11 +1114,19 @@
     let i = doc.blocchi.length + 1; while (nomi.has(base + ' ' + i)) i++;
     return base + ' ' + i;
   }
-  function creaBlocco(wx, wy) {
-    const b = { id: uid('b'), nome: nomeUnico('Blocco'), x: aggancia(wx - 70), y: aggancia(wy - 25), dati: [] };
+  function creaBlocco(wx, wy, conv) {
+    const b = { id: uid('b'), nome: nomeUnico(conv ? 'Conversione' : 'Blocco'), x: aggancia(wx - 70), y: aggancia(wy - 25), tipo: conv ? 'conversione' : 'bilancio', dati: [] };
+    if (conv) {
+      // proposta iniziale: elettricità (kWh) → CO₂ (t) con il fattore tipico; righe e fattore si cambiano nel pannello
+      const ing = nuovoDato({ u: 'kWh', etichetta: 'Elettricità' }), usc = nuovoDato({ u: 'tCO2', etichetta: 'CO₂' });
+      usc.conv = { da: ing.id, f: null, num: null, den: null, lib: '' };
+      b.dati.push(ing, usc);
+      applicaFattore(usc, 'el-co2');
+    }
     modifica(() => { doc.blocchi.push(b); });
     seleziona([b.id]);
-    messaggio(`Creato «${b.nome}». Aggiungi i dati nel pannello a destra, oppure continua a cliccare per altri blocchi.`, 'successo');
+    messaggio(conv ? `Creato il blocco di conversione «${b.nome}»: elettricità → CO₂ con il fattore tipico. Cambia righe, unità e fattore nel pannello a destra.`
+      : `Creato «${b.nome}». Aggiungi i dati nel pannello a destra, oppure continua a cliccare per altri blocchi.`, 'successo', conv ? 7000 : 4500);
     apriPannelloSeStretto();
     return b;
   }
@@ -928,12 +1147,16 @@
   }
   function creaCollegamento(da, a) {
     if (da.b === a.b) { messaggio('Un collegamento deve unire due blocchi diversi.', 'avviso'); return; }
+    const bS = doc.blocchi.find((x) => x.id === da.b), bT = doc.blocchi.find((x) => x.id === a.b);
+    const dS = datoDi(bS, da.d), dT = datoDi(bT, a.d);
+    const acquaConv = ((bT && bT.tipo === 'conversione') || (bS && bS.tipo === 'conversione')) && ((dS && dS.u === 'm3') || (dT && dT.u === 'm3'));
     if (doc.collegamenti.some((l) => l.da.b === da.b && l.da.d === da.d && l.a.b === a.b && l.a.d === a.d)) { messaggio('Questo collegamento esiste già.', 'avviso'); stato.collega = null; richiediDisegno(); return; }
     const l = { id: uid('l'), da: { b: da.b, d: da.d }, a: { b: a.b, d: a.d }, valore: null, calc: null, u: '', ua: '', etichetta: '' };
     modifica(() => { doc.collegamenti.push(l); });
     stato.collega = null;
     seleziona([], [l.id]);
-    messaggio('Collegamento creato. Inserisci valore e unità nel pannello (o lascia vuoto: lo calcola Aggiorna). Puoi continuare a collegare.', 'successo', 6000);
+    if (acquaConv) messaggio('Attenzione: l\'acqua (m³) non è convertibile in energia né in emissioni. Nel blocco di conversione questa riga sarà trascurata.', 'avviso', 8000);
+    else messaggio('Collegamento creato. Inserisci valore e unità nel pannello (o lascia vuoto: lo calcola Aggiorna). Puoi continuare a collegare.', 'successo', 6000);
   }
   function eliminaSelezione() {
     if (!stato.selB.size && !stato.selL.size) { messaggio('Niente di selezionato da eliminare.'); return; }
@@ -952,6 +1175,7 @@
       const nb = JSON.parse(JSON.stringify(b)); nb.id = uid('b'); mappaB.set(b.id, nb.id);
       nb.nome = b.nome + ' (copia)'; nb.x += 40; nb.y += 40;
       nb.dati.forEach((dt) => { const n = uid('d'); mappaD.set(dt.id, n); dt.id = n; });
+      nb.dati.forEach((dt) => { if (dt.conv && dt.conv.da) dt.conv.da = mappaD.get(dt.conv.da) || null; });
       nuovi.push(nb);
     });
     doc.collegamenti.filter((l) => mappaB.has(l.da.b) && mappaB.has(l.a.b)).forEach((l) => {
@@ -1048,7 +1272,7 @@
     }
     // sfondo
     if (e.shiftKey && stato.modo !== 'collegamento') { stato.drag = { ...base, tipo: 'riquadro', w1: w, prima: new Set(stato.selB) }; return; }
-    stato.drag = { ...base, tipo: stato.modo === 'blocco' ? 'crea' : 'vuoto', tx0: stato.vista.tx, ty0: stato.vista.ty };
+    stato.drag = { ...base, tipo: (stato.modo === 'blocco' || stato.modo === 'conversione') ? 'crea' : 'vuoto', conv: stato.modo === 'conversione', tx0: stato.vista.tx, ty0: stato.vista.ty };
   }
   function muovi(e) {
     if (stato.puntatori.has(e.pointerId)) stato.puntatori.set(e.pointerId, { x: e.clientX, y: e.clientY });
@@ -1080,7 +1304,7 @@
     const dr = stato.drag; if (!dr || dr.id !== e.pointerId) return;
     stato.drag = null; tela.classList.remove('pan-attivo');
     const w = aMondo(e.clientX, e.clientY);
-    if (dr.tipo === 'crea' && !dr.mosso) creaBlocco(w.x, w.y);
+    if (dr.tipo === 'crea' && !dr.mosso) creaBlocco(w.x, w.y, dr.conv);
     else if (dr.tipo === 'vuoto' && !dr.mosso) { if (stato.selB.size || stato.selL.size) seleziona([], []); }
     else if (dr.tipo === 'sposta') {
       if (dr.mosso) { storia.ultima = null; salvaPresto(); disegnaPannello(); aggiornaPulsanti(); }
@@ -1153,6 +1377,7 @@
     if (t.closest && t.closest('button, a, summary, label') && (k === 'Enter' || k === ' ')) return;
     const lk = k.length === 1 ? k.toLowerCase() : k;
     if (lk === 'b') { impostaModo('blocco'); e.preventDefault(); }
+    else if (lk === 'c') { impostaModo('conversione'); e.preventDefault(); }
     else if (lk === 'l') { impostaModo('collegamento'); e.preventDefault(); }
     else if (lk === 'v') { impostaModo('seleziona'); e.preventDefault(); }
     else if (lk === 'a') { aggiorna(); e.preventDefault(); }
@@ -1185,6 +1410,40 @@
     return msgs.map((m) => `<div class="sk-msg ${m.liv}">${esc(m.testo)}</div>`).join('');
   }
 
+  /* ---- fattori di conversione ---- */
+  const fattoreDi = (id) => (doc.fattori || []).find((x) => x.id === id) || null;
+  /** Applica alla riga d'uscita un fattore della libreria; se la dimensione non torna adegua l'unità della riga. */
+  function applicaFattore(dt, libId) {
+    const lib = fattoreDi(libId) || FATTORI_TIPICI.find((x) => x.id === libId); if (!lib || !dt.conv) return null;
+    dt.conv.f = lib.f; dt.conv.num = lib.num; dt.conv.den = lib.den; dt.conv.lib = lib.id;
+    if (dimU(lib.num) !== dimU(dt.u, dt.ua)) {
+      const vecchio = UNITA[dt.u] ? UNITA[dt.u].nomeDato : null;
+      dt.u = unitaUscitaPreferita(lib.num); dt.ua = '';
+      if (!dt.etichetta || dt.etichetta === vecchio || /^(Dato|Uscita)( \d+)?$/.test(dt.etichetta)) dt.etichetta = UNITA[dt.u].nomeDato;
+    }
+    return lib;
+  }
+  /** Fattore tipico più adatto per convertire la riga src nella riga dt (stessa dimensione dell'ingresso, poi dell'uscita e del vettore). */
+  function fattoreAdatto(src, dt) {
+    if (!src || src.u === 'm3' || !unitaOk(src.u, src.ua)) return null;
+    const ds = dimU(src.u, src.ua), dd = dimU(dt.u, dt.ua), vs = UNITA[src.u].vettore;
+    const punti = (x) => (dimU(x.num) === dd ? 0 : 10) + (UNITA[x.den].vettore === vs ? 0 : 5) + (x.den === src.u ? 0 : 1) + (x.num === dt.u ? 0 : 0.5);
+    const c = (doc.fattori || []).filter((x) => UNITA[x.den] && dimU(x.den) === ds).sort((a, b) => punti(a) - punti(b));
+    return c[0] || null;
+  }
+  /** Dopo un cambio d'unità: le conversioni che non tornano più ricevono un fattore tipico adatto (o restano da completare). */
+  function adeguaConversioni(b) {
+    if (b.tipo !== 'conversione') return;
+    b.dati.forEach((dt) => {
+      if (!dt.conv || !dt.conv.da) return;
+      const src = b.dati.find((x) => x.id === dt.conv.da); if (!src || dt.conv.f == null) return;
+      if (!coefConversione(dt.conv, src, dt).err) return;
+      const lib = fattoreAdatto(src, dt);
+      if (lib && dimU(lib.num) === dimU(dt.u, dt.ua)) applicaFattore(dt, lib.id);
+      else { dt.conv.f = null; dt.conv.num = null; dt.conv.den = null; dt.conv.lib = ''; }
+    });
+  }
+
   function disegnaPannello() {
     if (!corpoPannello) return;
     const att = document.activeElement;
@@ -1213,6 +1472,7 @@
     const o = doc.opzioni; const v = stato.verifica;
     let h = `<h2>Diagramma ${chiudiBtn()}</h2>`;
     h += '<p class="sk-nota">Nessun elemento selezionato: clicca un blocco o un tubo per modificarlo. Qui trovi le opzioni di calcolo e l\'esito della verifica.</p>';
+    h += `<label class="sk-campo"><span>Nota del diagramma (fonti, ipotesi, rendimenti: compare nelle esportazioni)</span><textarea data-campo="o-nota" rows="4" maxlength="2000">${esc(doc.nota || '')}</textarea></label>`;
     h += '<h3>Calcolo e spessori</h3>';
     h += `<label class="sk-check"><input type="checkbox" data-campo="o-conv"${o.conversione ? ' checked' : ''}> Converti in energia (kWh)</label>`;
     h += '<p class="sk-nota">Con la conversione MWh → kWh, Sm³ → kWh (con il PCI), elettricità e calore entrano nello stesso bilancio energetico e nella stessa scala degli spessori. Senza, ogni unità ha il suo bilancio e la sua scala (kWh e MWh dello stesso vettore restano sempre confrontabili).</p>';
@@ -1233,12 +1493,18 @@
       if (righe.length) h += `<ul class="sk-elenco">${righe.join('')}</ul>`;
       else if (v.r.nEq) h += '<div class="sk-msg ok">Tutti i bilanci sono rispettati.</div>';
     }
+    h += '<h3>Fattori tipici (libreria)</h3>';
+    h += '<p class="sk-nota">Valori proposti nei blocchi di conversione (coerenti con Playfair-S). Se ne cambi uno, si aggiornano tutte le righe che lo usano.</p>';
+    h += '<div class="sk-libreria">' + (doc.fattori || []).map((x) => `<label class="sk-lib-voce"><span>${esc(x.nome)}</span><span class="sk-fattore"><input class="sk-num" inputmode="decimal" data-campo="fl-f" data-id="${esc(x.id)}" value="${fmtCampo(x.f)}" aria-label="${esc(x.nome)}, fattore in ${esc(breveU(x.num) + '/' + breveU(x.den))}"><span class="sk-fattore-u">${esc(breveU(x.num) + '/' + breveU(x.den))}</span></span></label>`).join('') + '</div>';
+    h += '<div class="sk-azioni"><button type="button" class="sk-btn sk-piccolo" data-azione="fl-ripristina">Ripristina i valori tipici</button></div>';
     const nCalc = doc.collegamenti.filter((l) => l.calc != null).length + doc.blocchi.reduce((s, b) => s + b.dati.filter((d) => d.calc != null).length, 0);
     if (nCalc) h += `<div class="sk-azioni"><button type="button" class="sk-btn sk-piccolo" data-azione="fissa-tutti" data-tip="Trasforma i ${nCalc} valori calcolati in valori inseriti">Fissa i ${nCalc} calcolati</button><button type="button" class="sk-btn sk-piccolo" data-azione="cancella-calc">Cancella i calcolati</button></div>`;
     h += `<details class="sk-semantica"><summary>Come vengono verificati i bilanci</summary><ol>
       <li><strong>Dato collegato.</strong> Il valore di un dato (riga) è uguale alla somma dei tubi che arrivano a quella riga e, separatamente, alla somma dei tubi che partono da quella riga.</li>
       <li><strong>Blocco.</strong> Per ogni vettore (unità di misura o, con la conversione, energia in kWh): se il blocco ha sia ingressi sia uscite, Σ ingressi = Σ uscite + Σ dati con ruolo «Perdita». Un blocco senza ingressi è una <em>sorgente</em>, senza uscite è un'<em>utenza</em>: non ha vincoli di blocco.</li>
       <li><strong>Caselle vuote.</strong> Un dato o un tubo con l'unità ma senza valore è un'incognita: Aggiorna risolve il sistema lineare dei bilanci e scrive in <em style="color:var(--segno)">corsivo colorato</em> i valori determinati in modo univoco. Se i dati non bastano, segnala «non determinabile». «Fissa» trasforma un valore calcolato in inserito.</li>
+      <li><strong>Blocco di conversione</strong> (doppio bordo, icona ⇄). Trasforma un vettore in un altro: ogni riga d'uscita vale <em>fattore × riga d'ingresso</em> (es. t CO₂ = 0,216 kg CO₂/kWh × kWh; MWh = 9,59 kWh/Sm³ × Sm³). Qui il bilancio ingressi = uscite tra unità diverse <em>non</em> si applica: valgono le equazioni di conversione, che Aggiorna usa in avanti e all'indietro; se entrambi i valori sono inseriti e non tornano, il blocco diventa rosso. I prefissi (kg↔t, kWh↔MWh) sono gestiti da soli. L'acqua (m³) non è convertibile in energia né in emissioni: in un blocco di conversione viene trascurata con un avviso.</li>
+      <li><strong>Somme.</strong> Un blocco con una sola riga e più tubi in arrivo (es. «Emissioni totali (t CO₂)», «Energia primaria totale (TEP)») ne calcola la somma.</li>
       <li>Dati senza tubi e non «Perdita» sono solo informativi. Tolleranza: 0,1% del termine più grande.</li></ol></details>`;
     return h;
   }
@@ -1246,8 +1512,11 @@
   function pannelloBlocco(b) {
     if (!b) return pannelloDiagramma();
     const v = stato.verifica; const st = v ? v.r.stB.get(b.id) : null;
-    let h = `<h2>${iconaSt(st)} Blocco ${chiudiBtn()}</h2>`;
+    const conv = b.tipo === 'conversione';
+    let h = `<h2>${iconaSt(st)} ${conv ? 'Blocco di conversione <span aria-hidden="true">⇄</span>' : 'Blocco'} ${chiudiBtn()}</h2>`;
     h += `<label class="sk-campo"><span>Nome del blocco</span><input type="text" data-campo="b-nome" value="${esc(b.nome)}" maxlength="80"></label>`;
+    h += `<label class="sk-campo"><span>Tipo di blocco</span><select data-campo="b-tipo"><option value="bilancio"${conv ? '' : ' selected'}>Bilancio: Σ ingressi = Σ uscite + perdite</option><option value="conversione"${conv ? ' selected' : ''}>Conversione ⇄: uscita = fattore × ingresso</option></select></label>`;
+    if (conv) h += '<p class="sk-nota">Trasforma un vettore in un altro (es. Sm³ → MWh, kWh → t CO₂ o tep). Le righe senza fattore sono gli ingressi; per ogni uscita scegli la riga d\'ingresso e il fattore. Il bilancio tra unità diverse non si applica. L\'acqua (m³) non si converte.</p>';
     h += `<h3>Dati del blocco (${b.dati.length})</h3>`;
     if (!b.dati.length) h += '<p class="sk-nota">Ogni dato diventa una riga di testo nel blocco; i tubi partono e arrivano all\'altezza della sua riga. Con un dato il blocco è più largo che alto, con due è quadrato, con tre o più è più alto che largo.</p>';
     b.dati.forEach((dt, i) => {
@@ -1261,6 +1530,7 @@
       h += `<label>Valore<input type="text" class="sk-num${dt.calc != null ? ' calc' : ''}" inputmode="decimal" data-campo="d-val" data-dato="${dt.id}" value="${fmtCampo(dt.valore)}" placeholder="${dt.calc != null ? '≈ ' + esc(fmt(dt.calc)) : 'vuoto = da calcolare'}" autocomplete="off"></label>`;
       h += `<label>Unità<select data-campo="d-u" data-dato="${dt.id}">${opzioniUnita(dt.u, '(nessuna)')}</select></label>`;
       if (dt.u === 'altro') h += `<label class="sk-larga">Unità libera<input type="text" data-campo="d-ua" data-dato="${dt.id}" value="${esc(dt.ua)}" maxlength="30" placeholder="es. kg vapore, %"></label>`;
+      if (conv) h += rigaConversione(b, dt);
       h += `<label class="sk-larga">Ruolo<select data-campo="d-ruolo" data-dato="${dt.id}"><option value="valore"${dt.ruolo !== 'perdita' ? ' selected' : ''}>Valore della riga (totale dei tubi collegati)</option><option value="perdita"${dt.ruolo === 'perdita' ? ' selected' : ''}>Perdita (esce dal bilancio senza tubi)</option></select></label>`;
       if (dt.calc != null) h += `<div class="sk-val-calc">Calcolato: ${esc(fmt(dt.calc))} ${esc(ut)}<button type="button" class="sk-btn" data-azione="d-fissa" data-dato="${dt.id}">Fissa</button></div>`;
       h += `<p class="sk-nota sk-larga" style="margin:0">${nl ? nl + (nl === 1 ? ' tubo agganciato' : ' tubi agganciati') : 'nessun tubo agganciato'}</p>`;
@@ -1285,6 +1555,34 @@
       if (st) h += `<p class="sk-sr">Esito: ${testoSt[st]}</p>`;
     }
     h += '<div class="sk-azioni"><button type="button" class="sk-btn sk-piccolo" data-azione="b-collega" data-tip="Entra in modalità Collegamento partendo da questo blocco">Collega da qui</button><button type="button" class="sk-btn sk-piccolo" data-azione="duplica">Duplica</button><button type="button" class="sk-btn sk-piccolo sk-pericolo" data-azione="elimina">Elimina blocco</button></div>';
+    return h;
+  }
+
+  /** Campi di conversione di una riga (riga d'ingresso, fattore con la sua unità, fattore tipico). */
+  function rigaConversione(b, dt) {
+    if (dt.u === 'm3') return '<div class="sk-msg warn sk-larga">L\'acqua (m³) non è convertibile in energia né in emissioni: in questo blocco la riga è trascurata.</div>';
+    const fonti = b.dati.filter((x) => x !== dt && x.u !== 'm3' && !(x.conv && x.conv.da === dt.id));
+    const da = dt.conv && dt.conv.da && b.dati.find((x) => x.id === dt.conv.da) ? dt.conv.da : '';
+    let h = `<label class="sk-larga">Calcolo della riga<select data-campo="d-conv-da" data-dato="${dt.id}"><option value=""${da ? '' : ' selected'}>Ingresso (vettore da convertire)</option>`;
+    fonti.forEach((x) => { h += `<option value="${x.id}"${x.id === da ? ' selected' : ''}>= fattore × «${esc(x.etichetta || '—')}»${unitaOk(x.u, x.ua) ? ' (' + esc(testoUnita(x.u, x.ua)) + ')' : ''}</option>`; });
+    h += '</select></label>';
+    if (!da) return h;
+    const src = b.dati.find((x) => x.id === da);
+    const num = dt.conv.num || dt.u, den = dt.conv.den || src.u;
+    const ufat = breveU(num, dt.ua) + ' / ' + breveU(den, src.ua);
+    h += `<label class="sk-larga">Fattore<span class="sk-fattore"><input type="text" class="sk-num" inputmode="decimal" data-campo="d-conv-f" data-dato="${dt.id}" value="${fmtCampo(dt.conv.f)}" placeholder="fattore" autocomplete="off"><span class="sk-fattore-u">${esc(ufat)}</span></span></label>`;
+    const ds = dimU(src.u, src.ua);
+    const lib = (doc.fattori || []).filter((x) => UNITA[x.den] && dimU(x.den) === ds);
+    if (lib.length) {
+      h += `<label class="sk-larga">Fattore tipico<select data-campo="d-conv-lib" data-dato="${dt.id}"><option value=""${dt.conv.lib ? '' : ' selected'}>${dt.conv.f != null ? '(personalizzato)' : '(scegli…)'}</option>`;
+      lib.forEach((x) => { h += `<option value="${esc(x.id)}"${x.id === dt.conv.lib ? ' selected' : ''}>${esc(x.nome)}: ${esc(fmtFattore(x.f))} ${esc(breveU(x.num) + '/' + breveU(x.den))}</option>`; });
+      h += '</select></label>';
+    } else h += `<p class="sk-nota sk-larga" style="margin:0">Nessun fattore tipico per ${esc(breveU(src.u, src.ua))}: inserisci il fattore a mano.</p>`;
+    if (dt.conv.f != null && unitaOk(dt.u, dt.ua) && unitaOk(src.u, src.ua)) {
+      const c = coefConversione(dt.conv, src, dt);
+      if (c.err) h += `<div class="sk-msg err sk-larga">${esc(c.err)}</div>`;
+      else if (Math.abs(c.k - dt.conv.f) > 1e-12 * Math.max(1, Math.abs(c.k))) h += `<p class="sk-nota sk-larga" style="margin:0">Con le unità delle righe: ${esc(fmtFattore(c.k))} ${esc(breveU(dt.u, dt.ua) + ' / ' + breveU(src.u, src.ua))}</p>`;
+    }
     return h;
   }
 
@@ -1343,7 +1641,27 @@
           const vecchio = UNITA[dt.u] ? UNITA[dt.u].nomeDato : null;
           if (!dt.etichetta || dt.etichetta === vecchio || /^Dato( \d+)?$/.test(dt.etichetta)) dt.etichetta = UNITA[el.value] ? UNITA[el.value].nomeDato : dt.etichetta;
           dt.u = el.value;
+          adeguaConversioni(b);
         }, { pannello: true });
+        if (b.tipo === 'conversione' && dt.u === 'm3') messaggio('L\'acqua (m³) non è convertibile in energia né in emissioni: nel blocco di conversione la riga sarà trascurata.', 'avviso', 7000);
+      } break;
+      case 'b-tipo': if (tipoEv === 'change' && b) modifica(() => { b.tipo = el.value === 'conversione' ? 'conversione' : 'bilancio'; }, { pannello: true }); break;
+      case 'd-conv-da': if (tipoEv === 'change' && dt) {
+        let lib = null;
+        modifica(() => {
+          if (!el.value) { dt.conv = null; return; }
+          const src = b.dati.find((x) => x.id === el.value);
+          dt.conv = { f: null, num: null, den: null, lib: '', ...(dt.conv || {}), da: el.value };
+          if (dt.conv.f == null || coefConversione(dt.conv, src, dt).err) { dt.conv.f = null; dt.conv.num = null; dt.conv.den = null; dt.conv.lib = ''; lib = fattoreAdatto(src, dt); if (lib) applicaFattore(dt, lib.id); }
+        }, { pannello: true });
+        if (lib) messaggio(`Fattore tipico proposto: ${lib.nome}, ${fmtFattore(lib.f)} ${breveU(lib.num)}/${breveU(lib.den)}. Puoi cambiarlo.`, 'successo', 6000);
+      } break;
+      case 'd-conv-f': if (tipoEv === 'input' && dt && dt.conv) { const v = leggiVal(); if (v !== undefined) modifica(() => { dt.conv.f = v; dt.conv.lib = ''; }, { unione: 'd-conv-f' + dt.id }); } break;
+      case 'd-conv-lib': if (tipoEv === 'change' && dt && dt.conv && el.value) modifica(() => { applicaFattore(dt, el.value); }, { pannello: true }); break;
+      case 'o-nota': if (tipoEv === 'input') modifica(() => { doc.nota = el.value; }, { unione: 'o-nota', dati: false }); break;
+      case 'fl-f': if (tipoEv === 'input') {
+        const x = fattoreDi(el.dataset.id); const v = leggiVal();
+        if (x && v != null && v > 0) modifica(() => { x.f = v; doc.blocchi.forEach((bb) => bb.dati.forEach((d2) => { if (d2.conv && d2.conv.lib === x.id) d2.conv.f = v; })); }, { unione: 'fl-f' + x.id });
       } break;
       case 'd-ua': if (tipoEv === 'input' && dt) modifica(() => { dt.ua = el.value; }, { unione: 'd-ua' + dt.id }); break;
       case 'd-ruolo': if (tipoEv === 'change' && dt) modifica(() => { dt.ruolo = el.value; }); break;
@@ -1375,7 +1693,7 @@
       } break;
       case 'd-elimina': if (b && idx >= 0) {
         const id = b.dati[idx].id;
-        modifica(() => { b.dati.splice(idx, 1); doc.collegamenti.forEach((x) => { if (x.da.b === b.id && x.da.d === id) x.da.d = null; if (x.a.b === b.id && x.a.d === id) x.a.d = null; }); }, { pannello: true });
+        modifica(() => { b.dati.splice(idx, 1); b.dati.forEach((x) => { if (x.conv && x.conv.da === id) x.conv.da = null; }); doc.collegamenti.forEach((x) => { if (x.da.b === b.id && x.da.d === id) x.da.d = null; if (x.a.b === b.id && x.a.d === id) x.a.d = null; }); }, { pannello: true });
         messaggio('Dato eliminato (i tubi agganciati passano al centro del blocco). Ctrl+Z per annullare.');
       } break;
       case 'd-su': case 'd-giu': if (b && idx >= 0) {
@@ -1390,6 +1708,10 @@
       case 'elimina': eliminaSelezione(); break;
       case 'sel-blocco': seleziona([el.dataset.id], []); centraSu(el.dataset.id); break;
       case 'sel-link': seleziona([], [el.dataset.id]); break;
+      case 'fl-ripristina': modifica(() => {
+        doc.fattori = copiaFattori();
+        doc.blocchi.forEach((bb) => bb.dati.forEach((d2) => { const x = d2.conv && d2.conv.lib && fattoreDi(d2.conv.lib); if (x) d2.conv.f = x.f; }));
+      }, { pannello: true }); messaggio('Fattori tipici ripristinati.', 'successo'); break;
       case 'fissa-tutti': modifica(() => { doc.collegamenti.forEach((x) => { if (x.calc != null) { x.valore = x.calc; x.calc = null; } }); doc.blocchi.forEach((bb) => bb.dati.forEach((x) => { if (x.calc != null) { x.valore = x.calc; x.calc = null; } })); }, { pannello: true, dati: false }); messaggio('Valori calcolati fissati come inseriti.', 'successo'); break;
       case 'cancella-calc': modifica(() => { doc.collegamenti.forEach((x) => { x.calc = null; }); doc.blocchi.forEach((bb) => bb.dati.forEach((x) => { x.calc = null; })); }, { pannello: true }); break;
       case 'allinea-sx': case 'allinea-alto': case 'distribuisci-v': {
@@ -1437,7 +1759,7 @@
     setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 2000);
   }
   function salvaJSON() {
-    const dati = { ...doc, vista: stato.vista, salvato: new Date().toISOString() };
+    const dati = { ...doc, versione: VERSIONE, vista: stato.vista, salvato: new Date().toISOString() };
     scarica(new Blob([JSON.stringify(dati, null, 2)], { type: 'application/json' }), slug(doc.titolo) + '.json');
     messaggio('Progetto salvato come ' + slug(doc.titolo) + '.json', 'successo');
   }
@@ -1448,7 +1770,9 @@
     disegnaTutto();
     if (nuovo.vista) { stato.vista = { ...nuovo.vista }; applicaVista(); } else requestAnimationFrame(adatta);
     delete doc.vista;
-    if (testo) messaggio(testo, 'successo', 6000);
+    const migrato = doc.migrato; delete doc.migrato;
+    if (migrato) messaggio(`Progetto in formato versione ${migrato} convertito automaticamente alla versione ${VERSIONE} (blocchi di conversione, tep, nota). Premi Aggiorna per verificare i bilanci.`, 'successo', 9000);
+    else if (testo) messaggio(testo, 'successo', 6000);
   }
   function apriFile(file) {
     if (!file) return;
@@ -1490,7 +1814,9 @@
 .sk-riga-val{fill:${p.inchiostro};font-size:12px;font-weight:600}.sk-riga-val.calc{fill:${p.segno};font-style:italic}.sk-riga-val.vuoto{fill:${p.tenue};font-weight:400}
 .sk-tubo-corpo{fill:none;opacity:.9}.sk-tubo-err{fill:none;stroke:${p.errore};stroke-dasharray:7 5}.sk-tubo-warn{fill:none;stroke:${p.attenzione};stroke-dasharray:3 4}
 .sk-freccia{fill:#fff;opacity:.6}.sk-tubo-etich{font-size:11.5px;font-weight:600;fill:${p.inchiostro};paint-order:stroke;stroke:#fff;stroke-width:3.5px;stroke-linejoin:round}
-.sk-tubo-etich.calc{fill:${p.segno};font-style:italic}.sk-badge text{font-size:12px;font-weight:800;fill:#fff}.sk-badge-segno{stroke:#fff}.sk-badge circle{stroke:#fff;stroke-width:2}`;
+.sk-tubo-etich.calc{fill:${p.segno};font-style:italic}.sk-badge text{font-size:12px;font-weight:800;fill:#fff}.sk-badge-segno{stroke:#fff}.sk-badge circle{stroke:#fff;stroke-width:2}
+.sk-blocco-dentro{fill:none;stroke:${p.bordo};stroke-width:1}.sk-conv-icona{fill:none;stroke:${p.inchiostro};stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+.sk-riga-fx{fill:${p.tenue};font-size:10.5px;font-style:italic}`;
   }
   function vettoriPresenti(sc) {
     const s = new Set(sc.tubi.map((t) => t.vettore));
@@ -1507,11 +1833,14 @@
   }
   function costruisciSVG(x) {
     const { sc, bb, pal, vett } = x; const M = misuratore(FONT_EXP);
-    const margine = 40, testa = 78;
+    const margine = 40;
     const W = Math.max(Math.ceil(bb.w + margine * 2), 720);
+    const righeNota = a_capo(doc.nota, W - margine * 2, (t) => M(t, 400, 12.5));
+    const testa = 78 + righeNota.length * 17 + (righeNota.length ? 6 : 0);
     // legenda su più righe se serve
     const voci = vett.map((k) => ({ k, t: VETTORI[k].nome, w: 30 + M(VETTORI[k].nome, 400, 12) + 22 }));
-    voci.push({ k: null, t: 'tratteggio = valore mancante · corsivo = valore calcolato', w: M('tratteggio = valore mancante · corsivo = valore calcolato', 400, 12) + 10 });
+    const nl = notaLegenda();
+    voci.push({ k: null, t: nl, w: M(nl, 400, 12) + 10 });
     const righeLeg = []; let riga = [], lr = 0;
     voci.forEach((v) => { if (lr + v.w > W - margine * 2 && riga.length) { righeLeg.push(riga); riga = []; lr = 0; } riga.push(v); lr += v.w; });
     if (riga.length) righeLeg.push(riga);
@@ -1522,7 +1851,8 @@
     s += `<rect width="${W}" height="${H}" fill="#ffffff"/>`;
     s += `<text x="${margine}" y="38" style="font-size:22px;font-weight:700;fill:${pal.inchiostro}">${esc(doc.titolo)}</text>`;
     s += `<text x="${margine}" y="58" style="font-size:12px;fill:${pal.tenue}">${oggi()} · Playfair Sankey (playfair.statocritico.it)</text>`;
-    s += `<line x1="${margine}" x2="${W - margine}" y1="68" y2="68" stroke="${pal.linea}"/>`;
+    righeNota.forEach((t, i) => { s += `<text x="${margine}" y="${80 + i * 17}" style="font-size:12.5px;fill:${pal.inchiostro}">${esc(t)}</text>`; });
+    s += `<line x1="${margine}" x2="${W - margine}" y1="${testa - 10}" y2="${testa - 10}" stroke="${pal.linea}"/>`;
     s += `<g transform="translate(${r2(ox)} ${r2(oy)})">${svgCorpo(sc, 'export', { pal, esito: x.esito })}</g>`;
     let y = testa + bb.h + 30;
     s += `<line x1="${margine}" x2="${W - margine}" y1="${y - 14}" y2="${y - 14}" stroke="${pal.linea}"/>`;
@@ -1537,6 +1867,20 @@
     });
     s += '</svg>';
     return { svg: s, W, H, ox, oy, righeLeg };
+  }
+  /** Testo della legenda per le note grafiche (conversione, tratteggio, corsivo). */
+  function notaLegenda() {
+    return (doc.blocchi.some((b) => b.tipo === 'conversione') ? 'doppio bordo con frecce = blocco di conversione · rombo = riga convertita (fattore × ingresso) · ' : '') + 'tratteggio = valore mancante · corsivo = valore calcolato';
+  }
+  /** Divide un testo in righe di larghezza massima maxW (misura fornita da mis). */
+  function a_capo(testo, maxW, mis) {
+    const out = [];
+    String(testo || '').split(/\n+/).forEach((par) => {
+      let r = '';
+      par.split(/\s+/).filter(Boolean).forEach((p) => { const t = r ? r + ' ' + p : p; if (r && mis(t) > maxW) { out.push(r); r = p; } else r = t; });
+      if (r) out.push(r);
+    });
+    return out;
   }
   function esportaSVG() {
     const x = preparaExport(); if (!x) return;
@@ -1567,6 +1911,7 @@
       messaggio(`Esportato JPG (${c.width} × ${c.height} px).`, 'successo');
     } catch (err) { messaggio('Esportazione JPG non riuscita: ' + err.message, 'errore'); }
   }
+  // l'Helvetica standard di jsPDF non disegna ² e ³ (glifo vuoto): Sm³ → Sm3, m³ → m3, CO₂ → CO2
   const pdfTesto = (s) => String(s).replace(/₂/g, '2').replace(/³/g, '3').replace(/²/g, '2').replace(/≠/g, '!=').replace(/≈/g, '~').replace(/−/g, '-').replace(/→/g, '->').replace(/[^\x00-\xFF—–…·€‘’“”•]/g, '');
   /** PDF vettoriale disegnato con le primitive di jsPDF a partire dalla stessa scena. */
   function esportaPDF() {
@@ -1581,8 +1926,12 @@
     pdf.text(pdfTesto(doc.titolo), mg, mg + 4, { baseline: 'middle' });
     pdf.setFont('helvetica', 'normal'); pdf.setFontSize(8.5); pdf.setTextColor(pal.tenue);
     pdf.text(pdfTesto(`${oggi()} · Playfair Sankey (playfair.statocritico.it)`), mg, mg + 10, { baseline: 'middle' });
-    pdf.setDrawColor(pal.linea); pdf.setLineWidth(0.2); pdf.line(mg, mg + 14, PW - mg, mg + 14);
-    const top = mg + 19, fondo = PH - mg - 12;
+    pdf.setFontSize(8.5); pdf.setTextColor(pal.inchiostro);
+    const righeNota = doc.nota ? pdf.splitTextToSize(pdfTesto(doc.nota), PW - 2 * mg) : [];
+    righeNota.forEach((t, i) => pdf.text(t, mg, mg + 15 + i * 3.8, { baseline: 'middle' }));
+    const yLinea = mg + 14 + (righeNota.length ? righeNota.length * 3.8 + 1.5 : 0);
+    pdf.setDrawColor(pal.linea); pdf.setLineWidth(0.2); pdf.line(mg, yLinea, PW - mg, yLinea);
+    const top = yLinea + 5, fondo = PH - mg - 12;
     const k = Math.min((PW - 2 * mg) / bb.w, (fondo - top) / bb.h, 0.42);
     const ox = mg + ((PW - 2 * mg) - bb.w * k) / 2, oy = top + ((fondo - top) - bb.h * k) / 2;
     const X = (v) => ox + (v - bb.x) * k, Y = (v) => oy + (v - bb.y) * k;
@@ -1603,7 +1952,7 @@
       if (!t.etich) return;
       pdf.setFont('helvetica', t.etich.calc ? 'bolditalic' : 'bold'); pdf.setFontSize(pt(11.5)); pdf.setTextColor(t.etich.calc ? pal.segno : pal.inchiostro);
       const txt = pdfTesto(t.etich.testo); const tw = pdf.getTextWidth(txt);
-      const xx = X(t.etich.x) - (t.etich.anc === 'middle' ? tw / 2 : 0); const yy = Y(t.etich.y) - (t.etich.anc === 'middle' ? pt(11.5) * 25.4 / 72 * 0.35 : 0);
+      const xx = X(t.etich.x) - (t.etich.anc === 'middle' ? tw / 2 : t.etich.anc === 'end' ? tw : 0); const yy = Y(t.etich.y) - (t.etich.bl === 'auto' ? pt(11.5) * 25.4 / 72 * 0.35 : 0);
       pdf.setFillColor('#ffffff'); pdf.rect(xx - 0.5, yy - pt(11.5) * 0.18, tw + 1, pt(11.5) * 0.36, 'F');
       pdf.text(txt, xx, yy, { baseline: 'middle' });
     });
@@ -1622,16 +1971,31 @@
         pdf.curveTo(x0 + w - rr * 0.45, y0 + ins, x0 + w - ins, y0 + rr * 0.45, x0 + w - ins, y0 + rr); pdf.lineTo(x0 + w - ins, y0 + TESTA * k); pdf.lineTo(x0 + ins, y0 + TESTA * k); pdf.close(); pdf.fill();
         pdf.setDrawColor(pal.linea); pdf.setLineWidth(0.6 * k); pdf.line(x0, y0 + TESTA * k, x0 + w, y0 + TESTA * k);
       }
+      if (b.tipo === 'conversione') {
+        pdf.setDrawColor(pal.bordo); pdf.setLineWidth(1 * k); pdf.roundedRect(x0 + 3.5 * k, y0 + 3.5 * k, w - 7 * k, h - 7 * k, 5 * k, 5 * k, 'S');
+        const ix = x0 + w - (PADX + 18) * k, iy = y0 + (b.dati.length ? TESTA / 2 - 6.5 : g.h / 2 - 6.5) * k;
+        pdf.setDrawColor(pal.inchiostro); pdf.setLineWidth(1.6 * k); pdf.setLineCap('round');
+        [[0, 3.5, 12, 3.5], [9, 0.5, 12, 3.5], [12, 3.5, 9, 6.5], [14, 9.5, 2, 9.5], [5, 6.5, 2, 9.5], [2, 9.5, 5, 12.5]].forEach((q) => pdf.line(ix + q[0] * k, iy + q[1] * k, ix + q[2] * k, iy + q[3] * k));
+        pdf.setLineCap('butt');
+      }
       pdf.setFont('helvetica', 'bold'); pdf.setFontSize(pt(13)); pdf.setTextColor(pal.inchiostro);
       if (b.dati.length) pdf.text(pdfTesto(b.nome), x0 + PADX * k, y0 + (TESTA / 2 + 1) * k, { baseline: 'middle' });
       else pdf.text(pdfTesto(b.nome), x0 + w / 2, y0 + h / 2, { baseline: 'middle', align: 'center' });
       g.righe.forEach((r) => {
         const c = pal[VETTORI[unitaOk(r.dt.u, r.dt.ua) ? vettoreDi(r.dt.u) : 'altro'].v];
         const cy = y0 + r.cy * k;
-        if (r.dt.ruolo === 'perdita') { pdf.setDrawColor(c); pdf.setLineWidth(1.8 * k); pdf.circle(x0 + (PADX + 4) * k, cy, 3.6 * k, 'S'); }
-        else { pdf.setFillColor(c); pdf.circle(x0 + (PADX + 4) * k, cy, 4.2 * k, 'F'); }
+        const mx = x0 + (PADX + 4) * k;
+        if (r.uscita) {
+          pdf.setFillColor(c); pdf.setDrawColor(c); pdf.setLineWidth(1.6 * k);
+          const pts = [[mx, cy - 5 * k], [mx + 5 * k, cy], [mx, cy + 5 * k], [mx - 5 * k, cy]];
+          if (r.dt.ruolo === 'perdita') pts.forEach((q, i) => { const z = pts[(i + 1) % 4]; pdf.line(q[0], q[1], z[0], z[1]); });
+          else { pdf.triangle(pts[0][0], pts[0][1], pts[1][0], pts[1][1], pts[2][0], pts[2][1], 'F'); pdf.triangle(pts[0][0], pts[0][1], pts[2][0], pts[2][1], pts[3][0], pts[3][1], 'F'); }
+        } else if (r.dt.ruolo === 'perdita') { pdf.setDrawColor(c); pdf.setLineWidth(1.8 * k); pdf.circle(mx, cy, 3.6 * k, 'S'); }
+        else { pdf.setFillColor(c); pdf.circle(mx, cy, 4.2 * k, 'F'); }
         pdf.setFont('helvetica', 'normal'); pdf.setFontSize(pt(12)); pdf.setTextColor(pal.inchiostro);
-        pdf.text(pdfTesto(r.et), x0 + (PADX + 14) * k, cy, { baseline: 'middle' });
+        const et = pdfTesto(r.et);
+        pdf.text(et, x0 + (PADX + 14) * k, cy, { baseline: 'middle' });
+        if (r.fx) { const xw = pdf.getTextWidth(et); pdf.setFont('helvetica', 'italic'); pdf.setFontSize(pt(10.5)); pdf.setTextColor(pal.tenue); pdf.text(pdfTesto(r.fx), x0 + (PADX + 14 + 6) * k + xw, cy, { baseline: 'middle' }); }
         pdf.setFont('helvetica', r.tv.cls === 'calc' ? 'bolditalic' : r.tv.cls === 'vuoto' ? 'normal' : 'bold');
         pdf.setTextColor(r.tv.cls === 'calc' ? pal.segno : r.tv.cls === 'vuoto' ? pal.tenue : pal.inchiostro);
         pdf.text(pdfTesto(r.tv.testo), x0 + w - PADX * k, cy, { baseline: 'middle', align: 'right' });
@@ -1653,7 +2017,7 @@
       pdf.setTextColor(pal.inchiostro); const t = pdfTesto(VETTORI[kk].nome); pdf.text(t, lx + 9, ly, { baseline: 'middle' }); lx += 9 + pdf.getTextWidth(t) + 6;
     });
     pdf.setTextColor(pal.tenue);
-    const notaLeg = 'tratteggio = valore mancante · corsivo = valore calcolato';
+    const notaLeg = pdfTesto(notaLegenda());
     const notaPie = 'Pagina generata nel browser: nessun dato inviato a server.';
     // evita la sovrapposizione: se le due note non stanno sulla stessa riga, vanno a capo
     let lyNota = ly;
@@ -1667,12 +2031,20 @@
     return blob;
   }
 
-  /* ---- esempi ---- */
-  function costruisciEsempio(titolo, opz, blocchi, links) {
-    const d = docVuoto(); d.titolo = titolo; Object.assign(d.opzioni, opz);
+  /* ---- esempi ----
+     Blocco: [chiave, nome, x, y, dati, tipo]; dato: [etichetta, valore, unità, ruolo, ua, conv]
+     conv: { da: indice della riga d'ingresso, lib: id del fattore tipico } oppure { da, f, num, den }. */
+  function costruisciEsempio(titolo, opz, blocchi, links, nota) {
+    const d = docVuoto(); d.titolo = titolo; d.nota = nota || ''; Object.assign(d.opzioni, opz);
     const per = {};
-    blocchi.forEach(([k, nome, x, y, dati]) => {
-      const b = { id: uid('b'), nome, x, y, dati: dati.map(([et, val, u, ruolo, ua]) => ({ id: uid('d'), etichetta: et, valore: val, calc: null, u, ua: ua || '', ruolo: ruolo || 'valore' })) };
+    blocchi.forEach(([k, nome, x, y, dati, tipo]) => {
+      const b = { id: uid('b'), nome, x, y, tipo: tipo === 'conv' ? 'conversione' : 'bilancio', dati: dati.map(([et, val, u, ruolo, ua]) => ({ id: uid('d'), etichetta: et, valore: val, calc: null, u, ua: ua || '', ruolo: ruolo || 'valore', conv: null })) };
+      dati.forEach((x, i) => {
+        const c = x[5]; if (!c) return;
+        const dt = b.dati[i]; dt.conv = { da: b.dati[c.da].id, f: null, num: null, den: null, lib: '' };
+        if (c.lib) { const lib = d.fattori.find((f) => f.id === c.lib); Object.assign(dt.conv, { f: lib.f, num: lib.num, den: lib.den, lib: lib.id }); }
+        else Object.assign(dt.conv, { f: c.f, num: c.num || null, den: c.den || null });
+      });
       per[k] = b; d.blocchi.push(b);
     });
     links.forEach(([da, a, val, u, et]) => {
@@ -1681,34 +2053,121 @@
     });
     return d;
   }
+  /** Impaginazione automatica degli esempi: colonne dagli x indicativi (in ordine), larghezze e altezze
+      come saranno DOPO Aggiorna (tubi proporzionali), y di ogni blocco alla media delle porte collegate
+      nelle colonne vicine, poi impilati senza sovrapposizioni. */
+  function impagina(d, gapX, gapY) {
+    gapX = gapX || 240; gapY = gapY || 46;
+    const c = JSON.parse(JSON.stringify(d));
+    const r = analizza(c);
+    c.collegamenti.forEach((l) => { l.calc = (l.valore == null && r.calcLink.has(l.id)) ? r.calcLink.get(l.id) : null; });
+    c.blocchi.forEach((b) => b.dati.forEach((dt) => { dt.calc = (dt.valore == null && r.calcDato.has(dt.id)) ? r.calcDato.get(dt.id) : null; }));
+    c.opzioni.proporzionale = true;
+    const xs = [...new Set(c.blocchi.map((b) => b.x))].sort((a, b) => a - b);
+    const col = new Map(c.blocchi.map((b) => [b.id, xs.indexOf(b.x)]));
+    const ordine = new Map(c.blocchi.map((b) => [b.id, b.y]));
+    const mb = mappaBlocchi(c);
+    const grid = (v) => Math.round(v / GRIGLIA) * GRIGLIA;
+    for (let giro = 0; giro < 4; giro++) {
+      const geo = calcolaScena(c, { famiglia: famigliaPagina }).geo;
+      const cy = (b, did) => { const g = geo.get(b.id); const rr = did && g.righe.find((x) => x.dt.id === did); return rr ? rr.cy : g.cyCentro; };
+      let x = 0;
+      xs.forEach((_, ci) => { const bs = c.blocchi.filter((b) => col.get(b.id) === ci); bs.forEach((b) => { b.x = x; }); x += Math.max(...bs.map((b) => geo.get(b.id).w)) + gapX; });
+      const sinistra = giro % 2 === 0; // giri alterni: da sinistra (ingressi) e da destra (uscite)
+      const colonne = xs.map((_, i) => i); if (!sinistra) colonne.reverse();
+      colonne.forEach((ci) => {
+        const bs = c.blocchi.filter((b) => col.get(b.id) === ci).sort((p, q) => ordine.get(p.id) - ordine.get(q.id));
+        const obiettivi = bs.map((b) => {
+          const vicini = c.collegamenti.filter((l) => (l.a.b === b.id && (sinistra ? col.get(l.da.b) < ci : giro > 0)) || (l.da.b === b.id && (!sinistra ? col.get(l.a.b) > ci : giro > 0)));
+          if (!vicini.length) return null;
+          return vicini.reduce((s, l) => { const entra = l.a.b === b.id; const o = mb.get(entra ? l.da.b : l.a.b); return s + o.y + cy(o, entra ? l.da.d : l.a.d) - cy(b, entra ? l.a.d : l.da.d); }, 0) / vicini.length;
+        });
+        let fondo = -Infinity;
+        bs.forEach((b, i) => {
+          const t = obiettivi[i] != null ? obiettivi[i] : (isFinite(fondo) ? fondo + gapY : (giro ? b.y : ordine.get(b.id)));
+          b.y = grid(Math.max(t, fondo + gapY)); fondo = b.y + geo.get(b.id).h;
+        });
+        // se la colonna è scesa troppo rispetto agli obiettivi, la si risale in blocco
+        const scarti = bs.map((b, i) => (obiettivi[i] != null ? b.y - obiettivi[i] : null)).filter((v) => v != null);
+        if (scarti.length) { const m = Math.min(...scarti); if (m > 0) { const su = grid(scarti.reduce((a, v) => a + v, 0) / scarti.length / 2); if (su > 0) bs.forEach((b) => { b.y -= Math.min(su, grid(m)); }); } }
+      });
+    }
+    const y0 = Math.min(...c.blocchi.map((b) => b.y));
+    const pos = new Map(c.blocchi.map((b) => [b.id, { x: b.x, y: b.y - y0 }]));
+    d.blocchi.forEach((b) => { const q = pos.get(b.id); b.x = q.x; b.y = q.y; });
+    return d;
+  }
+  const FATTORI_NOTA = 'Fattori come in Playfair-S: elettricità 0,216 kg CO₂/kWh e 0,187 tep/MWh; gas naturale 1,96 kg CO₂/Sm³, 0,000836 tep/Sm³ e PCI 9,59 kWh/Sm³.';
+  /** Uscite di un blocco «→ CO₂ e TEP»: t CO₂ e tep calcolati dalla riga 0 con i fattori tipici indicati. */
+  const righeCO2TEP = (ing, co2, tep) => [ing, ['CO₂ emessa', null, 'tCO2', 'valore', '', { da: 0, lib: co2 }], ['Energia primaria', null, 'tep', 'valore', '', { da: 0, lib: tep }]];
+  /** Esempio «Sito N (2025)»: forniture → contatore gas (Sm³ → MWh, PCI) → utenze → conversione in CO₂ e TEP → totali. */
+  function esempioSito(n, el, gas, acqua, extra) {
+    const X = [0, 400, 820, 1240, 1760];
+    return impagina(costruisciEsempio(`Sito ${n} — forniture, utenze, CO₂ ed energia primaria (2025)`, { conversione: true }, [
+      ['el', 'Rete elettrica (POD)', X[0], 0, [['Prelievo 2025', el, 'kWh']]],
+      ['acq', 'Acquedotto', X[0], 250, [['Acqua 2025', acqua, 'm3']]],
+      ['gas', 'Rete gas (PDR)', X[0], 560, [['Gas naturale 2025', gas, 'Sm3']]],
+      ['pci', 'Contatore gas: Sm³ → MWh', X[1], 560, [['Energia termica (PCI)', null, 'MWh_th', 'valore', '', { da: 1, lib: 'gas-pci' }], ['Gas naturale', null, 'Sm3']], 'conv'],
+      ['ue', 'Utenze elettriche', X[2], 0, [['Elettricità', null, 'kWh']]],
+      ['ua', 'Utenze idriche', X[2], 250, [['Acqua', null, 'm3']]],
+      ['ut', 'Utenze termiche', X[2], 560, [['Energia termica', null, 'MWh_th']]],
+      ['cel', 'Elettricità → CO₂ e TEP', X[3], -10, righeCO2TEP(['Elettricità consumata', null, 'kWh'], 'el-co2', 'el-tep'), 'conv'],
+      ['cgas', 'Gas → CO₂ e TEP', X[3], 330, righeCO2TEP(['Gas consumato', null, 'Sm3'], 'gas-co2', 'gas-tep'), 'conv'],
+      ['tco2', 'Emissioni totali (t CO₂)', X[4], 60, [['Totale CO₂', null, 'tCO2']]],
+      ['ttep', 'Energia primaria totale (TEP)', X[4], 330, [['Totale', null, 'tep']]]
+    ], [['el.0', 'ue.0'], ['ue.0', 'cel.0'], ['gas.0', 'pci.1'], ['pci.0', 'ut.0'], ['pci.1', 'cgas.0'], ['acq.0', 'ua.0'],
+      ['cel.1', 'tco2.0'], ['cgas.1', 'tco2.0'], ['cel.2', 'ttep.0'], ['cgas.2', 'ttep.0']],
+    `Dati 2025 del sito ${n} (file ${n}_consumi.csv): elettricità ${fmt(el)} kWh, gas ${fmt(gas)} Sm³, acqua ${fmt(acqua)} m³; teleriscaldamento assente. ${extra ? extra + ' ' : ''}${FATTORI_NOTA} L'acqua resta un consumo: non si converte in energia né in emissioni.`));
+  }
   const ESEMPI = {
-    cogenerazione: () => costruisciEsempio('Centrale di cogenerazione — bilancio annuo', { conversione: true }, [
-      ['gas', 'Rete gas', 0, 170, [['Gas naturale', 500000, 'Sm3']]],
-      ['cog', 'Cogeneratore', 380, 90, [['Gas in ingresso', null, 'Sm3'], ['Elettricità', 1700, 'MWh_el'], ['Calore utile', 2200, 'MWh_th'], ['Perdite', null, 'MWh_th', 'perdita'], ['CO₂ emessa', 985, 'tCO2']]],
-      ['stab', 'Stabilimento', 840, 0, [['Elettricità', 1200, 'MWh_el']]],
-      ['rete', 'Rete elettrica (cessione)', 840, 130, [['Elettricità', null, 'MWh_el']]],
-      ['ut', 'Utenze termiche', 840, 270, [['Calore', null, 'MWh_th']]],
-      ['atm', 'Atmosfera', 840, 410, [['CO₂', null, 'tCO2']]]
-    ], [['gas.0', 'cog.0'], ['cog.1', 'stab.0'], ['cog.1', 'rete.0'], ['cog.2', 'ut.0'], ['cog.4', 'atm.0']]),
-    ospedale: () => costruisciEsempio('Ospedale — elettricità, gas, acqua e CO₂', { conversione: true }, [
-      ['el', 'Rete elettrica', 0, 20, [['Prelievo', 3200000, 'kWh']]],
-      ['gas', 'Rete gas', 0, 220, [['Gas naturale', 450000, 'Sm3']]],
-      ['acq', 'Acquedotto', 0, 540, [['Acqua', 60000, 'm3']]],
-      ['cab', 'Cabina MT/BT', 400, 10, [['Elettricità', null, 'kWh']]],
-      ['ct', 'Centrale termica', 400, 170, [['Gas', null, 'Sm3'], ['Calore prodotto', 3900000, 'kWh_th'], ['Acqua di reintegro', null, 'm3'], ['Perdite', null, 'kWh_th', 'perdita'], ['CO₂ emessa', 886.5, 'tCO2']]],
-      ['rep', 'Reparti di degenza', 900, 20, [['Elettricità', 2100000, 'kWh'], ['Calore', null, 'kWh_th'], ['Acqua', 45000, 'm3']]],
-      ['hvac', 'Servizi e HVAC', 900, 330, [['Elettricità', null, 'kWh']]],
-      ['atm', 'Atmosfera', 900, 480, [['CO₂', null, 'tCO2']]]
-    ], [['el.0', 'cab.0'], ['cab.0', 'rep.0'], ['cab.0', 'hvac.0'], ['gas.0', 'ct.0'], ['ct.1', 'rep.1'], ['acq.0', 'rep.2'], ['acq.0', 'ct.2'], ['ct.4', 'atm.0']]),
-    vapore: () => costruisciEsempio('Macchina a vapore — omaggio a Sankey (1898), su 100 kWh di carbone', { conversione: true }, [
-      ['carb', 'Carbone', -80, 150, [['Energia del combustibile', 100, 'kWh_th']]],
-      ['cald', 'Caldaia', 320, 120, [['Combustibile', null, 'kWh_th'], ['Fumi al camino', 20, 'kWh_th'], ['Vapore', null, 'kWh_th']]],
-      ['mot', 'Motore a vapore', 700, 90, [['Vapore', null, 'kWh_th'], ['Scarico al condensatore', null, 'kWh_th'], ['Attriti e irraggiamento', 5, 'kWh_th'], ['Lavoro all\'albero', 11, 'kWh']]],
-      ['cam', 'Camino', 700, 470, [['Fumi', null, 'kWh_th']]],
-      ['cond', 'Condensatore', 1110, 40, [['Calore scaricato', null, 'kWh_th']]],
-      ['amb', 'Ambiente', 1110, 190, [['Dispersioni', null, 'kWh_th']]],
-      ['alb', 'Lavoro utile', 1110, 330, [['Lavoro meccanico', null, 'kWh']]]
-    ], [['carb.0', 'cald.0'], ['cald.1', 'cam.0'], ['cald.2', 'mot.0'], ['mot.1', 'cond.0'], ['mot.2', 'amb.0'], ['mot.3', 'alb.0']]),
+    cogenerazione: () => impagina(costruisciEsempio('Centrale di cogenerazione — fabbisogni del sito 1 (2025)', { conversione: true }, [
+      ['gas', 'Rete gas (PDR)', 0, 90, [['Gas naturale', null, 'Sm3']]],
+      ['el', 'Rete elettrica (POD)', 0, 700, [['Prelievo', null, 'kWh']]],
+      ['cpdr', 'Contatore gas: Sm³ → MWh', 380, 40, [['Energia del gas (PCI)', null, 'MWh_th', 'valore', '', { da: 1, lib: 'gas-pci' }], ['Gas naturale', null, 'Sm3']], 'conv'],
+      ['cpod', 'Prelievo da rete → CO₂ e TEP', 380, 700, righeCO2TEP(['Prelievo da rete', null, 'kWh'], 'el-co2', 'el-tep'), 'conv'],
+      ['cog', 'Cogeneratore (1,6 MWe)', 960, -60, [['Combustibile', null, 'MWh_th'], ['Elettricità', 12000, 'MWh_el', 'valore', '', { da: 0, f: 0.40, num: 'MWh_el', den: 'MWh_th' }], ['Calore utile', null, 'MWh_th', 'valore', '', { da: 0, f: 0.45, num: 'MWh_th', den: 'MWh_th' }], ['Perdite', null, 'MWh_th', 'perdita', '', { da: 0, f: 0.15, num: 'MWh_th', den: 'MWh_th' }]], 'conv'],
+      ['cal', 'Caldaia integrativa', 960, 230, [['Combustibile', null, 'MWh_th'], ['Calore', null, 'MWh_th', 'valore', '', { da: 0, f: 0.92, num: 'MWh_th', den: 'MWh_th' }], ['Perdite', null, 'MWh_th', 'perdita', '', { da: 0, f: 0.08, num: 'MWh_th', den: 'MWh_th' }]], 'conv'],
+      ['ut', 'Utenze termiche (sito 1)', 1500, 120, [['Calore', 23713090, 'kWh_th']]],
+      ['ue', 'Utenze elettriche (sito 1)', 1500, 380, [['Elettricità', 16104820, 'kWh']]],
+      ['cgas', 'Gas → CO₂ e TEP', 1900, 600, righeCO2TEP(['Gas consumato', null, 'Sm3'], 'gas-co2', 'gas-tep'), 'conv'],
+      ['tco2', 'Emissioni totali (t CO₂)', 2300, 560, [['Totale CO₂', null, 'tCO2']]],
+      ['ttep', 'Energia primaria totale (TEP)', 2300, 690, [['Totale', null, 'tep']]]
+    ], [['gas.0', 'cpdr.1'], ['cpdr.0', 'cog.0'], ['cpdr.0', 'cal.0'], ['el.0', 'cpod.0'], ['cpod.0', 'ue.0'], ['cog.1', 'ue.0'], ['cog.2', 'ut.0'], ['cal.1', 'ut.0'],
+      ['cpdr.1', 'cgas.0'], ['cgas.1', 'tco2.0'], ['cpod.1', 'tco2.0'], ['cgas.2', 'ttep.0'], ['cpod.2', 'ttep.0']],
+    'Scenario sui fabbisogni 2025 del sito 1 (1_consumi.csv e termico_sito_1.csv): 16.104.820 kWh elettrici e 23.713.090 kWh termici. Cogeneratore da 1,6 MWe per 7.500 h (12.000 MWh el.), rendimenti ipotizzati sul PCI: elettrico 40%, termico 45%, perdite 15%; caldaia integrativa a rendimento 92%. Aggiorna ricava all\'indietro il gas (Sm³) e il prelievo da rete. Emissioni e tep si contano sui vettori acquistati (gas bruciato e prelievo da rete): elettricità e calore autoprodotti non si contano due volte. ' + FATTORI_NOTA)),
+    ospedale: () => impagina(costruisciEsempio('Ospedale — elettricità, gas, acqua, CO₂ e TEP (sito 4, 2025)', { conversione: false }, [
+      ['el', 'Rete elettrica (POD)', 0, 0, [['Prelievo 2025', 17694646, 'kWh']]],
+      ['gas', 'Rete gas (PDR)', 0, 330, [['Gas naturale 2025', 2334682, 'Sm3']]],
+      ['acq', 'Acquedotto', 0, 640, [['Acqua 2025', 156482.65, 'm3']]],
+      ['cab', 'Cabina MT/BT', 400, 0, [['Elettricità', null, 'kWh']]],
+      ['ct', 'Centrale termica (condensazione)', 400, 280, [['Calore prodotto', 23055515, 'kWh_th', 'valore', '', { da: 1, f: 1.03, num: 'kWh_th', den: 'kWh_th' }], ['Energia del gas (PCI)', null, 'MWh_th', 'valore', '', { da: 2, lib: 'gas-pci' }], ['Gas naturale', null, 'Sm3']], 'conv'],
+      ['rep', 'Reparti di degenza', 960, -40, [['Elettricità', 6000000, 'kWh'], ['Calore', 13000000, 'kWh_th'], ['Acqua', 95000, 'm3']]],
+      ['sop', 'Sale operatorie e diagnostica', 960, 250, [['Elettricità', 4500000, 'kWh'], ['Calore', 3500000, 'kWh_th']]],
+      ['serv', 'Servizi generali e HVAC', 960, 490, [['Elettricità', null, 'kWh'], ['Calore', null, 'kWh_th'], ['Acqua', null, 'm3']]],
+      ['cel', 'Elettricità → CO₂ e TEP', 1420, 40, righeCO2TEP(['Elettricità consumata', null, 'kWh'], 'el-co2', 'el-tep'), 'conv'],
+      ['cgas', 'Gas → CO₂ e TEP', 1420, 380, righeCO2TEP(['Gas consumato', null, 'Sm3'], 'gas-co2', 'gas-tep'), 'conv'],
+      ['tco2', 'Emissioni totali (t CO₂)', 1940, 110, [['Totale CO₂', null, 'tCO2']]],
+      ['ttep', 'Energia primaria totale (TEP)', 1940, 380, [['Totale', null, 'tep']]]
+    ], [['el.0', 'cab.0'], ['cab.0', 'rep.0'], ['cab.0', 'sop.0'], ['cab.0', 'serv.0'], ['gas.0', 'ct.2'], ['ct.0', 'rep.1'], ['ct.0', 'sop.1'], ['ct.0', 'serv.1'],
+      ['acq.0', 'rep.2'], ['acq.0', 'serv.2'], ['rep.0', 'cel.0'], ['sop.0', 'cel.0'], ['serv.0', 'cel.0'], ['ct.2', 'cgas.0'],
+      ['cel.1', 'tco2.0'], ['cgas.1', 'tco2.0'], ['cel.2', 'ttep.0'], ['cgas.2', 'ttep.0']],
+    'Dati 2025 del sito 4 (4_consumi.csv e termico_sito_4.csv): elettricità 17.694.646 kWh, gas 2.334.682 Sm³, acqua 156.483 m³, domanda termica 23.055.515 kWh. Centrale termica con caldaie a condensazione: rendimento 103% riferito al PCI (il calore di condensazione dei fumi si recupera), verificato entro la tolleranza dello 0,1%. La ripartizione tra reparti è indicativa. ' + FATTORI_NOTA + ' L\'acqua resta un consumo, esclusa da conversioni ed emissioni.'), 300),
+    sito1: () => esempioSito(1, 16104820, 2430979, 159171.46),
+    sito2: () => esempioSito(2, 5680743, 855823, 87548.74),
+    sito3: () => esempioSito(3, 2441251, 1423474, 43655.59, 'Attenzione: nel 2025 il consumo elettrico cala molto (2.441.251 kWh contro 5.465.782 kWh nel 2024, −55%); è un dato reale dei file, non un errore del diagramma.'),
+    sito45: () => { const d = esempioSito('4 e 5', 17694646, 2334682, 156482.65, 'I file del sito 4 e del sito 5 sono identici.'); d.nota = d.nota.replace('(file 4 e 5_consumi.csv)', '(file 4_consumi.csv e 5_consumi.csv)'); d.titolo = 'Siti 4 e 5 — forniture, utenze, CO₂ ed energia primaria (2025)'; return d; },
+    sito6: () => esempioSito(6, 7218604, 1074431, 122694.18),
+    vapore: () => costruisciEsempio('Macchina a vapore — omaggio a Sankey (1898), su 100 kWh di calore dal carbone', { conversione: true }, [
+      ['carb', 'Carbone', -80, 150, [['Carbone bruciato', null, 'kg']]],
+      ['comb', 'Combustione del carbone', 270, 110, [['Carbone', null, 'kg'], ['Calore (PCI)', 100, 'kWh_th', 'valore', '', { da: 0, lib: 'carb-pci' }], ['Energia primaria', null, 'tep', 'valore', '', { da: 0, lib: 'carb-tep' }]], 'conv'],
+      ['cald', 'Caldaia', 720, 120, [['Combustibile', null, 'kWh_th'], ['Fumi al camino', 20, 'kWh_th'], ['Vapore', null, 'kWh_th']]],
+      ['mot', 'Motore a vapore', 1100, 90, [['Vapore', null, 'kWh_th'], ['Scarico al condensatore', null, 'kWh_th'], ['Attriti e irraggiamento', 5, 'kWh_th'], ['Lavoro all\'albero', 11, 'kWh']]],
+      ['cam', 'Camino', 1100, 470, [['Fumi', null, 'kWh_th']]],
+      ['cond', 'Condensatore', 1510, 40, [['Calore scaricato', null, 'kWh_th']]],
+      ['amb', 'Ambiente', 1510, 190, [['Dispersioni', null, 'kWh_th']]],
+      ['alb', 'Lavoro utile', 1510, 330, [['Lavoro meccanico', null, 'kWh']]]
+    ], [['carb.0', 'comb.0'], ['comb.1', 'cald.0'], ['cald.1', 'cam.0'], ['cald.2', 'mot.0'], ['mot.1', 'cond.0'], ['mot.2', 'amb.0'], ['mot.3', 'alb.0']],
+    'Ricostruzione didattica del diagramma di M. H. P. R. Sankey (1898) su 100 kWh di calore. Il blocco di conversione ricava all\'indietro i kg di carbone (PCI 8,14 kWh/kg, carbone da 7.000 kcal/kg) e i tep corrispondenti (0,0007 tep/kg).'),
     minimo: () => costruisciEsempio('Esempio minimo: A → B → C, D', { conversione: false }, [
       ['a', 'A', 0, 100, [['Elettricità', null, 'kWh']]],
       ['b', 'B', 300, 100, [['Elettricità', null, 'kWh']]],
@@ -1726,9 +2185,10 @@
   const PASSI = [
     ['Benvenuto nell\'editor Sankey', '<p>Qui disegni <strong>diagrammi di flusso energetico</strong>: blocchi (impianti, reparti, utenze) uniti da <strong>tubi</strong> il cui spessore è proporzionale al flusso, come nel celebre diagramma della macchina a vapore di Matthew Sankey (1898).</p><p>Tutto resta nel tuo browser: il lavoro si salva da solo e puoi esportarlo in JPG, PDF o SVG.</p>'],
     ['1 · Crea i blocchi', '<p>Premi <strong>Blocco</strong> nel menu a sinistra (o il tasto <kbd>B</kbd>) e clicca nell\'area di disegno: ogni clic crea un blocco. Trascinali per spostarli; <kbd>Esc</kbd> esce dalla modalità.</p><p>Rotellina per lo zoom, trascina lo sfondo per spostare la vista, <kbd>0</kbd> per adattare.</p>'],
-    ['2 · Inserisci i dati', '<p>Clicca un blocco: nel pannello a destra dai un nome e aggiungi <strong>uno o più dati</strong> con etichetta, valore e unità (kWh, MWh el., Sm³, MWh o kWh termici, m³ acqua, t CO₂ o libera). Ogni dato è una riga del blocco.</p><p>Puoi lasciare vuoto il valore e indicare solo l\'unità: lo calcolerà il programma.</p>'],
-    ['3 · Collega i blocchi', '<p>Premi <strong>Collegamento</strong> (<kbd>L</kbd>), clicca la <strong>riga del dato</strong> di partenza e poi quella di arrivo. Il tubo esce e arriva all\'altezza di quella riga e prende il colore del vettore: <span style="color:var(--flusso-el)">verde</span> elettricità, <span style="color:var(--flusso-th)">arancione</span> gas e calore, <span style="color:var(--flusso-acqua)">azzurro</span> acqua, <span style="color:var(--flusso-co2)">marrone</span> CO₂.</p>'],
-    ['4 · Aggiorna ed esporta', '<p>Premi <strong>Aggiorna</strong> (<kbd>A</kbd>): gli spessori diventano proporzionali ai valori, i bilanci vengono verificati (bordo <span style="color:var(--successo)">verde</span> se tornano, <span style="color:var(--errore)">rosso</span> con lo scarto se no) e le caselle vuote vengono compilate <em style="color:var(--segno)">in corsivo</em>.</p><p>Per iniziare puoi caricare un esempio dal menu «Progetto». Buon lavoro!</p>']
+    ['2 · Inserisci i dati', '<p>Clicca un blocco: nel pannello a destra dai un nome e aggiungi <strong>uno o più dati</strong> con etichetta, valore e unità (kWh, MWh el., Sm³, MWh o kWh termici, m³ acqua, t o kg CO₂, tep, kg o libera). Ogni dato è una riga del blocco.</p><p>Puoi lasciare vuoto il valore e indicare solo l\'unità: lo calcolerà il programma.</p>'],
+    ['3 · Collega i blocchi', '<p>Premi <strong>Collegamento</strong> (<kbd>L</kbd>), clicca la <strong>riga del dato</strong> di partenza e poi quella di arrivo. Il tubo esce e arriva all\'altezza di quella riga e prende il colore del vettore: <span style="color:var(--flusso-el)">verde</span> elettricità, <span style="color:var(--flusso-th)">arancione</span> gas e calore, <span style="color:var(--flusso-acqua)">azzurro</span> acqua, <span style="color:var(--flusso-co2)">marrone</span> CO₂, <span style="color:var(--flusso-tep)">viola</span> tep (energia primaria).</p>'],
+    ['4 · Converti i vettori', '<p>Il pulsante <strong>Conversione</strong> (<kbd>C</kbd>) crea un blocco a <strong>doppio bordo ⇄</strong> che trasforma un vettore in un altro: ogni riga d\'uscita vale <em>fattore × riga d\'ingresso</em> (es. 9,59 kWh/Sm³ per il gas, 0,216 kg CO₂/kWh, 0,187 tep/MWh). Scegli il fattore dalla libreria «Fattore tipico» o scrivilo tu: i prefissi (kg↔t, kWh↔MWh) sono gestiti da soli.</p><p>Qui non vale il bilancio ingressi = uscite, ma l\'equazione di conversione, calcolata in avanti e all\'indietro. Collega più uscite di CO₂ o di <span style="color:var(--flusso-tep)">tep</span> a un blocco con una sola riga: ne fa la somma. L\'acqua (m³) non si converte.</p>'],
+    ['5 · Aggiorna ed esporta', '<p>Premi <strong>Aggiorna</strong> (<kbd>A</kbd>): gli spessori diventano proporzionali ai valori, i bilanci vengono verificati (bordo <span style="color:var(--successo)">verde</span> se tornano, <span style="color:var(--errore)">rosso</span> con lo scarto se no) e le caselle vuote vengono compilate <em style="color:var(--segno)">in corsivo</em>.</p><p>Per iniziare puoi caricare un esempio dal menu «Progetto». Buon lavoro!</p>']
   ];
   let passo = 0;
   function mostraPasso() {
@@ -1753,7 +2213,7 @@
     let caricato = false;
     try {
       const s = localStorage.getItem(CHIAVE_DOC);
-      if (s) { doc = normalizza(JSON.parse(s)); if (doc.vista) { stato.vista = doc.vista; delete doc.vista; } caricato = true; }
+      if (s) { doc = normalizza(JSON.parse(s)); delete doc.migrato; if (doc.vista) { stato.vista = doc.vista; delete doc.vista; } caricato = true; }
     } catch (_) { caricato = false; }
     if (!caricato) doc = ESEMPI.cogenerazione();
 
@@ -1804,7 +2264,14 @@
     $('#sk-titolo').addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); tela.focus({ preventScroll: true }); } });
     $('#sk-pannello-apri').addEventListener('click', () => { if (app.classList.contains('pannello-aperto')) chiudiPannelloSeStretto(); else { app.classList.add('pannello-aperto'); $('#sk-pannello-apri').setAttribute('aria-expanded', 'true'); const f = corpoPannello.querySelector('input, select, button'); if (f) f.focus(); } });
     corpoPannello.addEventListener('input', campoPannello);
-    corpoPannello.addEventListener('change', (e) => { campoPannello(e); if (e.target.dataset.campo === 'd-val' || e.target.dataset.campo === 'l-val') disegnaPannello(); });
+    // il ridisegno dopo «change» (che scatta sul blur) non deve sostituire il pulsante su cui si sta cliccando
+    let pannelloPremuto = false, ridisegnoAtteso = false;
+    corpoPannello.addEventListener('pointerdown', () => { pannelloPremuto = true; });
+    document.addEventListener('pointerup', () => { if (!pannelloPremuto) return; pannelloPremuto = false; if (ridisegnoAtteso) { ridisegnoAtteso = false; setTimeout(disegnaPannello, 0); } });
+    corpoPannello.addEventListener('change', (e) => {
+      campoPannello(e);
+      if (['d-val', 'l-val', 'd-conv-f', 'fl-f'].includes(e.target.dataset.campo)) { if (pannelloPremuto) ridisegnoAtteso = true; else disegnaPannello(); }
+    });
     corpoPannello.addEventListener('click', azionePannello);
     corpoPannello.addEventListener('keydown', (e) => { if (e.key === 'Enter' && e.target.matches('input[type="text"]')) { e.preventDefault(); e.target.blur(); disegnaPannello(); } });
 

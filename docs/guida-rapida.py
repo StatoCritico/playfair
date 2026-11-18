@@ -25,7 +25,7 @@ def miniature(b):
         pg.set_viewport_size({'width': 1280, 'height': 800})
         pg.goto(url + 'sankey.html'); pg.wait_for_timeout(800)
         pg.keyboard.press('Escape')
-        pg.select_option('#sk-esempio', 'ospedale'); pg.click('#sk-carica-esempio'); pg.wait_for_timeout(400)
+        pg.select_option('#sk-esempio', 'sito1'); pg.click('#sk-carica-esempio'); pg.wait_for_timeout(400)
         pg.mouse.click(700, 140)
         pg.keyboard.press('a'); pg.wait_for_timeout(400); pg.keyboard.press('0'); pg.wait_for_timeout(800)
         pg.evaluate('document.activeElement && document.activeElement.blur()'); pg.mouse.move(5, 790); pg.wait_for_timeout(300)
