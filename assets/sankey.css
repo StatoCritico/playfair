@@ -102,7 +102,7 @@
 .sk-tela-box { position: relative; min-height: 0; overflow: hidden; background: var(--carta, #19171c); }
 .sk-tela { display: block; width: 100%; height: 100%; touch-action: none; user-select: none; -webkit-user-select: none; outline: none; font-family: var(--testo, system-ui, sans-serif); }
 .sk-tela:focus-visible { box-shadow: inset 0 0 0 3px var(--segno, #8f9bff); }
-.sk-tela.modo-blocco, .sk-tela.modo-conversione { cursor: crosshair; }
+.sk-tela.modo-blocco, .sk-tela.modo-conversione, .sk-tela.modo-confronto { cursor: crosshair; }
 .sk-tela.modo-collegamento { cursor: alias; }
 .sk-tela.pan, .sk-tela.spazio { cursor: grab; }
 .sk-tela.pan-attivo { cursor: grabbing; }
@@ -127,13 +127,12 @@
 .sk-blocco.st-err .sk-blocco-fondo, .sk-blocco.st-err .sk-blocco-testa { fill: var(--errore-fondo, #361a1c); }
 .sk-blocco.obsoleto .sk-badge { opacity: .45; }
 .sk-blocco-testa { fill: var(--rialzo, #2d2932); }
-/* blocco di conversione: doppio bordo e icona ⇄ */
-.sk-blocco-dentro { fill: none; stroke: var(--bordo, #7b7385); stroke-width: 1; pointer-events: none; }
+/* blocco di conversione: angoli smussati e icona ⇄ · blocco Confronta: parallelogramma e «A−B» */
 .sk-conv-icona { fill: none; stroke: var(--inchiostro, #f3eff4); stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
-.sk-blocco.conv.st-ok .sk-blocco-dentro { stroke: var(--successo, #8fcf86); }
-.sk-blocco.conv.st-warn .sk-blocco-dentro { stroke: var(--attenzione, #f2c14e); }
-.sk-blocco.conv.st-err .sk-blocco-dentro { stroke: var(--errore, #ff8a8a); }
+.sk-cmp-icona { fill: var(--tenue, #b5adbd); font-size: 11px; font-weight: 700; }
 .sk-riga-fx { fill: var(--tenue, #b5adbd); font-size: 10.5px; font-style: italic; }
+.sk-riga-fx.cmp { fill: var(--successo, #8fcf86); font-style: normal; font-weight: 700; }
+.sk-riga-fx.aum { fill: var(--errore, #ff8a8a); }
 .sk-blocco-nome { fill: var(--inchiostro, #f3eff4); font-weight: 700; font-size: 13px; }
 .sk-riga-etich { fill: var(--inchiostro, #f3eff4); font-size: 12px; }
 .sk-riga-val { fill: var(--inchiostro, #f3eff4); font-size: 12px; font-weight: 600; font-variant-numeric: tabular-nums; }
