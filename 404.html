@@ -7,10 +7,11 @@
 <meta name="description" content="La pagina cercata non esiste: torna alla home di Playfair o scegli uno strumento.">
 <meta name="robots" content="noindex">
 <link rel="icon" href="/img/favicon.svg" type="image/svg+xml">
-<script>try{var t=localStorage.getItem('pf-tema');if(t)document.documentElement.dataset.theme=t;}catch(e){}</script>
+<script>try{var r=document.documentElement,t=localStorage.getItem('pf-tema'),s=localStorage.getItem('pf-schema');if(t)r.dataset.theme=t;if(s)r.dataset.schema=s;}catch(e){}</script>
 <link rel="stylesheet" href="/assets/tema.css">
 <link rel="stylesheet" href="/assets/area.css">
 <link rel="stylesheet" href="/assets/sito.css">
+<link rel="stylesheet" href="/assets/steampunk.css">
 <style>
 .perso { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: var(--s7); align-items: center; padding-block: var(--s8) var(--s6); }
 .perso h1 { margin: 0 0 var(--s4); }
@@ -28,7 +29,7 @@
 <body>
 <a class="pf-salta" href="#contenuto">Vai al contenuto</a>
 <header class="pf-testata">
-  <a class="pf-marchio" href="/index.html" aria-label="Playfair, home">Playfair<span class="pf-marchio-sub">.statocritico</span></a>
+  <a class="pf-marchio" href="/index.html" aria-label="Playfair, home"><svg viewBox="0 0 32 32" aria-hidden="true" focusable="false"><circle cx="16" cy="16" r="14.5" fill="none" stroke="var(--ottone)" stroke-width="1.5"></circle><path d="M11 24V8h6.5a4.5 4.5 0 0 1 0 9H11" fill="none" stroke="var(--primario)" stroke-width="3" stroke-linejoin="round"></path><path d="M15 24h7" stroke="var(--flusso-el)" stroke-width="3" stroke-linecap="round"></path></svg></a>
   <button class="pf-menu-apri" aria-expanded="false" aria-controls="pf-menu">Menu</button>
   <nav class="pf-menu" id="pf-menu" aria-label="Strumenti">
     <a href="/playfair-s.html" data-tip="Site — analisi del singolo sito: costi e consumi di elettricità, gas, calore e acqua">Playfair-S</a>

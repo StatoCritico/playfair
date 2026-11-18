@@ -1,15 +1,14 @@
 /* =====================================================================================================
-   Playfair · tema.css — il "CSS modificabile" della CORNICE
-   SOLO variabili e caratteri. Cambiando questo file (e nient'altro) si ristila la cornice del sito: testata e menu,
-   piè di pagina, sfondo della pagina, pagine di testo (home, personaggi, link, licenza, 404), intestazioni degli
-   strumenti, tooltip del menu. NON tocca l'area di lavoro (pannelli dei grafici, controlli degli strumenti, app
-   Sankey, esportazioni) né i colori dei dati (--flusso-*, --serie-*): quelli stanno in assets/area.css, palette fissa.
-   Base: vestito Corallo di EuGEnio (stesso autore), con un tocco "blueprint" per la tavola della home.
-   Tema scuro predefinito; tema chiaro con data-theme="light" su <html>.
-   Documentazione di ogni variabile: docs/CONTRATTO_CSS.md
+   Playfair · tema.css — «Steampunk e neon»: tre schemi (Fredda, Aliena, Calda) x tema scuro/chiaro
+   Solo variabili e caratteri della CORNICE. Nomi del contratto invariati (CONTRATTO_CSS.md, parte 1).
+   Schema: attributo data-schema="fredda|aliena|calda" su <html> (manometro della home, localStorage 'pf-schema');
+   senza attributo vale Aliena. Tema: data-theme="dark|light" come prima (scuro predefinito).
+   Variabili AGGIUNTE: --ottone --ottone-2 --neon --neon-2 --neon-testo --tubo-metallo --tubo-vetro --neon-font
+   e --fluo-el/-th/-acqua/-altro (i colori dei vettori di area.css nella versione luminosa, usati SOLO dentro i tubi
+   di vetro scuro della home: il significato non cambia; i --flusso-* restano quelli di area.css).
    ===================================================================================================== */
 
-/* ---- caratteri self-hosted (OFL 1.1, da @fontsource): niente CDN ---- */
+/* ---- caratteri self-hosted (OFL 1.1, @fontsource, sottoinsieme latino) ---- */
 @font-face { font-family: "Hanken Grotesk"; font-style: normal; font-weight: 400; font-display: swap; src: url("font/hanken-grotesk-latin-400-normal.woff2") format("woff2"); }
 @font-face { font-family: "Hanken Grotesk"; font-style: italic; font-weight: 400; font-display: swap; src: url("font/hanken-grotesk-latin-400-italic.woff2") format("woff2"); }
 @font-face { font-family: "Hanken Grotesk"; font-style: normal; font-weight: 600; font-display: swap; src: url("font/hanken-grotesk-latin-600-normal.woff2") format("woff2"); }
@@ -20,79 +19,132 @@
 @font-face { font-family: "IBM Plex Mono"; font-style: normal; font-weight: 400; font-display: swap; src: url("font/ibm-plex-mono-latin-400-normal.woff2") format("woff2"); }
 @font-face { font-family: "IBM Plex Mono"; font-style: normal; font-weight: 500; font-display: swap; src: url("font/ibm-plex-mono-latin-500-normal.woff2") format("woff2"); }
 @font-face { font-family: "IBM Plex Mono"; font-style: normal; font-weight: 600; font-display: swap; src: url("font/ibm-plex-mono-latin-600-normal.woff2") format("woff2"); }
+@font-face { font-family: "Marcellus"; font-style: normal; font-weight: 400; font-display: swap; src: url("font/marcellus-latin-400-normal.woff2") format("woff2"); }
+@font-face { font-family: "Share Tech Mono"; font-style: normal; font-weight: 400; font-display: swap; src: url("font/share-tech-mono-latin-400-normal.woff2") format("woff2"); }
+@font-face { font-family: "Playfair Display"; font-style: normal; font-weight: 500; font-display: swap; src: url("font/playfair-display-latin-500-normal.woff2") format("woff2"); }
+@font-face { font-family: "Playfair Display"; font-style: normal; font-weight: 600; font-display: swap; src: url("font/playfair-display-latin-600-normal.woff2") format("woff2"); }
+@font-face { font-family: "Playfair Display"; font-style: normal; font-weight: 700; font-display: swap; src: url("font/playfair-display-latin-700-normal.woff2") format("woff2"); }
+@font-face { font-family: "Orbitron"; font-style: normal; font-weight: 500; font-display: swap; src: url("font/orbitron-latin-500-normal.woff2") format("woff2"); }
+@font-face { font-family: "Orbitron"; font-style: normal; font-weight: 600; font-display: swap; src: url("font/orbitron-latin-600-normal.woff2") format("woff2"); }
+@font-face { font-family: "Cormorant Garamond"; font-style: normal; font-weight: 500; font-display: swap; src: url("font/cormorant-garamond-latin-500-normal.woff2") format("woff2"); }
+@font-face { font-family: "Cormorant Garamond"; font-style: normal; font-weight: 600; font-display: swap; src: url("font/cormorant-garamond-latin-600-normal.woff2") format("woff2"); }
+@font-face { font-family: "Cormorant Garamond"; font-style: normal; font-weight: 700; font-display: swap; src: url("font/cormorant-garamond-latin-700-normal.woff2") format("woff2"); }
+@font-face { font-family: "Michroma"; font-style: normal; font-weight: 400; font-display: swap; src: url("font/michroma-latin-400-normal.woff2") format("woff2"); }
 
-/* ---------------------------------------------------------------------------------- tema scuro (predefinito) */
+/* ---------------------------------------------------------------------------------- Aliena (predefinito) */
 :root, [data-theme="dark"] {
-  /* superfici */
-  --carta: #19171c;          /* fondo della pagina */
-  --foglio: #232027;         /* pannelli e riquadri */
-  --rialzo: #2d2932;         /* righe al passaggio, campi disattivi, intestazioni di tabella */
-  --tinta: #3a2230;          /* accento chiaro per aree (zona di trascinamento attiva) */
-  --linea: #39343f;          /* bordi e separatori */
-  --bordo: #7b7385;          /* bordi di campi e pulsanti secondari: 3,5:1 sul pannello */
-  /* testo */
-  --inchiostro: #f3eff4;     /* testo: 15,6:1 sul fondo */
-  --tenue: #b5adbd;          /* testo secondario: 8,2:1 */
-  /* marca */
-  --primario: #ff7a50;       /* link, pulsanti, voce attiva: 6,9:1 */
-  --primario-forte: #ff9775; /* passaggio del mouse sul primario */
-  --su-primario: #19171c;    /* testo sui pulsanti principali */
-  --profondo: #ffd0c0;       /* titoli dei grafici, cifre in evidenza */
-  --segno: #8f9bff;          /* secondo accento: soglie, riferimenti, valore di legge */
-  /* stati */
-  --successo: #8fcf86;   --successo-fondo: #1f2a1d;
-  --attenzione: #f2c14e; --attenzione-fondo: #2f2715;
-  --errore: #ff8a8a;     --errore-fondo: #361a1c;
-  /* serie dei grafici e vettori energetici (--serie-*, --flusso-*): NON stanno qui, ma in area.css (colori dei dati,
-     significato fisso). La cornice può usarli in lettura (home blueprint, monogramma). */
-  /* blueprint (tavola della home) */
-  --bp-fondo: #0a1830;       /* blu notte */
-  --bp-fondo-2: #0f2140;     /* riquadri di annotazione */
-  --bp-linea: #9cc7f0;       /* tratto della tavola e delle linee di richiamo */
-  --bp-luce: #7af4ff;        /* ciano luminoso: bagliori, riquadro acceso */
-  --bp-griglia: rgb(140 190 255 / .075); /* quadrettatura di fondo */
-  --bp-testo: #e2efff;       /* testo sui riquadri: 14:1 */
-  --bp-tenue: #93b2d8;       /* testo secondario sui riquadri: 7,5:1 */
-  /* ombre */
-  --ombra-1: 0 1px 2px rgb(0 0 0 / .35);
-  --ombra-2: 0 6px 20px rgb(0 0 0 / .45);
-  color-scheme: dark;
+  --carta: #0f1514; --foglio: #16201e; --rialzo: #1e2a28; --tinta: #211f33; --linea: #2a3836; --bordo: #708682;
+  --inchiostro: #e4efeb;   /* 15.7:1 su carta */
+  --tenue: #a2b7b1;        /* 8.7:1 su carta, 7.9:1 su foglio */
+  --primario: #8fd6bf;     /* 11.0:1 su carta */
+  --primario-forte: #b2e8d7; --su-primario: #0f1514; /* 11.0:1 */
+  --profondo: #d6c6ff; --segno: #c9a26b;
+  --successo: #8fcf86; --successo-fondo: #1f2a1d; --attenzione: #f2c14e; --attenzione-fondo: #2f2715; --errore: #ff8a8a; --errore-fondo: #361a1c;
+  --bp-fondo: #0b1312; --bp-fondo-2: #101e1c; --bp-linea: #a9e6d2; --bp-luce: #c6ff4a;
+  --bp-griglia: rgb(111 166 150 / .07); --bp-testo: #e0f0ea; --bp-tenue: #93b5aa;
+  --ottone: #5f9585; --ottone-2: #2c4440;
+  --neon: #b8ff3a; --neon-2: #b47bff; --neon-testo: #efffd6; /* 16.3:1 sui riquadri */
+  --tubo-metallo: #4f7f73; --tubo-vetro: #060d0c;
+  --titoli: "Cormorant Garamond", Georgia, serif; --neon-font: "Michroma", "IBM Plex Mono", sans-serif;
+  --ombra-1: 0 1px 2px rgb(0 0 0 / .4); --ombra-2: 0 6px 20px rgb(0 0 0 / .5); color-scheme: dark;
 }
-
-/* ---------------------------------------------------------------------------------- tema chiaro */
 [data-theme="light"] {
-  --carta: #f7f6f8; --foglio: #ffffff; --rialzo: #efedf1; --tinta: #ffe6dd; --linea: #e1dde6; --bordo: #847c8e;
-  --inchiostro: #1c1820; --tenue: #5f5868;
-  --primario: #c43c12; --primario-forte: #a8260c; --su-primario: #ffffff; --profondo: #8a1530; --segno: #3f4bd0;
-  --successo: #2e7a34;   --successo-fondo: #e7f2e4;
-  --attenzione: #8a5a00; --attenzione-fondo: #fbf0d6;
-  --errore: #a8133c;     --errore-fondo: #fbe5ea;
-  --bp-fondo: #e8eff8; --bp-fondo-2: #f6f9fd; --bp-linea: #23477e; --bp-luce: #0069b4;
-  --bp-griglia: rgb(35 71 126 / .07); --bp-testo: #0f2547; --bp-tenue: #44618a;
-  --ombra-1: 0 1px 2px rgb(42 29 25 / .08);
-  --ombra-2: 0 6px 20px rgb(42 29 25 / .14);
-  color-scheme: light;
+  --carta: #ecf1ee; --foglio: #f7faf8; --rialzo: #e0e8e4; --tinta: #e5e0f3; --linea: #c9d6d0; --bordo: #72847e;
+  --inchiostro: #101916;   /* 15.7:1 su carta */
+  --tenue: #485a54;        /* 6.4:1 su carta, 7.0:1 su foglio */
+  --primario: #1b6a55;     /* 5.7:1 su carta */
+  --primario-forte: #11513f; --su-primario: #ffffff; /* 6.5:1 */
+  --profondo: #4a2d8a; --segno: #7a5821;
+  --successo: #2e7a34; --successo-fondo: #e7f2e4; --attenzione: #8a5a00; --attenzione-fondo: #fbf0d6; --errore: #a8133c; --errore-fondo: #fbe5ea;
+  --bp-fondo: #e1eae6; --bp-fondo-2: #f1f6f3; --bp-linea: #2e5d51; --bp-luce: #6d28d9;
+  --bp-griglia: rgb(46 93 81 / .08); --bp-testo: #0f201b; --bp-tenue: #405c53;
+  --ottone: #4f8576; --ottone-2: #b5cbc3;
+  --neon: #8a3dff; --neon-2: #7ad400; --neon-testo: #5317b8; /* 8.8:1 sui riquadri */
+  --tubo-metallo: #3f6b60; --tubo-vetro: #08110f;
+  --titoli: "Cormorant Garamond", Georgia, serif; --neon-font: "Michroma", "IBM Plex Mono", sans-serif;
+  --ombra-1: 0 1px 2px rgb(40 30 20 / .08); --ombra-2: 0 6px 20px rgb(40 30 20 / .14); color-scheme: light;
 }
 
-/* ---------------------------------------------------------------------------------- comuni ai due temi */
+/* ---------------------------------------------------------------------------------- Fredda */
+[data-schema="fredda"] {
+  --carta: #14181b; --foglio: #1c2125; --rialzo: #252b30; --tinta: #1d2b31; --linea: #323a40; --bordo: #77838c;
+  --inchiostro: #e7ecee;   /* 15.0:1 su carta */
+  --tenue: #a7b2ba;        /* 8.3:1 su carta, 7.5:1 su foglio */
+  --primario: #8cc6cf;     /* 9.4:1 su carta */
+  --primario-forte: #aed9df; --su-primario: #14181b; /* 9.4:1 */
+  --profondo: #d3e4e8; --segno: #c9b98d;
+  --successo: #8fcf86; --successo-fondo: #1f2a1d; --attenzione: #f2c14e; --attenzione-fondo: #2f2715; --errore: #ff8a8a; --errore-fondo: #361a1c;
+  --bp-fondo: #0f171d; --bp-fondo-2: #152029; --bp-linea: #c6d8e2; --bp-luce: #5ff3ff;
+  --bp-griglia: rgb(142 164 178 / .07); --bp-testo: #e1e9ed; --bp-tenue: #94a8b5;
+  --ottone: #9c9478; --ottone-2: #4a4c48;
+  --neon: #4cf0ff; --neon-2: #9ffaff; --neon-testo: #dcfdff; /* 15.4:1 sui riquadri */
+  --tubo-metallo: #6f7b82; --tubo-vetro: #0a0f12;
+  --titoli: "Marcellus", Georgia, serif; --neon-font: "Share Tech Mono", "IBM Plex Mono", monospace;
+  --ombra-1: 0 1px 2px rgb(0 0 0 / .4); --ombra-2: 0 6px 20px rgb(0 0 0 / .5); color-scheme: dark;
+}
+[data-schema="fredda"][data-theme="light"] {
+  --carta: #edf0f1; --foglio: #f9fafa; --rialzo: #e2e7e9; --tinta: #d9e8eb; --linea: #ccd4d8; --bordo: #7a858d;
+  --inchiostro: #151a1e;   /* 15.3:1 su carta */
+  --tenue: #4d5860;        /* 6.4:1 su carta, 7.0:1 su foglio */
+  --primario: #1c6470;     /* 5.9:1 su carta */
+  --primario-forte: #124c56; --su-primario: #ffffff; /* 6.8:1 */
+  --profondo: #1b3a50; --segno: #75602a;
+  --successo: #2e7a34; --successo-fondo: #e7f2e4; --attenzione: #8a5a00; --attenzione-fondo: #fbf0d6; --errore: #a8133c; --errore-fondo: #fbe5ea;
+  --bp-fondo: #e3e8eb; --bp-fondo-2: #f3f6f7; --bp-linea: #3c5465; --bp-luce: #007d96;
+  --bp-griglia: rgb(60 84 101 / .08); --bp-testo: #111f29; --bp-tenue: #435a69;
+  --ottone: #8c8366; --ottone-2: #b9b6a8;
+  --neon: #00c4e6; --neon-2: #5fe6ff; --neon-testo: #005d70; /* 6.9:1 sui riquadri */
+  --tubo-metallo: #5e6a71; --tubo-vetro: #121a1f;
+  --titoli: "Marcellus", Georgia, serif; --neon-font: "Share Tech Mono", "IBM Plex Mono", monospace;
+  --ombra-1: 0 1px 2px rgb(40 30 20 / .08); --ombra-2: 0 6px 20px rgb(40 30 20 / .14); color-scheme: light;
+}
+
+/* ---------------------------------------------------------------------------------- Calda */
+[data-schema="calda"] {
+  --carta: #1a1612; --foglio: #231d17; --rialzo: #2d251d; --tinta: #34271a; --linea: #3c3228; --bordo: #86786a;
+  --inchiostro: #f2e9dc;   /* 15.0:1 su carta */
+  --tenue: #bfae98;        /* 8.3:1 su carta, 7.7:1 su foglio */
+  --primario: #e0b46a;     /* 9.3:1 su carta */
+  --primario-forte: #efc98a; --su-primario: #1a1612; /* 9.3:1 */
+  --profondo: #f3d9b0; --segno: #e09a7a;
+  --successo: #8fcf86; --successo-fondo: #1f2a1d; --attenzione: #f2c14e; --attenzione-fondo: #2f2715; --errore: #ff8a8a; --errore-fondo: #361a1c;
+  --bp-fondo: #1b1611; --bp-fondo-2: #251d16; --bp-linea: #ebd2a6; --bp-luce: #ff6ad5;
+  --bp-griglia: rgb(196 162 115 / .07); --bp-testo: #f1e6d4; --bp-tenue: #c2ab8c;
+  --ottone: #b8945a; --ottone-2: #5a4630;
+  --neon: #ff4fcf; --neon-2: #ffb3ec; --neon-testo: #ffe3f6; /* 13.9:1 sui riquadri */
+  --tubo-metallo: #8a6b3e; --tubo-vetro: #120d09;
+  --titoli: "Playfair Display", Georgia, serif; --neon-font: "Orbitron", "IBM Plex Mono", sans-serif;
+  --ombra-1: 0 1px 2px rgb(0 0 0 / .4); --ombra-2: 0 6px 20px rgb(0 0 0 / .5); color-scheme: dark;
+}
+[data-schema="calda"][data-theme="light"] {
+  --carta: #f4ede2; --foglio: #fbf7f0; --rialzo: #ebe2d3; --tinta: #f1e2c8; --linea: #dccfbb; --bordo: #8a7b69;
+  --inchiostro: #221a12;   /* 14.7:1 su carta */
+  --tenue: #5e4f3f;        /* 6.8:1 su carta, 7.4:1 su foglio */
+  --primario: #87561a;     /* 5.3:1 su carta */
+  --primario-forte: #6c4310; --su-primario: #ffffff; /* 6.2:1 */
+  --profondo: #6b2e12; --segno: #9a3f1f;
+  --successo: #2e7a34; --successo-fondo: #e7f2e4; --attenzione: #8a5a00; --attenzione-fondo: #fbf0d6; --errore: #a8133c; --errore-fondo: #fbe5ea;
+  --bp-fondo: #efe5d3; --bp-fondo-2: #f8f2e7; --bp-linea: #6b4f2a; --bp-luce: #c4087f;
+  --bp-griglia: rgb(107 79 42 / .08); --bp-testo: #2a1e12; --bp-tenue: #665139;
+  --ottone: #a8854c; --ottone-2: #d8c6a2;
+  --neon: #ff2fb9; --neon-2: #ff8fdc; --neon-testo: #a3006c; /* 6.8:1 sui riquadri */
+  --tubo-metallo: #7a5a30; --tubo-vetro: #17110b;
+  --titoli: "Playfair Display", Georgia, serif; --neon-font: "Orbitron", "IBM Plex Mono", sans-serif;
+  --ombra-1: 0 1px 2px rgb(40 30 20 / .08); --ombra-2: 0 6px 20px rgb(40 30 20 / .14); color-scheme: light;
+}
+
+/* ---------------------------------------------------------------------------------- comuni */
 :root {
-  /* caratteri */
+  --fluo-el: #4fd68a; --fluo-th: #ff9a3d; --fluo-acqua: #4cc6f5; --fluo-altro: #9b96a6;
   --testo: "Hanken Grotesk", system-ui, -apple-system, "Segoe UI", sans-serif;
-  --titoli: "Barlow", "Hanken Grotesk", system-ui, sans-serif;
-  --mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-  /* scala dei corpi (base 16 px) */
+  --mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
   --c-xs: .78rem; --c-s: .875rem; --c-m: 1rem; --c-l: 1.125rem; --c-xl: 1.375rem; --c-2xl: 1.75rem;
-  --c-h1: clamp(2rem, 1.25rem + 2.6vw, 3.25rem);
-  /* spaziature (passo 4 px) */
-  --s1: .25rem; --s2: .5rem; --s3: .75rem; --s4: 1rem; --s5: 1.5rem; --s6: 2rem; --s7: 3rem; --s8: 4rem;
-  --margine: clamp(1rem, 3vw, 2rem);
-  --larghezza: 1440px;       /* larghezza massima dei contenuti */
-  /* raggi */
-  --raggio: 6px; --r-s: 4px; --r: var(--raggio); --r-l: 10px; --r-tondo: 999px;
-  /* misure */
-  --tocco: 2.75rem;          /* 44 px, altezza minima di campi e pulsanti */
-  --alto-testata: 3.75rem;   /* aggiornata da sito.js con l'altezza reale */
-  /* movimento */
-  --durata: .18s;
-  --ritardo-tip: .35s;
+  --c-h1: clamp(2rem, 1.4rem + 2.6vw, 3.25rem);
+  --s1: 4px; --s2: 8px; --s3: 12px; --s4: 16px; --s5: 24px; --s6: 32px; --s7: 48px; --s8: 64px;
+  --margine: clamp(16px, 3vw, 32px);
+  --larghezza: 1440px;
+  --raggio: 6px; --r: var(--raggio); --r-s: 4px; --r-l: 10px; --r-tondo: 999px;
+  --tocco: 2.75rem;
+  --alto-testata: 3.75rem;
+  --durata: .18s; --ritardo-tip: .35s;
 }

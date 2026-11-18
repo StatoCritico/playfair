@@ -16,222 +16,16 @@
 <meta property="og:image:type" content="image/jpeg">
 <meta property="og:image:alt" content="La macchina a vapore del diagramma di Sankey del 1898, ridisegnata come un progetto con i flussi di energia animati">
 <meta name="twitter:card" content="summary_large_image">
-<script>try{var t=localStorage.getItem('pf-tema');if(t)document.documentElement.dataset.theme=t;}catch(e){}</script>
+<script>try{var r=document.documentElement,t=localStorage.getItem('pf-tema'),s=localStorage.getItem('pf-schema');if(t)r.dataset.theme=t;if(s)r.dataset.schema=s;}catch(e){}</script>
 <link rel="stylesheet" href="assets/tema.css">
 <link rel="stylesheet" href="assets/area.css">
 <link rel="stylesheet" href="assets/sito.css">
-<style>
-/* ===================================================== home: la tavola di Sankey come progetto (blueprint) */
-.bp-scena {
-  position: relative; color: var(--bp-testo); background-color: var(--bp-fondo);
-  background-image:
-    linear-gradient(var(--bp-griglia) 1px, transparent 1px),
-    linear-gradient(90deg, var(--bp-griglia) 1px, transparent 1px),
-    linear-gradient(var(--bp-griglia) 1px, transparent 1px),
-    linear-gradient(90deg, var(--bp-griglia) 1px, transparent 1px);
-  background-size: 120px 120px, 120px 120px, 24px 24px, 24px 24px;
-  background-position: -1px -1px;
-  border-bottom: 1px solid var(--linea);
-  overflow: hidden;
-}
-.bp-interno { max-width: var(--larghezza); margin: 0 auto; padding: var(--s6) var(--margine) var(--s6); }
-.bp-intesta { grid-area: tit; max-width: 40rem; }
-.bp-codice, .nota-rif, .bp-didascalia, .bp-comandi button, .legenda-titolo {
-  font-family: var(--mono); text-transform: uppercase; letter-spacing: .12em; font-variant-caps: all-small-caps;
-}
-.bp-codice { margin: 0 0 var(--s2); font-size: .95rem; color: var(--bp-tenue); }
-.bp-codice b { color: var(--bp-luce); font-weight: 500; }
-.bp-intesta h1 { margin: 0; color: var(--bp-testo); font-size: clamp(2.1rem, 1.2rem + 3vw, 3.6rem); line-height: 1; letter-spacing: -.02em; }
-.bp-intesta h1 em { font-style: normal; color: var(--bp-luce); }
-.bp-sotto { margin: var(--s3) 0 0; max-width: 60ch; color: var(--bp-tenue); font-size: var(--c-l); }
-.bp-comandi { display: flex; gap: var(--s2); }
-.bp-comandi button {
-  min-height: 2.25rem; padding: 0 .9rem; border: 1px solid var(--bp-linea); border-radius: var(--r-s); background: transparent;
-  color: var(--bp-testo); font-size: .9rem; cursor: pointer;
-}
-.bp-comandi button:hover { border-color: var(--bp-luce); color: var(--bp-luce); }
-.bp-comandi button:focus-visible { outline: 2px solid var(--bp-luce); outline-offset: 2px; }
-
-/* ------- la macchina: tavola al centro, riquadri intorno */
-.macchina {
-  --colonna: clamp(210px, 17vw, 250px);
-  position: relative; display: grid; gap: var(--s5) clamp(1.25rem, 3vw, 3rem);
-  grid-template-columns: var(--colonna) minmax(0, 1fr) var(--colonna);
-  grid-template-areas: "tit tit tit" ". su ." "sx tav dx" ". giu .";
-}
-@media (min-width: 1360px) {   /* titolo e riquadro "Sankey" sulla stessa riga: la tavola sale */
-  .macchina { grid-template-areas: none; grid-template-rows: auto auto auto; }
-  .macchina > .bp-intesta { grid-area: 1 / 1 / 2 / 3; max-width: 32rem; align-self: end; }
-  .macchina > .note-su { grid-area: 1 / 2 / 2 / 3; align-self: end; }
-  .macchina > .note-sx { grid-area: 2 / 1 / 3 / 2; } .macchina > .tavola { grid-area: 2 / 2 / 3 / 3; } .macchina > .note-dx { grid-area: 2 / 3 / 3 / 4; }
-  .macchina > .note-giu { grid-area: 3 / 2 / 4 / 3; }
-}
-.note-sx { grid-area: sx; } .note-dx { grid-area: dx; } .note-su { grid-area: su; } .note-giu { grid-area: giu; }
-.note-sx, .note-dx { display: flex; flex-direction: column; justify-content: space-between; gap: var(--s4); }
-.note-su, .note-giu { display: flex; }
-.note-su .nota, .note-giu .nota { width: var(--colonna); margin-left: clamp(0px, calc(var(--x) - var(--colonna) / 2), calc(100% - var(--colonna))); }
-.note-su .nota { margin-bottom: 0; }
-.tavola { grid-area: tav; position: relative; margin: 0; aspect-ratio: 1920 / 1046; align-self: center; }
-.tavola::before {             /* cornice da tavola tecnica con tacche agli angoli */
-  content: ""; position: absolute; inset: -10px; border: 1px solid color-mix(in srgb, var(--bp-linea) 45%, transparent); pointer-events: none;
-  background:
-    linear-gradient(var(--bp-linea), var(--bp-linea)) 0 0 / 14px 1px no-repeat, linear-gradient(var(--bp-linea), var(--bp-linea)) 0 0 / 1px 14px no-repeat,
-    linear-gradient(var(--bp-linea), var(--bp-linea)) 100% 100% / 14px 1px no-repeat, linear-gradient(var(--bp-linea), var(--bp-linea)) 100% 100% / 1px 14px no-repeat,
-    linear-gradient(var(--bp-linea), var(--bp-linea)) 100% 0 / 14px 1px no-repeat, linear-gradient(var(--bp-linea), var(--bp-linea)) 100% 0 / 1px 14px no-repeat,
-    linear-gradient(var(--bp-linea), var(--bp-linea)) 0 100% / 14px 1px no-repeat, linear-gradient(var(--bp-linea), var(--bp-linea)) 0 100% / 1px 14px no-repeat;
-}
-.tavola svg { position: absolute; inset: 0; width: 100%; height: 100%; display: block; overflow: visible; }
-.disegno image { opacity: .92; }
-.richiami { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; overflow: visible; z-index: 2; }
-
-/* ------- flussi animati */
-.flussi .alveo, .flussi .scia { fill: none; stroke-width: calc(var(--w) * 1px); transition: opacity .25s, stroke-width .25s; }
-.flussi .alveo { opacity: .22; stroke-linecap: butt; }
-.flussi .scia { stroke-width: calc(var(--w) * .42px + 2.5px); stroke-linecap: round; opacity: 1; animation: scorre var(--dur) linear infinite; }
-.flussi .scie { filter: url(#bagliore); }
-[data-theme="light"] .flussi .scie { filter: none; }
-[data-theme="light"] .flussi .alveo { opacity: .16; }
-@keyframes scorre { from { stroke-dashoffset: 0; } to { stroke-dashoffset: calc(var(--ciclo) * -1px); } }
-.bp-scena.ferma .flussi .scia { animation-play-state: paused; }
-
-/* ------- parti della macchina che si accendono */
-.parte { fill: var(--bp-luce); fill-opacity: 0; stroke: var(--bp-luce); stroke-opacity: 0; stroke-width: 3; stroke-dasharray: 14 8; transition: fill-opacity .25s, stroke-opacity .25s; cursor: pointer; pointer-events: all; }
-.marcatore circle { r: 25px; fill: var(--bp-fondo); stroke: var(--bp-linea); stroke-width: 3; transition: fill .2s, stroke .2s, r .2s; }
-.marcatore text { font: 600 26px/1 var(--mono); fill: var(--bp-testo); text-anchor: middle; dominant-baseline: central; transition: fill .2s; }
-.marcatore { pointer-events: none; }
-.flussi-g { pointer-events: none; } /* i flussi non devono coprire le parti cliccabili */
-
-.macchina[data-attivo]:not([data-attivo=""]) .flussi .alveo { opacity: .08; }
-.macchina[data-attivo]:not([data-attivo=""]) .flussi .scia { opacity: .3; }
-/* una regola per parte: riquadro acceso → parte e flussi accesi */
-.macchina[data-attivo="grate"] .parte-grate, .macchina[data-attivo="boiler"] .parte-boiler, .macchina[data-attivo="pipe"] .parte-pipe,
-.macchina[data-attivo="engine"] .parte-engine, .macchina[data-attivo="condenser"] .parte-condenser,
-.macchina[data-attivo="economiser"] .parte-economiser, .macchina[data-attivo="feedpump"] .parte-feedpump { fill-opacity: .12; stroke-opacity: 1; }
-.macchina[data-attivo="grate"] .p-grate, .macchina[data-attivo="boiler"] .p-boiler, .macchina[data-attivo="pipe"] .p-pipe,
-.macchina[data-attivo="engine"] .p-engine, .macchina[data-attivo="condenser"] .p-condenser,
-.macchina[data-attivo="economiser"] .p-economiser, .macchina[data-attivo="feedpump"] .p-feedpump { opacity: 1 !important; }
-.macchina[data-attivo="grate"] .scia.p-grate, .macchina[data-attivo="boiler"] .scia.p-boiler, .macchina[data-attivo="pipe"] .scia.p-pipe,
-.macchina[data-attivo="engine"] .scia.p-engine, .macchina[data-attivo="condenser"] .scia.p-condenser,
-.macchina[data-attivo="economiser"] .scia.p-economiser, .macchina[data-attivo="feedpump"] .scia.p-feedpump { stroke-width: calc(var(--w) * .7px + 6px); }
-.macchina[data-attivo="grate"] .alveo.p-grate, .macchina[data-attivo="boiler"] .alveo.p-boiler, .macchina[data-attivo="pipe"] .alveo.p-pipe,
-.macchina[data-attivo="engine"] .alveo.p-engine, .macchina[data-attivo="condenser"] .alveo.p-condenser,
-.macchina[data-attivo="economiser"] .alveo.p-economiser, .macchina[data-attivo="feedpump"] .alveo.p-feedpump { opacity: .45 !important; stroke-width: calc(var(--w) * 1.2px + 6px); }
-.macchina[data-attivo="grate"] .marcatore[data-parte="grate"] circle, .macchina[data-attivo="boiler"] .marcatore[data-parte="boiler"] circle,
-.macchina[data-attivo="pipe"] .marcatore[data-parte="pipe"] circle, .macchina[data-attivo="engine"] .marcatore[data-parte="engine"] circle,
-.macchina[data-attivo="condenser"] .marcatore[data-parte="condenser"] circle, .macchina[data-attivo="economiser"] .marcatore[data-parte="economiser"] circle,
-.macchina[data-attivo="feedpump"] .marcatore[data-parte="feedpump"] circle { fill: var(--primario); stroke: var(--primario); r: 31px; }
-.macchina[data-attivo="grate"] .marcatore[data-parte="grate"] text, .macchina[data-attivo="boiler"] .marcatore[data-parte="boiler"] text,
-.macchina[data-attivo="pipe"] .marcatore[data-parte="pipe"] text, .macchina[data-attivo="engine"] .marcatore[data-parte="engine"] text,
-.macchina[data-attivo="condenser"] .marcatore[data-parte="condenser"] text, .macchina[data-attivo="economiser"] .marcatore[data-parte="economiser"] text,
-.macchina[data-attivo="feedpump"] .marcatore[data-parte="feedpump"] text { fill: var(--su-primario); }
-
-/* parte 8 (Playfair-G): le perdite per irraggiamento, cioè tutti i tratti grigi sottili che escono dalla macchina */
-.macchina[data-attivo="radiation"] .parte-radiation { fill-opacity: .12; stroke-opacity: 1; }
-.macchina[data-attivo="radiation"] .p-radiation { opacity: 1 !important; }
-.macchina[data-attivo="radiation"] .scia.p-radiation { stroke-width: calc(var(--w) * .7px + 6px); }
-.macchina[data-attivo="radiation"] .alveo.p-radiation { opacity: .45 !important; stroke-width: calc(var(--w) * 1.2px + 6px); }
-.macchina[data-attivo="radiation"] .marcatore[data-parte="radiation"] circle { fill: var(--primario); stroke: var(--primario); r: 31px; }
-.macchina[data-attivo="radiation"] .marcatore[data-parte="radiation"] text { fill: var(--su-primario); }
-/* riquadri sotto la tavola: stessa cella, ciascuno spostato secondo --x */
-@media (min-width: 1100px) {
-  .note-giu { display: grid; align-items: start; }
-  .note-giu > .nota { grid-area: 1 / 1; }
-}
-
-/* ------- riquadri di annotazione */
-.nota {
-  position: relative; display: block; padding: .85rem 1rem .9rem; text-decoration: none; color: var(--bp-testo);
-  background: color-mix(in srgb, var(--bp-fondo-2) 92%, transparent); border: 1px solid color-mix(in srgb, var(--bp-linea) 70%, transparent);
-  border-radius: 2px; transition: border-color .2s, box-shadow .25s, background-color .2s, transform .2s;
-}
-.nota::before, .nota::after {   /* tacche d'angolo */
-  content: ""; position: absolute; width: 9px; height: 9px; border: 0 solid var(--bp-luce); opacity: 0; transition: opacity .2s;
-}
-.nota::before { left: -4px; top: -4px; border-width: 2px 0 0 2px; }
-.nota::after { right: -4px; bottom: -4px; border-width: 0 2px 2px 0; }
-.nota-rif { display: flex; align-items: center; gap: .55rem; margin-bottom: .35rem; font-size: .82rem; color: var(--bp-tenue); line-height: 1.2; }
-.nota-n {
-  display: inline-grid; place-items: center; min-width: 1.75rem; height: 1.75rem; padding: 0 .2rem; border: 1px solid var(--bp-linea);
-  border-radius: 50%; color: var(--bp-testo); font-size: .82rem; letter-spacing: .02em; transition: background-color .2s, color .2s, border-color .2s;
-}
-.nota-titolo { display: block; font: 700 1.3rem/1.1 var(--titoli); letter-spacing: -.005em; color: var(--bp-testo); }
-.nota-desc { display: block; margin-top: .3rem; font-size: .9rem; line-height: 1.4; color: var(--bp-tenue); }
-.nota-vai { position: absolute; right: .8rem; top: .75rem; font: 500 1rem/1 var(--mono); color: var(--bp-tenue); transition: transform .2s, color .2s; }
-a.nota:is(:hover, :focus-visible, .acceso) {
-  border-color: var(--primario); background: color-mix(in srgb, var(--bp-fondo-2) 80%, var(--primario) 20%);
-  box-shadow: 0 0 0 1px var(--primario), 0 0 22px color-mix(in srgb, var(--primario) 45%, transparent);
-  outline: none;
-}
-a.nota:is(:hover, :focus-visible, .acceso)::before, a.nota:is(:hover, :focus-visible, .acceso)::after { opacity: 1; border-color: var(--primario); }
-a.nota:is(:hover, :focus-visible, .acceso) .nota-n { background: var(--primario); border-color: var(--primario); color: var(--su-primario); }
-a.nota:is(:hover, :focus-visible, .acceso) .nota-vai { transform: translateX(3px); color: var(--primario); }
-a.nota:is(:hover, :focus-visible, .acceso) .nota-titolo { color: var(--bp-testo); }
-a.nota:focus-visible { outline: 2px solid var(--bp-luce); outline-offset: 4px; }
-[data-theme="light"] a.nota:is(:hover, :focus-visible, .acceso) { background: color-mix(in srgb, var(--bp-fondo-2) 88%, var(--primario) 12%); }
-
-/* legenda dei flussi */
-.nota-legenda { border-style: dashed; }
-.legenda-titolo { display: block; font-size: .82rem; color: var(--bp-tenue); margin-bottom: .45rem; }
-.nota-legenda ul { list-style: none; margin: 0; padding: 0; display: grid; gap: .3rem; font-size: .88rem; }
-.nota-legenda li { display: flex; align-items: center; gap: .55rem; }
-.nota-legenda i { flex: none; width: 1.6rem; height: .3rem; border-radius: 2px; background: var(--c); box-shadow: 0 0 8px var(--c); }
-.nota-legenda small { display: block; margin-top: .5rem; color: var(--bp-tenue); font-size: .78rem; line-height: 1.35; }
-
-/* linee di richiamo (disegnate da JS) */
-.richiamo { fill: none; stroke: var(--bp-linea); stroke-width: 1.2; opacity: .75; transition: stroke .2s, opacity .2s, stroke-width .2s; }
-.richiamo-piede { fill: var(--bp-fondo); stroke: var(--bp-linea); stroke-width: 1.2; transition: fill .2s, stroke .2s; }
-.richiamo-punta { fill: var(--bp-linea); transition: fill .2s; }
-.richiami g.acceso .richiamo { stroke: var(--primario); stroke-width: 2; opacity: 1; filter: drop-shadow(0 0 4px var(--primario)); }
-.richiami g.acceso .richiamo-piede { fill: var(--primario); stroke: var(--primario); }
-.richiami g.acceso .richiamo-punta { fill: var(--primario); }
-
-.bp-didascalia { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: var(--s3) 1.5rem; margin: var(--s5) 0 0; padding-top: var(--s3);
-  border-top: 1px solid color-mix(in srgb, var(--bp-linea) 35%, transparent); font-size: .82rem; color: var(--bp-tenue); }
-.bp-didascalia p { margin: 0; display: grid; gap: .2rem; }
-.bp-didascalia a { color: var(--bp-testo); }
-
-/* ------- schermi medi e telefono: riquadri in elenco sotto la tavola, numeri sui marcatori */
-@media (max-width: 1099px) {
-  .macchina { grid-template-columns: 1fr 1fr; grid-template-areas: "tit tit" "tav tav"; gap: var(--s3); }
-  .bp-intesta { margin-bottom: var(--s4); }
-  .note-sx, .note-dx, .note-su, .note-giu { display: contents; }
-  .tavola { margin: 10px 0 var(--s5); grid-column: 1 / -1; }
-  .note-su .nota, .note-giu .nota { width: auto; margin: 0; }
-  .nota { order: var(--ordine); }
-  .nota-legenda { order: 9; grid-column: 1 / -1; }
-  .richiami { display: none; }
-  .marcatore circle { r: 46px; stroke-width: 4; }
-  .marcatore text { font-size: 44px; }
-  .macchina[data-attivo] .marcatore circle { r: 46px; }
-}
-@media (max-width: 640px) {
-  .macchina { grid-template-columns: 1fr; grid-template-areas: "tit" "tav"; }
-  .marcatore circle, .macchina[data-attivo] .marcatore circle { r: 62px; }
-  .marcatore text { font-size: 60px; }
-}
-
-/* ------- introduzione */
-.intro { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: var(--s7); padding-block: var(--s7) 0; }
-.intro h2 { margin: 0 0 var(--s4); font-size: var(--c-2xl); }
-.intro p { margin: 0 0 var(--s4); max-width: 66ch; }
-.intro .principi { margin: 0; padding: 0; list-style: none; display: grid; gap: var(--s3); align-content: start; }
-.principi li { display: grid; grid-template-columns: auto 1fr; gap: .2rem var(--s3); padding: var(--s4); border: 1px solid var(--linea); border-radius: var(--r-l); background: var(--foglio); }
-.principi b { font-family: var(--titoli); font-size: var(--c-l); }
-.principi span { grid-column: 2; color: var(--tenue); font-size: var(--c-s); }
-.principi i { grid-row: span 2; width: 2.2rem; height: 2.2rem; border-radius: 50%; display: grid; place-items: center; font: 600 .9rem/1 var(--mono); font-style: normal;
-  color: var(--primario); border: 1px solid var(--linea); }
-@media (max-width: 860px) { .intro { grid-template-columns: 1fr; gap: var(--s5); } }
-
-@media (prefers-reduced-motion: reduce) {
-  .flussi .scia { animation: none; }
-  .bp-comandi .anima { display: none; }
-}
-</style>
+<link rel="stylesheet" href="assets/steampunk.css">
 </head>
 <body>
 <a class="pf-salta" href="#contenuto">Vai al contenuto</a>
 <header class="pf-testata">
-  <a class="pf-marchio" href="index.html" aria-label="Playfair, home">Playfair<span class="pf-marchio-sub">.statocritico</span></a>
+  <a class="pf-marchio" href="index.html" aria-label="Playfair, home"><svg viewBox="0 0 32 32" aria-hidden="true" focusable="false"><circle cx="16" cy="16" r="14.5" fill="none" stroke="var(--ottone)" stroke-width="1.5"></circle><path d="M11 24V8h6.5a4.5 4.5 0 0 1 0 9H11" fill="none" stroke="var(--primario)" stroke-width="3" stroke-linejoin="round"></path><path d="M15 24h7" stroke="var(--flusso-el)" stroke-width="3" stroke-linecap="round"></path></svg></a>
   <button class="pf-menu-apri" aria-expanded="false" aria-controls="pf-menu">Menu</button>
   <nav class="pf-menu" id="pf-menu" aria-label="Strumenti">
     <a href="playfair-s.html" data-tip="Site — analisi del singolo sito: costi e consumi di elettricità, gas, calore e acqua">Playfair-S</a>
@@ -248,201 +42,34 @@ a.nota:focus-visible { outline: 2px solid var(--bp-luce); outline-offset: 4px; }
 </header>
 
 <main id="contenuto">
-<section class="bp-scena" aria-labelledby="titolo-home">
- <div class="bp-interno">
-  <div class="macchina" data-attivo="">
-  <div class="bp-intesta">
-      <div>
-        <p class="bp-codice"><b>Tav. 01</b> · Playfair · strumenti di formazione sull'energia</p>
-        <h1 id="titolo-home">L'energia, <em>disegnata</em>.</h1>
-        <p class="bp-sotto">Dalla bolletta al flusso, dal flusso all'investimento: ogni parte della macchina a vapore del capitano Sankey porta a uno strumento.</p>
-      </div>
-  
-    </div>
-    <div class="note-su">
-      <a class="nota" href="sankey.html" data-parte="pipe" style="--x: 54.7%; --ordine: 3">
-        <span class="nota-rif"><span class="nota-n">03</span>Steam pipe · i flussi</span>
-        <span class="nota-titolo">Sankey</span>
-        <span class="nota-desc">Disegna diagrammi energetici a blocchi e verifica i bilanci.</span>
-        <span class="nota-vai" aria-hidden="true">→</span>
-      </a>
-    </div>
-
-    <div class="note-sx">
-      <a class="nota" href="playfair-t.html" data-parte="boiler" style="--ordine: 2">
-        <span class="nota-rif"><span class="nota-n">02</span>Boiler · il calore</span>
-        <span class="nota-titolo">Playfair-T</span>
-        <span class="nota-desc">Consumi termici ed elettrici, simulazione della cogenerazione.</span>
-        <span class="nota-vai" aria-hidden="true">→</span>
-      </a>
-      <a class="nota" href="playfair-m.html" data-parte="economiser" style="--ordine: 6">
-        <span class="nota-rif"><span class="nota-n">06</span>Economiser · l'economia</span>
-        <span class="nota-titolo">Playfair-M</span>
-        <span class="nota-desc">Investimenti energetici a confronto: VAN, TIR, ROI e flussi di cassa.</span>
-        <span class="nota-vai" aria-hidden="true">→</span>
-      </a>
-      <a class="nota" href="playfair-s.html" data-parte="grate" style="--ordine: 1">
-        <span class="nota-rif"><span class="nota-n">01</span>Fire grate · l'energia che entra</span>
-        <span class="nota-titolo">Playfair-S</span>
-        <span class="nota-desc">Il sito e le sue bollette: costi e consumi di elettricità, gas, calore, acqua.</span>
-        <span class="nota-vai" aria-hidden="true">→</span>
-      </a>
-    </div>
-
-    <figure class="tavola">
-      <svg class="disegno" viewBox="0 0 1920 1046" aria-hidden="true" focusable="false">
-        <defs>
-          <filter id="bp-colore" x="0" y="0" width="1" height="1" color-interpolation-filters="sRGB">
-            <feFlood style="flood-color: var(--bp-linea)"/>
-            <feComposite in2="SourceAlpha" operator="in"/>
-          </filter>
-        </defs>
-        <image href="img/sankey-1898-tavola.png" width="1920" height="1046" filter="url(#bp-colore)"/>
-      </svg>
-      <svg class="flussi" viewBox="0 0 1920 1046" role="img" aria-labelledby="tavola-titolo tavola-desc">
-        <title id="tavola-titolo">La macchina a vapore di Sankey (1898) con i flussi di energia animati</title>
-        <desc id="tavola-desc">Il calore del focolare sale nella caldaia, il vapore corre nel tubo verso la macchina; una piccola parte diventa lavoro utile, la maggior parte finisce al condensatore; l'acqua torna alla caldaia attraverso la pompa di alimentazione e l'economizzatore. Le perdite per irraggiamento escono ai lati.</desc>
-        <defs>
-          <filter id="bagliore" x="-10%" y="-10%" width="120%" height="120%">
-            <feGaussianBlur in="SourceGraphic" stdDeviation="7" result="sfoca"/>
-            <feMerge><feMergeNode in="sfoca"/><feMergeNode in="SourceGraphic"/></feMerge>
-          </filter>
-        </defs>
-        <g class="parti">
-          <rect class="parte parte-boiler" data-parte="boiler" x="206" y="136" width="562" height="622" rx="6"/>
-          <rect class="parte parte-grate" data-parte="grate" x="206" y="682" width="562" height="114" rx="6"/>
-          <rect class="parte parte-pipe" data-parte="pipe" x="768" y="166" width="572" height="412" rx="6"/>
-          <path class="parte parte-engine" data-parte="engine" d="M1340 138 H1768 V182 H1908 V262 H1768 V622 H1340 Z"/>
-          <rect class="parte parte-condenser" data-parte="condenser" x="1338" y="828" width="444" height="184" rx="6"/>
-          <rect class="parte parte-economiser" data-parte="economiser" x="26" y="402" width="172" height="166" rx="6"/>
-          <rect class="parte parte-feedpump" data-parte="feedpump" x="402" y="852" width="250" height="136" rx="6"/>
-          <rect class="parte parte-radiation" data-parte="radiation" x="780" y="584" width="430" height="104" rx="6"/>
-        </g>
-        <g class="flussi-g">
-<g class="alvei">
-<path class="alveo p-grate p-boiler" d="M300 772 V610 C300 470 380 400 520 384" style="--w:13.7;stroke:var(--flusso-th)"/>
-<path class="alveo p-grate p-boiler" d="M530 772 V560 C530 430 600 378 760 376" style="--w:43.0;stroke:var(--flusso-th)"/>
-<path class="alveo p-pipe p-boiler p-engine" d="M640 376 H1340 C1420 376 1470 384 1500 400" style="--w:52.0;stroke:var(--flusso-th)"/>
-<path class="alveo p-engine" d="M1352 220 H1905" style="--w:8.9;stroke:var(--flusso-el)"/>
-<path class="alveo p-condenser p-engine" d="M1420 330 C1560 360 1600 430 1600 560 V1044" style="--w:38.4;stroke:var(--flusso-altro)"/>
-<path class="alveo p-engine p-radiation" d="M1772 205 C1800 196 1812 160 1830 104" style="--w:5.0;stroke:var(--flusso-altro)"/>
-<path class="alveo p-engine p-radiation" d="M1640 404 C1700 440 1740 442 1812 442" style="--w:5.0;stroke:var(--flusso-altro)"/>
-<path class="alveo p-boiler p-radiation" d="M706 690 C706 638 730 630 838 630" style="--w:5.0;stroke:var(--flusso-altro)"/>
-<path class="alveo p-pipe p-radiation" d="M1050 580 C1108 580 1132 590 1140 614" style="--w:5.0;stroke:var(--flusso-altro)"/>
-<path class="alveo p-condenser p-radiation" d="M1782 696 C1790 738 1808 750 1838 750" style="--w:5.0;stroke:var(--flusso-altro)"/>
-<path class="alveo p-engine p-pipe p-boiler" d="M1548 180 C1606 180 1622 140 1600 122 C1590 113 1570 112 1545 112 H160 C122 112 108 138 116 160 C124 180 150 184 214 184" style="--w:5.0;stroke:var(--flusso-acqua)"/>
-<path class="alveo p-condenser p-pipe" d="M1336 578 C1440 578 1487 600 1487 660 V872 C1487 905 1462 915 1424 915" style="--w:5.0;stroke:var(--flusso-acqua)"/>
-<path class="alveo p-feedpump p-economiser p-condenser" d="M1424 915 H200 C140 915 112 885 112 830 V262 C112 240 128 230 160 230 H214" style="--w:5.0;stroke:var(--flusso-acqua)"/>
-<path class="alveo p-economiser p-boiler" d="M356 604 C356 500 296 444 200 444 C140 444 112 470 70 480 H4" style="--w:5.1;stroke:var(--flusso-th)"/>
-<path class="alveo p-pipe p-radiation" d="M830 106 C830 92 826 84 828 68" style="--w:5.0;stroke:var(--flusso-altro)"/>
-<path class="alveo p-feedpump p-radiation" d="M962 918 C952 930 946 944 940 962" style="--w:5.0;stroke:var(--flusso-altro)"/>
-<path class="alveo p-economiser p-radiation" d="M106 304 H60" style="--w:5.0;stroke:var(--flusso-altro)"/>
-<path class="alveo p-economiser p-radiation" d="M106 762 H58" style="--w:5.0;stroke:var(--flusso-altro)"/>
-</g>
-<g class="scie">
-<path class="scia p-grate p-boiler" d="M300 772 V610 C300 470 380 400 520 384" style="--w:13.7;--ciclo:64;--dur:0.500s;stroke:var(--flusso-th);stroke-dasharray:15 49"/>
-<path class="scia p-grate p-boiler" d="M530 772 V560 C530 430 600 378 760 376" style="--w:43.0;--ciclo:180;--dur:2.000s;stroke:var(--flusso-th);stroke-dasharray:47 133"/>
-<path class="scia p-pipe p-boiler p-engine" d="M640 376 H1340 C1420 376 1470 384 1500 400" style="--w:52.0;--ciclo:216;--dur:2.000s;stroke:var(--flusso-th);stroke-dasharray:57 159"/>
-<path class="scia p-engine" d="M1352 220 H1905" style="--w:8.9;--ciclo:53;--dur:0.400s;stroke:var(--flusso-el);stroke-dasharray:12 41"/>
-<path class="scia p-condenser p-engine" d="M1420 330 C1560 360 1600 430 1600 560 V1044" style="--w:38.4;--ciclo:162;--dur:2.000s;stroke:var(--flusso-altro);stroke-dasharray:42 120"/>
-<path class="scia p-engine p-radiation" d="M1772 205 C1800 196 1812 160 1830 104" style="--w:5.0;--ciclo:53;--dur:0.400s;stroke:var(--flusso-altro);stroke-dasharray:12 41"/>
-<path class="scia p-engine p-radiation" d="M1640 404 C1700 440 1740 442 1812 442" style="--w:5.0;--ciclo:53;--dur:0.400s;stroke:var(--flusso-altro);stroke-dasharray:12 41"/>
-<path class="scia p-boiler p-radiation" d="M706 690 C706 638 730 630 838 630" style="--w:5.0;--ciclo:53;--dur:0.400s;stroke:var(--flusso-altro);stroke-dasharray:12 41"/>
-<path class="scia p-pipe p-radiation" d="M1050 580 C1108 580 1132 590 1140 614" style="--w:5.0;--ciclo:53;--dur:0.400s;stroke:var(--flusso-altro);stroke-dasharray:12 41"/>
-<path class="scia p-condenser p-radiation" d="M1782 696 C1790 738 1808 750 1838 750" style="--w:5.0;--ciclo:53;--dur:0.400s;stroke:var(--flusso-altro);stroke-dasharray:12 41"/>
-<path class="scia p-engine p-pipe p-boiler" d="M1548 180 C1606 180 1622 140 1600 122 C1590 113 1570 112 1545 112 H160 C122 112 108 138 116 160 C124 180 150 184 214 184" style="--w:5.0;--ciclo:53;--dur:0.400s;stroke:var(--flusso-acqua);stroke-dasharray:12 41"/>
-<path class="scia p-condenser p-pipe" d="M1336 578 C1440 578 1487 600 1487 660 V872 C1487 905 1462 915 1424 915" style="--w:5.0;--ciclo:53;--dur:0.400s;stroke:var(--flusso-acqua);stroke-dasharray:12 41"/>
-<path class="scia p-feedpump p-economiser p-condenser" d="M1424 915 H200 C140 915 112 885 112 830 V262 C112 240 128 230 160 230 H214" style="--w:5.0;--ciclo:53;--dur:0.400s;stroke:var(--flusso-acqua);stroke-dasharray:12 41"/>
-<path class="scia p-economiser p-boiler" d="M356 604 C356 500 296 444 200 444 C140 444 112 470 70 480 H4" style="--w:5.1;--ciclo:53;--dur:0.400s;stroke:var(--flusso-th);stroke-dasharray:12 41"/>
-<path class="scia p-pipe p-radiation" d="M830 106 C830 92 826 84 828 68" style="--w:5.0;--ciclo:53;--dur:0.400s;stroke:var(--flusso-altro);stroke-dasharray:12 41"/>
-<path class="scia p-feedpump p-radiation" d="M962 918 C952 930 946 944 940 962" style="--w:5.0;--ciclo:53;--dur:0.400s;stroke:var(--flusso-altro);stroke-dasharray:12 41"/>
-<path class="scia p-economiser p-radiation" d="M106 304 H60" style="--w:5.0;--ciclo:53;--dur:0.400s;stroke:var(--flusso-altro);stroke-dasharray:12 41"/>
-<path class="scia p-economiser p-radiation" d="M106 762 H58" style="--w:5.0;--ciclo:53;--dur:0.400s;stroke:var(--flusso-altro);stroke-dasharray:12 41"/>
-</g>
-</g>
-        <g class="marcatori">
-          <g class="marcatore" data-parte="grate" transform="translate(420 745)"><circle/><text>1</text></g>
-          <g class="marcatore" data-parte="boiler" transform="translate(420 300)"><circle/><text>2</text></g>
-          <g class="marcatore" data-parte="pipe" transform="translate(1050 290)"><circle/><text>3</text></g>
-          <g class="marcatore" data-parte="engine" transform="translate(1640 222)"><circle/><text>4</text></g>
-          <g class="marcatore" data-parte="condenser" transform="translate(1520 960)"><circle/><text>5</text></g>
-          <g class="marcatore" data-parte="economiser" transform="translate(150 525)"><circle/><text>6</text></g>
-          <g class="marcatore" data-parte="feedpump" transform="translate(620 920)"><circle/><text>7</text></g>
-          <g class="marcatore" data-parte="radiation" transform="translate(965 652)"><circle/><text>8</text></g>
-        </g>
-      </svg>
-    </figure>
-
-    <div class="note-dx">
-      <a class="nota" href="playfair-e.html" data-parte="engine" style="--ordine: 4">
-        <span class="nota-rif"><span class="nota-n">04</span>Engine · work</span>
-        <span class="nota-titolo">Playfair-E</span>
-        <span class="nota-desc">Il lavoro utile, l'elettricità: curve di carico, picchi e base.</span>
-        <span class="nota-vai" aria-hidden="true">→</span>
-      </a>
-      <div class="nota nota-legenda">
-        <span class="legenda-titolo">Legenda · flussi</span>
-        <ul>
-          <li><i style="--c: var(--flusso-th)"></i>Calore e vapore</li>
-          <li><i style="--c: var(--flusso-el)"></i>Lavoro utile, elettricità</li>
-          <li><i style="--c: var(--flusso-acqua)"></i>Acqua di ritorno</li>
-          <li><i style="--c: var(--flusso-altro)"></i>Perdite e scarico</li>
-        </ul>
-        <small>Spessori proporzionali ai valori della tavola originale.</small>
-      </div>
-      <a class="nota" href="playfair-c.html" data-parte="condenser" style="--ordine: 5">
-        <span class="nota-rif"><span class="nota-n">05</span>Condenser · lo scarto</span>
-        <span class="nota-titolo">Playfair-C</span>
-        <span class="nota-desc">Ciò che si scarta e si recupera: scostamenti cumulati CUSUM.</span>
-        <span class="nota-vai" aria-hidden="true">→</span>
-      </a>
-    </div>
-
-    <div class="note-giu">
-      <a class="nota" href="personaggi.html" data-parte="feedpump" style="--x: 25.3%; --ordine: 7">
-        <span class="nota-rif"><span class="nota-n">07</span>Feed pump · chi la avviò</span>
-        <span class="nota-titolo">Personaggi</span>
-        <span class="nota-desc">Chi mise in moto tutto: William Playfair e il capitano Sankey.</span>
-        <span class="nota-vai" aria-hidden="true">→</span>
-      </a>
-      <a class="nota" href="playfair-g.html" data-parte="radiation" style="--x: 68%; --ordine: 8">
-        <span class="nota-rif"><span class="nota-n">08</span>Radiation · confronto tra più sedi all’interno di un gruppo</span>
-        <span class="nota-titolo">Playfair-G</span>
-        <span class="nota-desc">Le sedi che pesano di più: Pareto, incidenza e mappa a quadranti.</span>
-        <span class="nota-vai" aria-hidden="true">→</span>
-      </a>
-    </div>
-
-    <svg class="richiami" aria-hidden="true" focusable="false"></svg>
-  </div>
-
-  <div class="bp-didascalia">
-   <p>
-    <span>M. H. P. R. Sankey, <i>The thermal efficiency of steam-engines</i>, tav. 5 · Actual steam plant</span>
-    <span>Minutes of Proceedings of the Institution of Civil Engineers, vol. CXXXIV, 1898 · pubblico dominio · <a href="https://commons.wikimedia.org/wiki/File:JIE_Sankey_V5_Fig1.png">Wikimedia Commons</a></span>
-    <span>Ridisegno animato: Playfair · <a href="img/macchina-sankey-anteprima.jpg">versione GIF</a></span>
-   </p>
-    <div class="bp-comandi">
-      <button type="button" class="anima" aria-pressed="false" id="ferma-flussi">❚❚ Ferma i flussi</button>
-    </div>
-  </div>
- </div>
+<div class="sp-home">
+<section class="scena" aria-labelledby="titolo-home">
+<svg class="ingranaggi" viewBox="0 0 360 260" aria-hidden="true"><g transform="translate(250 120)"><g class="ruota r1"><path d="M90.0,0.0 L89.4,10.1 L76.0,17.4 L73.6,25.8 L81.1,39.0 L76.2,47.9 L61.0,48.6 L55.2,55.2 L56.1,70.4 L47.9,76.2 L33.8,70.3 L25.8,73.6 L20.0,87.7 L10.1,89.4 L0.0,78.0 L-8.7,77.5 L-20.0,87.7 L-29.7,84.9 L-33.8,70.3 L-41.5,66.0 L-56.1,70.4 L-63.6,63.6 L-61.0,48.6 L-66.0,41.5 L-81.1,39.0 L-84.9,29.7 L-76.0,17.4 L-77.5,8.7 L-90.0,0.0 L-89.4,-10.1 L-76.0,-17.4 L-73.6,-25.8 L-81.1,-39.0 L-76.2,-47.9 L-61.0,-48.6 L-55.2,-55.2 L-56.1,-70.4 L-47.9,-76.2 L-33.8,-70.3 L-25.8,-73.6 L-20.0,-87.7 L-10.1,-89.4 L-0.0,-78.0 L8.7,-77.5 L20.0,-87.7 L29.7,-84.9 L33.8,-70.3 L41.5,-66.0 L56.1,-70.4 L63.6,-63.6 L61.0,-48.6 L66.0,-41.5 L81.1,-39.0 L84.9,-29.7 L76.0,-17.4 L77.5,-8.7 Z"></path><circle r="58"></circle><circle r="16"></circle></g></g><g transform="translate(110 170)"><g class="ruota r2"><path d="M56.0,0.0 L55.3,8.8 L43.7,14.2 L41.0,20.9 L45.3,32.9 L39.6,39.6 L27.0,37.2 L20.9,41.0 L17.3,53.3 L8.8,55.3 L0.0,46.0 L-7.2,45.4 L-17.3,53.3 L-25.4,49.9 L-27.0,37.2 L-32.5,32.5 L-45.3,32.9 L-49.9,25.4 L-43.7,14.2 L-45.4,7.2 L-56.0,0.0 L-55.3,-8.8 L-43.7,-14.2 L-41.0,-20.9 L-45.3,-32.9 L-39.6,-39.6 L-27.0,-37.2 L-20.9,-41.0 L-17.3,-53.3 L-8.8,-55.3 L-0.0,-46.0 L7.2,-45.4 L17.3,-53.3 L25.4,-49.9 L27.0,-37.2 L32.5,-32.5 L45.3,-32.9 L49.9,-25.4 L43.7,-14.2 L45.4,-7.2 Z"></path><circle r="34"></circle><circle r="10"></circle></g></g><g transform="translate(330 232)"><g class="ruota r3"><path d="M38.0,0.0 L37.3,7.4 L27.7,11.5 L24.9,16.7 L26.9,26.9 L21.1,31.6 L11.5,27.7 L5.9,29.4 L0.0,38.0 L-7.4,37.3 L-11.5,27.7 L-16.7,24.9 L-26.9,26.9 L-31.6,21.1 L-27.7,11.5 L-29.4,5.9 L-38.0,0.0 L-37.3,-7.4 L-27.7,-11.5 L-24.9,-16.7 L-26.9,-26.9 L-21.1,-31.6 L-11.5,-27.7 L-5.9,-29.4 L-0.0,-38.0 L7.4,-37.3 L11.5,-27.7 L16.7,-24.9 L26.9,-26.9 L31.6,-21.1 L27.7,-11.5 L29.4,-5.9 Z"></path><circle r="20"></circle><circle r="7"></circle></g></g></svg>
+<div class="sp-wrap">
+<div class="intesta">
+<div>
+<p class="codice"><b>Playfair</b> · strumenti di formazione sull'energia</p>
+<h1 class="h1" id="titolo-home">L'energia, <em>disegnata.</em></h1>
+<p class="sotto">Diagrammi di flusso energetici ed economici</p>
+</div>
+<div class="schema"><button class="gauge" id="sp-gauge" type="button" aria-label="Schema grafico: Aliena"><svg viewBox="-50 -50 100 100" aria-hidden="true"><circle class="m-cassa" r="47"></circle><circle class="m-quadrante" r="42"></circle><path class="m-rosso" d="M30.3 -17.5 A35 35 0 0 1 30.3 17.5"></path><line class="tacca" x1="-22.5" y1="13.0" x2="-32.9" y2="19.0"></line><line class="tacca" x1="-29.8" y1="3.1" x2="-37.8" y2="4.0"></line><line class="tacca" x1="-28.5" y1="-9.3" x2="-36.1" y2="-11.7"></line><line class="tacca" x1="-22.3" y1="-20.1" x2="-28.2" y2="-25.4"></line><line class="tacca" x1="-12.2" y1="-27.4" x2="-15.5" y2="-34.7"></line><line class="tacca" x1="0.0" y1="-26.0" x2="0.0" y2="-38.0"></line><line class="tacca" x1="12.2" y1="-27.4" x2="15.5" y2="-34.7"></line><line class="tacca" x1="22.3" y1="-20.1" x2="28.2" y2="-25.4"></line><line class="tacca" x1="28.5" y1="-9.3" x2="36.1" y2="-11.7"></line><line class="tacca" x1="29.8" y1="3.1" x2="37.8" y2="4.0"></line><line class="tacca" x1="22.5" y1="13.0" x2="32.9" y2="19.0"></line><text class="m-lab m-lab-fredda" x="-18.9" y="1.0">F</text><text class="m-lab m-lab-aliena" x="7.7" y="-14.4">A</text><text class="m-lab m-lab-calda" x="19.0" y="3.4">C</text><text class="m-scritta" y="30">SCHEMA</text><g class="ago"><line x1="0" y1="6" x2="0" y2="-34"></line></g><circle class="m-perno" r="4.5"></circle></svg></button></div>
+</div>
+<div class="layout" id="sp-layout">
+<div class="top" style="grid-column: 1"><a class="nota" href="playfair-s.html" data-parte="grate" data-lato="giu"><span class="neon" aria-hidden="true"></span><span class="rif"><span class="n">01</span>Fire grate · l'energia che entra</span><span class="titolo">Playfair-S</span><span class="desc">Il sito e le sue bollette: costi e consumi di elettricità, gas, calore, acqua.</span><span class="vai" aria-hidden="true">→</span></a></div>
+<div class="top" style="grid-column: 2"><a class="nota" href="playfair-e.html" data-parte="engine" data-lato="giu"><span class="neon" aria-hidden="true"></span><span class="rif"><span class="n">04</span>Engine · work</span><span class="titolo">Playfair-E</span><span class="desc">Il lavoro utile, l'elettricità: curve di carico, picchi e base.</span><span class="vai" aria-hidden="true">→</span></a></div>
+<div class="top" style="grid-column: 3"><a class="nota" href="playfair-t.html" data-parte="boiler" data-lato="giu"><span class="neon" aria-hidden="true"></span><span class="rif"><span class="n">02</span>Boiler · il calore</span><span class="titolo">Playfair-T</span><span class="desc">Consumi termici ed elettrici, simulazione della cogenerazione.</span><span class="vai" aria-hidden="true">→</span></a></div>
+<div class="top" style="grid-column: 4"><a class="nota" href="playfair-m.html" data-parte="economiser" data-lato="giu"><span class="neon" aria-hidden="true"></span><span class="rif"><span class="n">06</span>Economiser · l'economia</span><span class="titolo">Playfair-M</span><span class="desc">Investimenti energetici a confronto: VAN, TIR, ROI e flussi di cassa.</span><span class="vai" aria-hidden="true">→</span></a></div>
+<div class="top" style="grid-column: 5"><a class="nota" href="playfair-c.html" data-parte="condenser" data-lato="giu"><span class="neon" aria-hidden="true"></span><span class="rif"><span class="n">05</span>Condenser · lo scarto</span><span class="titolo">Playfair-C</span><span class="desc">Ciò che si scarta e si recupera: scostamenti cumulati CUSUM.</span><span class="vai" aria-hidden="true">→</span></a></div>
+<div class="col-sx"><a class="nota" href="playfair-g.html" data-parte="radiation" data-lato="dx"><span class="neon" aria-hidden="true"></span><span class="rif"><span class="n">08</span>Radiation · confronto tra più sedi all’interno di un gruppo</span><span class="titolo">Playfair-G</span><span class="desc">Le sedi che pesano di più: Pareto, incidenza e mappa a quadranti.</span><span class="vai" aria-hidden="true">→</span></a><a class="nota" href="sankey.html" data-parte="pipe" data-lato="dx"><span class="neon" aria-hidden="true"></span><span class="rif"><span class="n">03</span>Steam pipe · i flussi</span><span class="titolo">Sankey</span><span class="desc">Disegna diagrammi energetici a blocchi e verifica i bilanci.</span><span class="vai" aria-hidden="true">→</span></a></div>
+<figure class="figura"><div class="cornice-tav"><div class="tav" aria-hidden="true"></div><svg class="flussi" viewBox="0 0 1920 1046" role="img" aria-label="La macchina a vapore di Sankey (1898): i flussi di energia scorrono nei tubi, un tratto dopo l’altro"><defs><filter id="sp-sfoca" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="9"></feGaussianBlur></filter><mask id="sp-mk0" maskUnits="userSpaceOnUse" x="-80" y="-80" width="2080" height="1206"><path class="mkp" d="M300 772 V610 C300 470 380 400 520 384" fill="none" stroke="#fff" stroke-width="70" pathLength="1" stroke-dasharray="1 1" stroke-dashoffset="1"></path></mask><mask id="sp-mk1" maskUnits="userSpaceOnUse" x="-80" y="-80" width="2080" height="1206"><path class="mkp" d="M530 772 V560 C530 430 600 378 760 376" fill="none" stroke="#fff" stroke-width="99" pathLength="1" stroke-dasharray="1 1" stroke-dashoffset="1"></path></mask><mask id="sp-mk2" maskUnits="userSpaceOnUse" x="-80" y="-80" width="2080" height="1206"><path class="mkp" d="M640 376 H1340 C1420 376 1470 384 1500 400" fill="none" stroke="#fff" stroke-width="108" pathLength="1" stroke-dasharray="1 1" stroke-dashoffset="1"></path></mask><mask id="sp-mk3" maskUnits="userSpaceOnUse" x="-80" y="-80" width="2080" height="1206"><path class="mkp" d="M1352 220 H1905" fill="none" stroke="#fff" stroke-width="65" pathLength="1" stroke-dasharray="1 1" stroke-dashoffset="1"></path></mask><mask id="sp-mk4" maskUnits="userSpaceOnUse" x="-80" y="-80" width="2080" height="1206"><path class="mkp" d="M1420 330 C1560 360 1600 430 1600 560 V1044" fill="none" stroke="#fff" stroke-width="94" pathLength="1" stroke-dasharray="1 1" stroke-dashoffset="1"></path></mask><mask id="sp-mk5" maskUnits="userSpaceOnUse" x="-80" y="-80" width="2080" height="1206"><path class="mkp" d="M1772 205 C1800 196 1812 160 1830 104" fill="none" stroke="#fff" stroke-width="63" pathLength="1" stroke-dasharray="1 1" stroke-dashoffset="1"></path></mask><mask id="sp-mk6" maskUnits="userSpaceOnUse" x="-80" y="-80" width="2080" height="1206"><path class="mkp" d="M1640 404 C1700 440 1740 442 1812 442" fill="none" stroke="#fff" stroke-width="63" pathLength="1" stroke-dasharray="1 1" stroke-dashoffset="1"></path></mask><mask id="sp-mk7" maskUnits="userSpaceOnUse" x="-80" y="-80" width="2080" height="1206"><path class="mkp" d="M706 690 C706 638 730 630 838 630" fill="none" stroke="#fff" stroke-width="63" pathLength="1" stroke-dasharray="1 1" stroke-dashoffset="1"></path></mask><mask id="sp-mk8" maskUnits="userSpaceOnUse" x="-80" y="-80" width="2080" height="1206"><path class="mkp" d="M1050 580 C1108 580 1132 590 1140 614" fill="none" stroke="#fff" stroke-width="63" pathLength="1" stroke-dasharray="1 1" stroke-dashoffset="1"></path></mask><mask id="sp-mk9" maskUnits="userSpaceOnUse" x="-80" y="-80" width="2080" height="1206"><path class="mkp" d="M1782 696 C1790 738 1808 750 1838 750" fill="none" stroke="#fff" stroke-width="63" pathLength="1" stroke-dasharray="1 1" stroke-dashoffset="1"></path></mask><mask id="sp-mk10" maskUnits="userSpaceOnUse" x="-80" y="-80" width="2080" height="1206"><path class="mkp" d="M1548 180 C1606 180 1622 140 1600 122 C1590 113 1570 112 1545 112 H160 C122 112 108 138 116 160 C124 180 150 184 214 184" fill="none" stroke="#fff" stroke-width="63" pathLength="1" stroke-dasharray="1 1" stroke-dashoffset="1"></path></mask><mask id="sp-mk11" maskUnits="userSpaceOnUse" x="-80" y="-80" width="2080" height="1206"><path class="mkp" d="M1336 578 C1440 578 1487 600 1487 660 V872 C1487 905 1462 915 1424 915" fill="none" stroke="#fff" stroke-width="63" pathLength="1" stroke-dasharray="1 1" stroke-dashoffset="1"></path></mask><mask id="sp-mk12" maskUnits="userSpaceOnUse" x="-80" y="-80" width="2080" height="1206"><path class="mkp" d="M1424 915 H200 C140 915 112 885 112 830 V262 C112 240 128 230 160 230 H214" fill="none" stroke="#fff" stroke-width="63" pathLength="1" stroke-dasharray="1 1" stroke-dashoffset="1"></path></mask><mask id="sp-mk13" maskUnits="userSpaceOnUse" x="-80" y="-80" width="2080" height="1206"><path class="mkp" d="M356 604 C356 500 296 444 200 444 C140 444 112 470 70 480 H4" fill="none" stroke="#fff" stroke-width="63" pathLength="1" stroke-dasharray="1 1" stroke-dashoffset="1"></path></mask><mask id="sp-mk14" maskUnits="userSpaceOnUse" x="-80" y="-80" width="2080" height="1206"><path class="mkp" d="M830 106 C830 92 826 84 828 68" fill="none" stroke="#fff" stroke-width="63" pathLength="1" stroke-dasharray="1 1" stroke-dashoffset="1"></path></mask><mask id="sp-mk15" maskUnits="userSpaceOnUse" x="-80" y="-80" width="2080" height="1206"><path class="mkp" d="M962 918 C952 930 946 944 940 962" fill="none" stroke="#fff" stroke-width="63" pathLength="1" stroke-dasharray="1 1" stroke-dashoffset="1"></path></mask><mask id="sp-mk16" maskUnits="userSpaceOnUse" x="-80" y="-80" width="2080" height="1206"><path class="mkp" d="M106 304 H60" fill="none" stroke="#fff" stroke-width="63" pathLength="1" stroke-dasharray="1 1" stroke-dashoffset="1"></path></mask><mask id="sp-mk17" maskUnits="userSpaceOnUse" x="-80" y="-80" width="2080" height="1206"><path class="mkp" d="M106 762 H58" fill="none" stroke="#fff" stroke-width="63" pathLength="1" stroke-dasharray="1 1" stroke-dashoffset="1"></path></mask></defs><g class="f p-grate p-boiler" data-i="0" style="--c:var(--fluo-th);--ciclo:95;--dur:1.26s"><path class="tubo-m" d="M300 772 V610 C300 470 380 400 520 384" stroke-width="29.7"></path><path class="tubo-v" d="M300 772 V610 C300 470 380 400 520 384" stroke-width="21.7"></path><path class="riflesso" d="M300 772 V610 C300 470 380 400 520 384" stroke-width="1.6"></path><g class="luce" mask="url(#sp-mk0)"><path class="alone" d="M300 772 V610 C300 470 380 400 520 384" stroke-width="23.7" filter="url(#sp-sfoca)"></path><path class="scia" d="M300 772 V610 C300 470 380 400 520 384" stroke-width="11.6" stroke-dasharray="25 70"></path><path class="nucleo" d="M300 772 V610 C300 470 380 400 520 384" stroke-width="3.8" stroke-dasharray="25 70"></path></g></g><g class="f p-grate p-boiler" data-i="1" style="--c:var(--fluo-th);--ciclo:212;--dur:0.57s"><path class="tubo-m" d="M530 772 V560 C530 430 600 378 760 376" stroke-width="59.0"></path><path class="tubo-v" d="M530 772 V560 C530 430 600 378 760 376" stroke-width="51.0"></path><path class="riflesso" d="M530 772 V560 C530 430 600 378 760 376" stroke-width="5.2"></path><g class="luce" mask="url(#sp-mk1)"><path class="alone" d="M530 772 V560 C530 430 600 378 760 376" stroke-width="53.0" filter="url(#sp-sfoca)"></path><path class="scia" d="M530 772 V560 C530 430 600 378 760 376" stroke-width="36.5" stroke-dasharray="57 155"></path><path class="nucleo" d="M530 772 V560 C530 430 600 378 760 376" stroke-width="12.0" stroke-dasharray="57 155"></path></g></g><g class="f p-pipe p-boiler p-engine" data-i="2" style="--c:var(--fluo-th);--ciclo:248;--dur:0.55s"><path class="tubo-m" d="M640 376 H1340 C1420 376 1470 384 1500 400" stroke-width="68.0"></path><path class="tubo-v" d="M640 376 H1340 C1420 376 1470 384 1500 400" stroke-width="60.0"></path><path class="riflesso" d="M640 376 H1340 C1420 376 1470 384 1500 400" stroke-width="6.2"></path><g class="luce" mask="url(#sp-mk2)"><path class="alone" d="M640 376 H1340 C1420 376 1470 384 1500 400" stroke-width="62.0" filter="url(#sp-sfoca)"></path><path class="scia" d="M640 376 H1340 C1420 376 1470 384 1500 400" stroke-width="44.2" stroke-dasharray="67 181"></path><path class="nucleo" d="M640 376 H1340 C1420 376 1470 384 1500 400" stroke-width="14.6" stroke-dasharray="67 181"></path></g></g><g class="f p-engine" data-i="3" style="--c:var(--fluo-el);--ciclo:76;--dur:1.58s"><path class="tubo-m" d="M1352 220 H1905" stroke-width="24.9"></path><path class="tubo-v" d="M1352 220 H1905" stroke-width="16.9"></path><path class="riflesso" d="M1352 220 H1905" stroke-width="1.5"></path><g class="luce" mask="url(#sp-mk3)"><path class="alone" d="M1352 220 H1905" stroke-width="18.9" filter="url(#sp-sfoca)"></path><path class="scia" d="M1352 220 H1905" stroke-width="7.6" stroke-dasharray="20 56"></path><path class="nucleo" d="M1352 220 H1905" stroke-width="2.5" stroke-dasharray="20 56"></path></g></g><g class="f p-condenser p-engine" data-i="4" style="--c:var(--fluo-altro);--ciclo:194;--dur:0.62s"><path class="tubo-m" d="M1420 330 C1560 360 1600 430 1600 560 V1044" stroke-width="54.4"></path><path class="tubo-v" d="M1420 330 C1560 360 1600 430 1600 560 V1044" stroke-width="46.4"></path><path class="riflesso" d="M1420 330 C1560 360 1600 430 1600 560 V1044" stroke-width="4.6"></path><g class="luce" mask="url(#sp-mk4)"><path class="alone" d="M1420 330 C1560 360 1600 430 1600 560 V1044" stroke-width="48.4" filter="url(#sp-sfoca)"></path><path class="scia" d="M1420 330 C1560 360 1600 430 1600 560 V1044" stroke-width="32.6" stroke-dasharray="52 142"></path><path class="nucleo" d="M1420 330 C1560 360 1600 430 1600 560 V1044" stroke-width="10.8" stroke-dasharray="52 142"></path></g></g><g class="f p-engine p-radiation" data-i="5" style="--c:var(--fluo-altro);--ciclo:68;--dur:1.76s"><path class="tubo-m" d="M1772 205 C1800 196 1812 160 1830 104" stroke-width="23.0"></path><path class="tubo-v" d="M1772 205 C1800 196 1812 160 1830 104" stroke-width="15.0"></path><path class="riflesso" d="M1772 205 C1800 196 1812 160 1830 104" stroke-width="1.5"></path><g class="luce" mask="url(#sp-mk5)"><path class="alone" d="M1772 205 C1800 196 1812 160 1830 104" stroke-width="17.0" filter="url(#sp-sfoca)"></path><path class="scia" d="M1772 205 C1800 196 1812 160 1830 104" stroke-width="6.0" stroke-dasharray="18 50"></path><path class="nucleo" d="M1772 205 C1800 196 1812 160 1830 104" stroke-width="2.0" stroke-dasharray="18 50"></path></g></g><g class="f p-engine p-radiation" data-i="6" style="--c:var(--fluo-altro);--ciclo:68;--dur:1.76s"><path class="tubo-m" d="M1640 404 C1700 440 1740 442 1812 442" stroke-width="23.0"></path><path class="tubo-v" d="M1640 404 C1700 440 1740 442 1812 442" stroke-width="15.0"></path><path class="riflesso" d="M1640 404 C1700 440 1740 442 1812 442" stroke-width="1.5"></path><g class="luce" mask="url(#sp-mk6)"><path class="alone" d="M1640 404 C1700 440 1740 442 1812 442" stroke-width="17.0" filter="url(#sp-sfoca)"></path><path class="scia" d="M1640 404 C1700 440 1740 442 1812 442" stroke-width="6.0" stroke-dasharray="18 50"></path><path class="nucleo" d="M1640 404 C1700 440 1740 442 1812 442" stroke-width="2.0" stroke-dasharray="18 50"></path></g></g><g class="f p-boiler p-radiation" data-i="7" style="--c:var(--fluo-altro);--ciclo:68;--dur:1.76s"><path class="tubo-m" d="M706 690 C706 638 730 630 838 630" stroke-width="23.0"></path><path class="tubo-v" d="M706 690 C706 638 730 630 838 630" stroke-width="15.0"></path><path class="riflesso" d="M706 690 C706 638 730 630 838 630" stroke-width="1.5"></path><g class="luce" mask="url(#sp-mk7)"><path class="alone" d="M706 690 C706 638 730 630 838 630" stroke-width="17.0" filter="url(#sp-sfoca)"></path><path class="scia" d="M706 690 C706 638 730 630 838 630" stroke-width="6.0" stroke-dasharray="18 50"></path><path class="nucleo" d="M706 690 C706 638 730 630 838 630" stroke-width="2.0" stroke-dasharray="18 50"></path></g></g><g class="f p-pipe p-radiation" data-i="8" style="--c:var(--fluo-altro);--ciclo:68;--dur:1.76s"><path class="tubo-m" d="M1050 580 C1108 580 1132 590 1140 614" stroke-width="23.0"></path><path class="tubo-v" d="M1050 580 C1108 580 1132 590 1140 614" stroke-width="15.0"></path><path class="riflesso" d="M1050 580 C1108 580 1132 590 1140 614" stroke-width="1.5"></path><g class="luce" mask="url(#sp-mk8)"><path class="alone" d="M1050 580 C1108 580 1132 590 1140 614" stroke-width="17.0" filter="url(#sp-sfoca)"></path><path class="scia" d="M1050 580 C1108 580 1132 590 1140 614" stroke-width="6.0" stroke-dasharray="18 50"></path><path class="nucleo" d="M1050 580 C1108 580 1132 590 1140 614" stroke-width="2.0" stroke-dasharray="18 50"></path></g></g><g class="f p-condenser p-radiation" data-i="9" style="--c:var(--fluo-altro);--ciclo:68;--dur:1.76s"><path class="tubo-m" d="M1782 696 C1790 738 1808 750 1838 750" stroke-width="23.0"></path><path class="tubo-v" d="M1782 696 C1790 738 1808 750 1838 750" stroke-width="15.0"></path><path class="riflesso" d="M1782 696 C1790 738 1808 750 1838 750" stroke-width="1.5"></path><g class="luce" mask="url(#sp-mk9)"><path class="alone" d="M1782 696 C1790 738 1808 750 1838 750" stroke-width="17.0" filter="url(#sp-sfoca)"></path><path class="scia" d="M1782 696 C1790 738 1808 750 1838 750" stroke-width="6.0" stroke-dasharray="18 50"></path><path class="nucleo" d="M1782 696 C1790 738 1808 750 1838 750" stroke-width="2.0" stroke-dasharray="18 50"></path></g></g><g class="f p-engine p-pipe p-boiler" data-i="10" style="--c:var(--fluo-acqua);--ciclo:68;--dur:1.76s"><path class="tubo-m" d="M1548 180 C1606 180 1622 140 1600 122 C1590 113 1570 112 1545 112 H160 C122 112 108 138 116 160 C124 180 150 184 214 184" stroke-width="23.0"></path><path class="tubo-v" d="M1548 180 C1606 180 1622 140 1600 122 C1590 113 1570 112 1545 112 H160 C122 112 108 138 116 160 C124 180 150 184 214 184" stroke-width="15.0"></path><path class="riflesso" d="M1548 180 C1606 180 1622 140 1600 122 C1590 113 1570 112 1545 112 H160 C122 112 108 138 116 160 C124 180 150 184 214 184" stroke-width="1.5"></path><g class="luce" mask="url(#sp-mk10)"><path class="alone" d="M1548 180 C1606 180 1622 140 1600 122 C1590 113 1570 112 1545 112 H160 C122 112 108 138 116 160 C124 180 150 184 214 184" stroke-width="17.0" filter="url(#sp-sfoca)"></path><path class="scia" d="M1548 180 C1606 180 1622 140 1600 122 C1590 113 1570 112 1545 112 H160 C122 112 108 138 116 160 C124 180 150 184 214 184" stroke-width="6.0" stroke-dasharray="18 50"></path><path class="nucleo" d="M1548 180 C1606 180 1622 140 1600 122 C1590 113 1570 112 1545 112 H160 C122 112 108 138 116 160 C124 180 150 184 214 184" stroke-width="2.0" stroke-dasharray="18 50"></path></g></g><g class="f p-condenser p-pipe" data-i="11" style="--c:var(--fluo-acqua);--ciclo:68;--dur:1.76s"><path class="tubo-m" d="M1336 578 C1440 578 1487 600 1487 660 V872 C1487 905 1462 915 1424 915" stroke-width="23.0"></path><path class="tubo-v" d="M1336 578 C1440 578 1487 600 1487 660 V872 C1487 905 1462 915 1424 915" stroke-width="15.0"></path><path class="riflesso" d="M1336 578 C1440 578 1487 600 1487 660 V872 C1487 905 1462 915 1424 915" stroke-width="1.5"></path><g class="luce" mask="url(#sp-mk11)"><path class="alone" d="M1336 578 C1440 578 1487 600 1487 660 V872 C1487 905 1462 915 1424 915" stroke-width="17.0" filter="url(#sp-sfoca)"></path><path class="scia" d="M1336 578 C1440 578 1487 600 1487 660 V872 C1487 905 1462 915 1424 915" stroke-width="6.0" stroke-dasharray="18 50"></path><path class="nucleo" d="M1336 578 C1440 578 1487 600 1487 660 V872 C1487 905 1462 915 1424 915" stroke-width="2.0" stroke-dasharray="18 50"></path></g></g><g class="f p-feedpump p-economiser p-condenser" data-i="12" style="--c:var(--fluo-acqua);--ciclo:68;--dur:1.76s"><path class="tubo-m" d="M1424 915 H200 C140 915 112 885 112 830 V262 C112 240 128 230 160 230 H214" stroke-width="23.0"></path><path class="tubo-v" d="M1424 915 H200 C140 915 112 885 112 830 V262 C112 240 128 230 160 230 H214" stroke-width="15.0"></path><path class="riflesso" d="M1424 915 H200 C140 915 112 885 112 830 V262 C112 240 128 230 160 230 H214" stroke-width="1.5"></path><g class="luce" mask="url(#sp-mk12)"><path class="alone" d="M1424 915 H200 C140 915 112 885 112 830 V262 C112 240 128 230 160 230 H214" stroke-width="17.0" filter="url(#sp-sfoca)"></path><path class="scia" d="M1424 915 H200 C140 915 112 885 112 830 V262 C112 240 128 230 160 230 H214" stroke-width="6.0" stroke-dasharray="18 50"></path><path class="nucleo" d="M1424 915 H200 C140 915 112 885 112 830 V262 C112 240 128 230 160 230 H214" stroke-width="2.0" stroke-dasharray="18 50"></path></g></g><g class="f p-economiser p-boiler" data-i="13" style="--c:var(--fluo-th);--ciclo:68;--dur:1.76s"><path class="tubo-m" d="M356 604 C356 500 296 444 200 444 C140 444 112 470 70 480 H4" stroke-width="23.0"></path><path class="tubo-v" d="M356 604 C356 500 296 444 200 444 C140 444 112 470 70 480 H4" stroke-width="15.0"></path><path class="riflesso" d="M356 604 C356 500 296 444 200 444 C140 444 112 470 70 480 H4" stroke-width="1.5"></path><g class="luce" mask="url(#sp-mk13)"><path class="alone" d="M356 604 C356 500 296 444 200 444 C140 444 112 470 70 480 H4" stroke-width="17.0" filter="url(#sp-sfoca)"></path><path class="scia" d="M356 604 C356 500 296 444 200 444 C140 444 112 470 70 480 H4" stroke-width="6.0" stroke-dasharray="18 50"></path><path class="nucleo" d="M356 604 C356 500 296 444 200 444 C140 444 112 470 70 480 H4" stroke-width="2.0" stroke-dasharray="18 50"></path></g></g><g class="f p-pipe p-radiation" data-i="14" style="--c:var(--fluo-altro);--ciclo:68;--dur:1.76s"><path class="tubo-m" d="M830 106 C830 92 826 84 828 68" stroke-width="23.0"></path><path class="tubo-v" d="M830 106 C830 92 826 84 828 68" stroke-width="15.0"></path><path class="riflesso" d="M830 106 C830 92 826 84 828 68" stroke-width="1.5"></path><g class="luce" mask="url(#sp-mk14)"><path class="alone" d="M830 106 C830 92 826 84 828 68" stroke-width="17.0" filter="url(#sp-sfoca)"></path><path class="scia" d="M830 106 C830 92 826 84 828 68" stroke-width="6.0" stroke-dasharray="18 50"></path><path class="nucleo" d="M830 106 C830 92 826 84 828 68" stroke-width="2.0" stroke-dasharray="18 50"></path></g></g><g class="f p-feedpump p-radiation" data-i="15" style="--c:var(--fluo-altro);--ciclo:68;--dur:1.76s"><path class="tubo-m" d="M962 918 C952 930 946 944 940 962" stroke-width="23.0"></path><path class="tubo-v" d="M962 918 C952 930 946 944 940 962" stroke-width="15.0"></path><path class="riflesso" d="M962 918 C952 930 946 944 940 962" stroke-width="1.5"></path><g class="luce" mask="url(#sp-mk15)"><path class="alone" d="M962 918 C952 930 946 944 940 962" stroke-width="17.0" filter="url(#sp-sfoca)"></path><path class="scia" d="M962 918 C952 930 946 944 940 962" stroke-width="6.0" stroke-dasharray="18 50"></path><path class="nucleo" d="M962 918 C952 930 946 944 940 962" stroke-width="2.0" stroke-dasharray="18 50"></path></g></g><g class="f p-economiser p-radiation" data-i="16" style="--c:var(--fluo-altro);--ciclo:68;--dur:1.76s"><path class="tubo-m" d="M106 304 H60" stroke-width="23.0"></path><path class="tubo-v" d="M106 304 H60" stroke-width="15.0"></path><path class="riflesso" d="M106 304 H60" stroke-width="1.5"></path><g class="luce" mask="url(#sp-mk16)"><path class="alone" d="M106 304 H60" stroke-width="17.0" filter="url(#sp-sfoca)"></path><path class="scia" d="M106 304 H60" stroke-width="6.0" stroke-dasharray="18 50"></path><path class="nucleo" d="M106 304 H60" stroke-width="2.0" stroke-dasharray="18 50"></path></g></g><g class="f p-economiser p-radiation" data-i="17" style="--c:var(--fluo-altro);--ciclo:68;--dur:1.76s"><path class="tubo-m" d="M106 762 H58" stroke-width="23.0"></path><path class="tubo-v" d="M106 762 H58" stroke-width="15.0"></path><path class="riflesso" d="M106 762 H58" stroke-width="1.5"></path><g class="luce" mask="url(#sp-mk17)"><path class="alone" d="M106 762 H58" stroke-width="17.0" filter="url(#sp-sfoca)"></path><path class="scia" d="M106 762 H58" stroke-width="6.0" stroke-dasharray="18 50"></path><path class="nucleo" d="M106 762 H58" stroke-width="2.0" stroke-dasharray="18 50"></path></g></g><g class="marcatore" data-parte="grate" data-x="420" data-y="745" transform="translate(420 745)"><circle class="ghiera" r="54"></circle><circle class="disco" r="40"></circle><text y="15">1</text></g><g class="marcatore" data-parte="boiler" data-x="420" data-y="300" transform="translate(420 300)"><circle class="ghiera" r="54"></circle><circle class="disco" r="40"></circle><text y="15">2</text></g><g class="marcatore" data-parte="pipe" data-x="1050" data-y="290" transform="translate(1050 290)"><circle class="ghiera" r="54"></circle><circle class="disco" r="40"></circle><text y="15">3</text></g><g class="marcatore" data-parte="engine" data-x="1640" data-y="222" transform="translate(1640 222)"><circle class="ghiera" r="54"></circle><circle class="disco" r="40"></circle><text y="15">4</text></g><g class="marcatore" data-parte="condenser" data-x="1520" data-y="960" transform="translate(1520 960)"><circle class="ghiera" r="54"></circle><circle class="disco" r="40"></circle><text y="15">5</text></g><g class="marcatore" data-parte="economiser" data-x="150" data-y="525" transform="translate(150 525)"><circle class="ghiera" r="54"></circle><circle class="disco" r="40"></circle><text y="15">6</text></g><g class="marcatore" data-parte="feedpump" data-x="620" data-y="920" transform="translate(620 920)"><circle class="ghiera" r="54"></circle><circle class="disco" r="40"></circle><text y="15">7</text></g><g class="marcatore" data-parte="radiation" data-x="965" data-y="652" transform="translate(965 652)"><circle class="ghiera" r="54"></circle><circle class="disco" r="40"></circle><text y="15">8</text></g></svg></div></figure>
+<div class="col-dx"><div class="nota legenda"><span class="rif">Legenda · flussi</span><ul><li><i class="chip" style="--c:var(--fluo-th)"></i>Calore e vapore</li><li><i class="chip" style="--c:var(--fluo-el)"></i>Lavoro utile, elettricità</li><li><i class="chip" style="--c:var(--fluo-acqua)"></i>Acqua di ritorno</li><li><i class="chip" style="--c:var(--fluo-altro)"></i>Perdite e scarico</li></ul><small>Spessori proporzionali ai valori della tavola originale.</small></div></div>
+<div class="riga-giu"><a class="nota" href="personaggi.html" data-parte="feedpump" data-lato="su"><span class="neon" aria-hidden="true"></span><span class="rif"><span class="n">07</span>Feed pump · chi la avviò</span><span class="titolo">Personaggi</span><span class="desc">Grandi del passato da ricordare: William Playfair e il capitano Sankey.</span><span class="vai" aria-hidden="true">→</span></a></div>
+<svg class="richiami" id="sp-richiami" aria-hidden="true"></svg>
+</div>
+<p class="didascalia">Minutes of Proceedings of the Institution of Civil Engineers, vol. CXXXIV, 1898 · pubblico dominio · <a href="https://commons.wikimedia.org/wiki/File:JIE_Sankey_V5_Fig1.png">Wikimedia Commons</a></p>
+</div>
 </section>
-
-<section class="pf-contenitore intro" aria-labelledby="titolo-intro">
-  <div>
-    <p class="pf-sopratitolo">Perché Playfair, perché Sankey</p>
-    <h2 id="titolo-intro">Vedere l'energia prima di gestirla</h2>
-    <p>Nel 1786 l'ingegnere ed economista scozzese <a href="personaggi.html">William Playfair</a> pubblicò il <i>Commercial and Political Atlas</i>: per la prima volta i numeri della bilancia commerciale inglese diventavano linee, aree e barre. Quindici anni dopo aggiunse il grafico a torta. Questo sito porta il suo nome perché fa la stessa cosa con i consumi di energia: li rende visibili.</p>
-    <p>La tavola qui sopra è del 1898: il capitano Matthew Sankey vi disegnò il bilancio di una macchina a vapore con frecce larghe quanto l'energia che trasportano. Si vede subito che il lavoro utile è una striscia sottile e che quasi tutto il calore finisce al condensatore. È ancora il modo più onesto di guardare un impianto.</p>
-    <p>Ogni strumento parte da un file CSV e produce grafici pronti per esercitazioni e relazioni: bollette e consumi del sito, curve di carico quartorarie, cogenerazione, investimenti, carte CUSUM, diagrammi di flusso. <strong>I dati restano nel tuo browser</strong>: nulla viene inviato a un server.</p>
-  </div>
-  <ul class="principi">
-    <li><i>CSV</i><b>Trascina il file</b><span>Lascia il CSV ovunque nella pagina dello strumento, oppure sceglilo dal pulsante.</span></li>
-    <li><i>◫</i><b>Leggi i grafici</b><span>Linee, barre, mappe orarie e flussi: ogni grafico ha i suoi valori in chiaro.</span></li>
-    <li><i>⌂</i><b>Tutto in locale</b><span>Nessun account, nessun cookie: i tuoi file non lasciano il computer.</span></li>
-  </ul>
-</section>
+</div>
 </main>
 
 <footer class="pf-piede">
@@ -450,89 +77,7 @@ a.nota:focus-visible { outline: 2px solid var(--bp-luce); outline-offset: 4px; }
   <p class="pf-piede-nota">I dati caricati restano nel browser: nulla viene inviato a server. <span class="pf-piede-attribuzione">Playfair © 2026 Paolo Bianco – Stato Critico – <a href="https://playfair.statocritico.it">https://playfair.statocritico.it</a></span></p>
 </footer>
 
-<script>
-(function () {
-  "use strict";
-  var scena = document.querySelector(".bp-scena"), macchina = document.querySelector(".macchina");
-  var richiami = macchina.querySelector(".richiami"), tavola = macchina.querySelector(".tavola");
-  var NS = "http://www.w3.org/2000/svg", W = 1920, H = 1046;
-  /* punto della tavola (coordinate dell'immagine) a cui punta ciascun riquadro */
-  var BERSAGLI = { grate: [420, 745], boiler: [420, 300], pipe: [1050, 290], engine: [1640, 222], condenser: [1520, 960], economiser: [150, 525], feedpump: [620, 920], radiation: [965, 652] };
-  var note = Array.prototype.slice.call(macchina.querySelectorAll("a.nota[data-parte]"));
-
-  function el(nome, attr, padre) { var e = document.createElementNS(NS, nome); for (var k in attr) e.setAttribute(k, attr[k]); if (padre) padre.appendChild(e); return e; }
-
-  function disegna() {
-    while (richiami.firstChild) richiami.removeChild(richiami.firstChild);
-    if (getComputedStyle(richiami).display === "none") return;
-    var m = macchina.getBoundingClientRect(), t = tavola.getBoundingClientRect(), s = t.width / W;
-    richiami.setAttribute("viewBox", "0 0 " + m.width + " " + m.height);
-    note.forEach(function (a) {
-      var b = BERSAGLI[a.dataset.parte], r = a.getBoundingClientRect();
-      var tx = t.left - m.left + b[0] * s, ty = t.top - m.top + b[1] * s;
-      var x0, y0, x1, y1, d;
-      var cx = r.left - m.left + r.width / 2, cy = r.top - m.top + r.height / 2;
-      var g = el("g", { "data-parte": a.dataset.parte }, richiami);
-      var rag = 25 * s + 5;                                     // raggio del marcatore + margine
-      if (r.right <= t.left + 2) {            // colonna di sinistra: esce dal lato destro
-        x0 = r.right - m.left; y0 = cy; x1 = x0 + 22; y1 = y0;
-      } else if (r.left >= t.right - 2) {     // colonna di destra
-        x0 = r.left - m.left; y0 = cy; x1 = x0 - 22; y1 = y0;
-      } else if (r.bottom <= t.top + 2) {     // sopra
-        x0 = cx; y0 = r.bottom - m.top; x1 = x0; y1 = y0 + 16;
-      } else {                                // sotto
-        x0 = cx; y0 = r.top - m.top; x1 = x0; y1 = y0 - 16;
-      }
-      var dx = tx - x1, dy = ty - y1, L = Math.hypot(dx, dy) || 1;
-      var ex = tx - dx / L * rag, ey = ty - dy / L * rag;
-      d = "M" + x0 + " " + y0 + " L" + x1 + " " + y1 + " L" + ex.toFixed(1) + " " + ey.toFixed(1);
-      el("path", { "class": "richiamo", d: d }, g);
-      el("circle", { "class": "richiamo-piede", cx: x0, cy: y0, r: 3.5 }, g);
-      var ang = Math.atan2(dy, dx), k = 9, w = 4.2;
-      var p1 = [ex, ey], p2 = [ex - k * Math.cos(ang) + w * Math.sin(ang), ey - k * Math.sin(ang) - w * Math.cos(ang)],
-          p3 = [ex - k * Math.cos(ang) - w * Math.sin(ang), ey - k * Math.sin(ang) + w * Math.cos(ang)];
-      el("path", { "class": "richiamo-punta", d: "M" + p1.join(" ") + " L" + p2.join(" ") + " L" + p3.join(" ") + " Z" }, g);
-    });
-    accendi(macchina.dataset.attivo);
-  }
-
-  function accendi(parte) {
-    macchina.dataset.attivo = parte || "";
-    Array.prototype.forEach.call(richiami.querySelectorAll("g"), function (g) { g.classList.toggle("acceso", g.dataset.parte === parte); });
-    note.forEach(function (a) { a.classList.toggle("acceso", a.dataset.parte === parte); });
-  }
-  note.forEach(function (a) {
-    a.addEventListener("mouseenter", function () { accendi(a.dataset.parte); });
-    a.addEventListener("mouseleave", function () { accendi(document.activeElement && document.activeElement.dataset && note.indexOf(document.activeElement) >= 0 ? document.activeElement.dataset.parte : ""); });
-    a.addEventListener("focus", function () { accendi(a.dataset.parte); });
-    a.addEventListener("blur", function () { accendi(""); });
-  });
-  /* anche le parti della tavola rispondono al mouse e portano allo strumento */
-  Array.prototype.forEach.call(macchina.querySelectorAll(".parte"), function (p) {
-    var nota = note.filter(function (a) { return a.dataset.parte === p.dataset.parte; })[0];
-    if (!nota) return;
-    p.addEventListener("mouseenter", function () { accendi(p.dataset.parte); });
-    p.addEventListener("mouseleave", function () { accendi(""); });
-    p.addEventListener("click", function () { location.href = nota.href; });
-  });
-
-  var attesa;
-  function ridisegna() { cancelAnimationFrame(attesa); attesa = requestAnimationFrame(disegna); }
-  window.addEventListener("resize", ridisegna);
-  if ("ResizeObserver" in window) new ResizeObserver(ridisegna).observe(macchina);
-  if (document.fonts && document.fonts.ready) document.fonts.ready.then(ridisegna);
-  window.addEventListener("load", ridisegna);
-  disegna();
-
-  /* pausa dell'animazione (WCAG 2.2.2) */
-  var ferma = document.getElementById("ferma-flussi");
-  ferma.addEventListener("click", function () {
-    var f = scena.classList.toggle("ferma");
-    ferma.setAttribute("aria-pressed", f ? "true" : "false");
-    ferma.textContent = f ? "▶ Avvia i flussi" : "❚❚ Ferma i flussi";
-  });
-})();
-</script>
+<script src="assets/home.js" defer></script>
 <script src="assets/sito.js" defer></script>
 </body>
 </html>
