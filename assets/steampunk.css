@@ -13,7 +13,7 @@
 .pf-menu a.sp-acceso { color: var(--neon-testo); text-shadow: 0 0 6px var(--neon), 0 0 16px var(--neon); }
 .pf-tema { position: relative; border: 0; min-width: 2.75rem; height: 2.75rem; margin-right: -.45rem; }
 .pf-tema:hover { background: none; color: var(--primario); }
-.pf-tema::before { width: 30px; height: 30px; border: 1.5px solid var(--ottone); background: none; box-sizing: border-box; }
+.pf-tema::before { position: absolute; left: 50%; top: 50%; width: 30px; height: 30px; margin: -15px 0 0 -15px; border: 1.5px solid var(--ottone); background: none; box-sizing: border-box; }
 .pf-tema::after { content: ""; position: absolute; left: 50%; top: 50%; width: 18px; height: 18px; margin: -9px 0 0 -9px; border-radius: 50%;
   background: linear-gradient(90deg, currentColor 50%, transparent 50%); }
 @media (min-width: 961px) { .pf-menu { margin-inline: auto; } }
