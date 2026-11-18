@@ -44,8 +44,8 @@
   function isNum(v) { return typeof v === "number" && isFinite(v); }
 
   /* ------------------------------------------------------------------------------- colori
-     I grafici sono disegnati con i colori del tema in uso. In un foglio Excel (fondo bianco) si usano i colori del
-     tema chiaro: ogni colore che coincide con una variabile del tema scuro diventa il valore chiaro della stessa. */
+     I grafici sono disegnati con i colori dell'area di lavoro (area.css) nella modalità in uso. In un foglio Excel (fondo bianco) si usano i colori del
+     tema chiaro: ogni colore che coincide con una variabile dell'area scura diventa il valore chiaro della stessa. */
   var tela1 = doc.createElement("canvas"); tela1.width = tela1.height = 1;
   var g1 = tela1.getContext("2d", { willReadFrequently: true });
   function rgba(c) {
@@ -69,8 +69,9 @@
   function preparaMappa() {
     mappaChiara = {};
     if (root.getAttribute("data-theme") === "light") return;
-    var nomi = ["carta", "foglio", "rialzo", "tinta", "linea", "bordo", "inchiostro", "tenue", "primario", "primario-forte", "su-primario",
-      "profondo", "segno", "successo", "attenzione", "errore", "serie-1", "serie-2", "serie-3", "serie-4", "serie-5", "serie-6",
+    // variabili dell'AREA DI LAVORO (area.css): sono quelle con cui gli strumenti disegnano i grafici
+    var nomi = ["area-fondo", "area-pannello", "area-rialzo", "area-tinta", "area-linea", "area-bordo", "area-testo", "area-tenue",
+      "area-accento", "area-accento-forte", "area-su-accento", "area-titolo", "area-segno", "area-focus", "area-ok", "area-warn", "area-err", "serie-1", "serie-2", "serie-3", "serie-4", "serie-5", "serie-6",
       "flusso-el", "flusso-th", "flusso-acqua", "flusso-co2", "flusso-altro", "flusso-tep"];
     var d = doc.createElement("div");
     d.setAttribute("data-theme", "light"); d.style.display = "none";
@@ -395,7 +396,7 @@
   }
 
   /* ------------------------------------------------------------------------------- immagini dei grafici */
-  function sfondo() { return (window.Playfair && Playfair.colore("--foglio")) || "#ffffff"; }
+  function sfondo() { return (window.Playfair && Playfair.colore("--area-pannello")) || "#ffffff"; }
   /** PNG (Uint8Array) con didascalia della fonte a partire da una tela */
   function pngDaTela(tela) {
     var c = window.Playfair && Playfair.telaConFonte ? Playfair.telaConFonte(tela, { sfondo: sfondo() }) : tela;

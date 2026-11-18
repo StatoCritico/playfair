@@ -8,15 +8,16 @@
 <link rel="icon" href="img/favicon.svg" type="image/svg+xml">
 <script>try{var t=localStorage.getItem('pf-tema');if(t)document.documentElement.dataset.theme=t;}catch(e){}</script>
 <link rel="stylesheet" href="assets/tema.css">
+<link rel="stylesheet" href="assets/area.css">
 <link rel="stylesheet" href="assets/sito.css">
 <link rel="stylesheet" href="assets/strumenti.css">
 <style>
 .pf-app.c .ch{height:320px}
 .pf-app.c .sgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:8px;margin-top:10px}
-.pf-app.c .scard{background:var(--rialzo);border-radius:var(--raggio,6px);padding:9px 12px;position:relative}
-.pf-app.c .slabel{font-size:12px;color:var(--tenue);margin-bottom:3px;cursor:pointer;text-decoration:underline dotted;text-underline-offset:3px;display:inline-block}
-.pf-app.c .svalue{font:600 17px/1.25 var(--titoli);font-variant-numeric:tabular-nums}
-.pf-app.c .stip{display:none;position:absolute;z-index:20;top:100%;left:0;width:240px;background:var(--foglio);border:1px solid var(--linea);border-radius:6px;padding:8px;font-size:12px;color:var(--inchiostro);line-height:1.5;margin-top:4px;box-shadow:var(--ombra-2)}
+.pf-app.c .scard{background:var(--area-rialzo);border-radius:var(--area-raggio,6px);padding:9px 12px;position:relative}
+.pf-app.c .slabel{font-size:12px;color:var(--area-tenue);margin-bottom:3px;cursor:pointer;text-decoration:underline dotted;text-underline-offset:3px;display:inline-block}
+.pf-app.c .svalue{font:600 17px/1.25 var(--area-font-titoli);font-variant-numeric:tabular-nums}
+.pf-app.c .stip{display:none;position:absolute;z-index:20;top:100%;left:0;width:240px;background:var(--area-pannello);border:1px solid var(--area-linea);border-radius:6px;padding:8px;font-size:12px;color:var(--area-testo);line-height:1.5;margin-top:4px;box-shadow:var(--area-ombra-2)}
 </style>
 </head>
 <body class="pf-pagina-strumento">
@@ -56,7 +57,7 @@
   <div class="pf-intro-azioni"><button class="pf-bottone-piccolo" type="button" data-pf-excel-scarica data-tip="Scarica una cartella Excel con un foglio per grafico: tabella dei dati e grafico modificabile">Scarica in Excel</button> <button class="pf-bottone-piccolo" id="contactBtn" type="button" onclick="contactAuthor()">Contatta l’autore</button></div>
 </section>
 
-<div class="pf-app fam-b c">
+<div class="pf-app pf-area fam-b c">
 <div class="wrap">
 
 <div class="riquadro">
@@ -165,7 +166,7 @@ var panels={andamenti:true,reg:true,scarti:true,cusum:true};
 function dk(){return PF.scuroAttivo();}
 function tc(){return PF.tenue();}
 function gc(){return PF.griglia();}
-var PAL=PF.tavolozza({cons:['--serie-2','#378add'],drv:['--serie-3','#e09b1a'],reg:['--primario','#C0392B'],pos:['--successo','#3ba878'],neg:['--errore','#dc3232'],ink:['--inchiostro','#000000']});
+var PAL=PF.tavolozza({cons:['--serie-2','#378add'],drv:['--serie-3','#e09b1a'],reg:['--serie-1','#C0392B'],pos:['--area-ok','#3ba878'],neg:['--area-err','#dc3232'],ink:['--area-testo','#000000']});
 function fn(v,d){return v.toLocaleString('it-IT',{minimumFractionDigits:d,maximumFractionDigits:d});}
 
 function togglePanel(id){

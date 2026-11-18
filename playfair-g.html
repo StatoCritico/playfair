@@ -8,72 +8,73 @@
 <link rel="icon" href="img/favicon.svg" type="image/svg+xml">
 <script>try{var t=localStorage.getItem('pf-tema');if(t)document.documentElement.dataset.theme=t;}catch(e){}</script>
 <link rel="stylesheet" href="assets/tema.css">
+<link rel="stylesheet" href="assets/area.css">
 <link rel="stylesheet" href="assets/sito.css">
 <link rel="stylesheet" href="assets/strumenti.css">
 <style>
 .pf-app.g .panel{padding:14px}
-.pf-app.g .panel-title{margin-bottom:10px;border-bottom:1px solid var(--linea);padding-bottom:6px;display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.pf-app.g .panel-title{margin-bottom:10px;border-bottom:1px solid var(--area-linea);padding-bottom:6px;display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
 .pf-app.g .row{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end}
 .pf-app.g .field{min-width:130px;flex:0 1 auto}
 .pf-app.g .field.largo{flex:1 1 260px}
 .pf-app.g .pf-drop{min-height:5.5rem}
-.pf-app.g #msg{margin-top:8px;font-size:13px;color:var(--tenue);line-height:1.5}
-.pf-app.g #msg b{color:var(--inchiostro)}
-.pf-app.g .avviso{margin-top:8px;padding:8px 10px;border-radius:4px;font-size:13px;line-height:1.5;background:var(--attenzione-fondo);color:var(--inchiostro);border-left:3px solid var(--attenzione)}
-.pf-app.g .avviso.errore{background:var(--errore-fondo);border-left-color:var(--errore)}
+.pf-app.g #msg{margin-top:8px;font-size:13px;color:var(--area-tenue);line-height:1.5}
+.pf-app.g #msg b{color:var(--area-testo)}
+.pf-app.g .avviso{margin-top:8px;padding:8px 10px;border-radius:4px;font-size:13px;line-height:1.5;background:var(--area-warn-fondo);color:var(--area-testo);border-left:3px solid var(--area-warn)}
+.pf-app.g .avviso.errore{background:var(--area-err-fondo);border-left-color:var(--area-err)}
 .pf-app.g .avviso ul{margin:4px 0 0 18px}
 .pf-app.g .kpi{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px}
-.pf-app.g .kpi > div{background:var(--rialzo);border-radius:var(--raggio,6px);padding:9px 12px}
-.pf-app.g .kpi .k-et{font-size:12px;color:var(--tenue);margin-bottom:3px}
-.pf-app.g .kpi .k-val{font:600 19px/1.2 var(--titoli);font-variant-numeric:tabular-nums;color:var(--inchiostro)}
-.pf-app.g .kpi .k-val small{font:400 12px var(--testo);color:var(--tenue);margin-left:3px}
-.pf-app.g .kpi .k-nota{font-size:11.5px;color:var(--tenue);margin-top:2px}
-.pf-app.g .kpi .evid{background:var(--tinta)}
-.pf-app.g .kpi .evid .k-val{color:var(--profondo)}
-.pf-app.g .tabs{display:flex;gap:2px;border-bottom:1px solid var(--linea);margin-bottom:12px;flex-wrap:wrap}
-.pf-app.g .tab{padding:7px 14px;cursor:pointer;font:600 14px/1.2 var(--titoli);color:var(--tenue);border:0;border-bottom:3px solid transparent;margin-bottom:-1px;border-radius:0;background:transparent}
-.pf-app.g .tab:hover{color:var(--inchiostro);border-bottom-color:var(--linea);background:transparent}
-.pf-app.g .tab[aria-selected="true"]{color:var(--inchiostro);border-bottom-color:var(--primario)}
+.pf-app.g .kpi > div{background:var(--area-rialzo);border-radius:var(--area-raggio,6px);padding:9px 12px}
+.pf-app.g .kpi .k-et{font-size:12px;color:var(--area-tenue);margin-bottom:3px}
+.pf-app.g .kpi .k-val{font:600 19px/1.2 var(--area-font-titoli);font-variant-numeric:tabular-nums;color:var(--area-testo)}
+.pf-app.g .kpi .k-val small{font:400 12px var(--area-font);color:var(--area-tenue);margin-left:3px}
+.pf-app.g .kpi .k-nota{font-size:11.5px;color:var(--area-tenue);margin-top:2px}
+.pf-app.g .kpi .evid{background:var(--area-tinta)}
+.pf-app.g .kpi .evid .k-val{color:var(--area-titolo)}
+.pf-app.g .tabs{display:flex;gap:2px;border-bottom:1px solid var(--area-linea);margin-bottom:12px;flex-wrap:wrap}
+.pf-app.g .tab{padding:7px 14px;cursor:pointer;font:600 14px/1.2 var(--area-font-titoli);color:var(--area-tenue);border:0;border-bottom:3px solid transparent;margin-bottom:-1px;border-radius:0;background:transparent}
+.pf-app.g .tab:hover{color:var(--area-testo);border-bottom-color:var(--area-linea);background:transparent}
+.pf-app.g .tab[aria-selected="true"]{color:var(--area-testo);border-bottom-color:var(--area-accento)}
 .pf-app.g .tab-content{display:none}
 .pf-app.g .tab-content.active{display:block}
-.pf-app.g .barra{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:10px;font-size:13px;color:var(--tenue)}
+.pf-app.g .barra{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:10px;font-size:13px;color:var(--area-tenue)}
 .pf-app.g .barra .spazio{flex:1}
 .pf-app.g .barra label{display:inline-flex;gap:6px;align-items:center}
-.pf-app.g .sintesi{font-size:14px;line-height:1.5;margin-bottom:10px;color:var(--inchiostro)}
-.pf-app.g .sintesi b{color:var(--profondo)}
+.pf-app.g .sintesi{font-size:14px;line-height:1.5;margin-bottom:10px;color:var(--area-testo)}
+.pf-app.g .sintesi b{color:var(--area-titolo)}
 .pf-app.g .scorre{overflow-x:auto;-webkit-overflow-scrolling:touch}
 .pf-app.g .chart-wrap{position:relative;width:100%}
-.pf-app.g .vuoto{display:flex;align-items:center;justify-content:center;min-height:180px;font-size:13px;color:var(--tenue);border:1px dashed var(--bordo);border-radius:4px;text-align:center;padding:16px}
-.pf-app.g .legge{margin-top:12px;padding:10px 14px;background:var(--rialzo);border:1px solid var(--linea);border-left:3px solid var(--segno);border-radius:4px;font-size:13px;line-height:1.6;color:var(--inchiostro)}
-.pf-app.g .legge h3{font:600 13px/1.3 var(--titoli);text-transform:uppercase;letter-spacing:.06em;color:var(--tenue);margin-bottom:4px}
+.pf-app.g .vuoto{display:flex;align-items:center;justify-content:center;min-height:180px;font-size:13px;color:var(--area-tenue);border:1px dashed var(--area-bordo);border-radius:4px;text-align:center;padding:16px}
+.pf-app.g .legge{margin-top:12px;padding:10px 14px;background:var(--area-rialzo);border:1px solid var(--area-linea);border-left:3px solid var(--area-segno);border-radius:4px;font-size:13px;line-height:1.6;color:var(--area-testo)}
+.pf-app.g .legge h3{font:600 13px/1.3 var(--area-font-titoli);text-transform:uppercase;letter-spacing:.06em;color:var(--area-tenue);margin-bottom:4px}
 .pf-app.g .legge ul{margin:4px 0 0 18px}
 .pf-app.g .legge p + p{margin-top:4px}
 .pf-app.g .quadri{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:12px}
-.pf-app.g .quadro{border:1px solid var(--linea);border-radius:var(--raggio,6px);padding:9px 12px;background:var(--foglio);border-top:4px solid var(--q)}
-.pf-app.g .quadro h4{margin:0 0 4px;font:600 14px/1.3 var(--titoli);color:var(--inchiostro)}
-.pf-app.g .quadro h4 small{font:400 12px var(--testo);color:var(--tenue);margin-left:4px}
-.pf-app.g .quadro p{font-size:12px;color:var(--tenue);margin-bottom:4px;line-height:1.45}
+.pf-app.g .quadro{border:1px solid var(--area-linea);border-radius:var(--area-raggio,6px);padding:9px 12px;background:var(--area-pannello);border-top:4px solid var(--q)}
+.pf-app.g .quadro h4{margin:0 0 4px;font:600 14px/1.3 var(--area-font-titoli);color:var(--area-testo)}
+.pf-app.g .quadro h4 small{font:400 12px var(--area-font);color:var(--area-tenue);margin-left:4px}
+.pf-app.g .quadro p{font-size:12px;color:var(--area-tenue);margin-bottom:4px;line-height:1.45}
 .pf-app.g .quadro ul{list-style:none;font-size:12.5px;line-height:1.55;font-variant-numeric:tabular-nums}
 .pf-app.g .quadro li code{font-size:11.5px;margin-right:4px}
-.pf-app.g .quadro li span{color:var(--tenue)}
-.pf-app.g .tab-wrap{overflow-x:auto;max-height:620px;overflow-y:auto;border:1px solid var(--linea);border-radius:4px}
+.pf-app.g .quadro li span{color:var(--area-tenue)}
+.pf-app.g .tab-wrap{overflow-x:auto;max-height:620px;overflow-y:auto;border:1px solid var(--area-linea);border-radius:4px}
 .pf-app.g table.tg{border-collapse:collapse;width:100%;font-size:13px;font-variant-numeric:tabular-nums}
-.pf-app.g table.tg th,.pf-app.g table.tg td{border-bottom:1px solid var(--linea);padding:5px 9px;white-space:nowrap;text-align:right}
+.pf-app.g table.tg th,.pf-app.g table.tg td{border-bottom:1px solid var(--area-linea);padding:5px 9px;white-space:nowrap;text-align:right}
 .pf-app.g table.tg td.t,.pf-app.g table.tg th.t{text-align:left}
 .pf-app.g table.tg td.nome{white-space:normal;min-width:180px}
-.pf-app.g table.tg thead th{position:sticky;top:0;z-index:1;background:var(--rialzo);font:600 12px/1.3 var(--titoli);color:var(--inchiostro);padding:0}
+.pf-app.g table.tg thead th{position:sticky;top:0;z-index:1;background:var(--area-rialzo);font:600 12px/1.3 var(--area-font-titoli);color:var(--area-testo);padding:0}
 .pf-app.g table.tg thead th button{all:unset;box-sizing:border-box;display:block;width:100%;padding:7px 9px;cursor:pointer;text-align:inherit}
-.pf-app.g table.tg thead th button:focus-visible{outline:2px solid var(--primario);outline-offset:-2px}
-.pf-app.g table.tg thead th button::after{content:" ↕";color:var(--tenue);font-weight:400}
-.pf-app.g table.tg thead th[aria-sort="ascending"] button::after{content:" ▲";color:var(--primario)}
-.pf-app.g table.tg thead th[aria-sort="descending"] button::after{content:" ▼";color:var(--primario)}
-.pf-app.g table.tg tbody tr:hover > *{background:var(--rialzo)}
-.pf-app.g table.tg tr.p80 td:first-child{box-shadow:inset 3px 0 0 var(--primario)}
-.pf-app.g table.tg tr.zero td{color:var(--tenue)}
-.pf-app.g table.tg tfoot td{font-weight:600;background:var(--rialzo);border-top:1px solid var(--bordo)}
-.pf-app.g .alto{color:var(--errore);font-weight:600}
-.pf-app.g .basso{color:var(--successo);font-weight:600}
-.pf-app.g .qtag{display:inline-block;padding:1px 7px;border-radius:999px;font-size:11.5px;border:1px solid var(--q);color:var(--inchiostro);background:color-mix(in srgb,var(--q) 14%,transparent)}
+.pf-app.g table.tg thead th button:focus-visible{outline:2px solid var(--area-focus);outline-offset:-2px}
+.pf-app.g table.tg thead th button::after{content:" ↕";color:var(--area-tenue);font-weight:400}
+.pf-app.g table.tg thead th[aria-sort="ascending"] button::after{content:" ▲";color:var(--area-accento)}
+.pf-app.g table.tg thead th[aria-sort="descending"] button::after{content:" ▼";color:var(--area-accento)}
+.pf-app.g table.tg tbody tr:hover > *{background:var(--area-rialzo)}
+.pf-app.g table.tg tr.p80 td:first-child{box-shadow:inset 3px 0 0 var(--serie-1)}
+.pf-app.g table.tg tr.zero td{color:var(--area-tenue)}
+.pf-app.g table.tg tfoot td{font-weight:600;background:var(--area-rialzo);border-top:1px solid var(--area-bordo)}
+.pf-app.g .alto{color:var(--area-err);font-weight:600}
+.pf-app.g .basso{color:var(--area-ok);font-weight:600}
+.pf-app.g .qtag{display:inline-block;padding:1px 7px;border-radius:999px;font-size:11.5px;border:1px solid var(--q);color:var(--area-testo);background:color-mix(in srgb,var(--q) 14%,transparent)}
 @media (max-width:700px){
   .pf-app.g .quadri{grid-template-columns:1fr}
   .pf-app.g .tab{padding:7px 10px;font-size:13px}
@@ -118,7 +119,7 @@
   <div class="pf-intro-azioni"><button class="pf-bottone-piccolo" type="button" data-pf-excel-scarica data-tip="Scarica una cartella Excel con un foglio per grafico: tabella dei dati e grafico modificabile">Scarica in Excel</button></div>
 </section>
 
-<div class="pf-app fam-a g">
+<div class="pf-app pf-area fam-a g">
 
 <!-- FILE -->
 <div class="panel">
@@ -243,16 +244,16 @@ var R = null;                     // risultati dei calcoli
 var ORD = { col: 'consumo', dir: -1 };
 var charts = {};
 var COL = PF.tavolozza({
-  p80: ['--primario', '#c43c12'], resto: function () { return PF.mescola(PF.c('--tenue'), PF.c('--foglio'), .45); },
-  cum: ['--segno', '#3f4bd0'], soglia: ['--attenzione', '#8a5a00'], quota: function () { return PF.rgba(PF.c('--serie-2'), .45); },
-  alto: ['--errore', '#a8133c'], basso: ['--successo', '#2e7a34'], ink: ['--inchiostro', '#1c1820'], foglio: ['--foglio', '#fff'],
-  qPri: ['--errore', '#a8133c'], qGes: ['--attenzione', '#8a5a00'], qMir: ['--serie-2', '#1f6fb4'], qBas: ['--successo', '#2e7a34']
+  p80: ['--serie-1', '#c43c12'], resto: function () { return PF.mescola(PF.c('--area-tenue'), PF.c('--area-pannello'), .45); },
+  cum: ['--area-segno', '#3f4bd0'], soglia: ['--area-warn', '#8a5a00'], quota: function () { return PF.rgba(PF.c('--serie-2'), .45); },
+  alto: ['--area-err', '#a8133c'], basso: ['--area-ok', '#2e7a34'], ink: ['--area-testo', '#1c1820'], foglio: ['--area-pannello', '#fff'],
+  qPri: ['--area-err', '#a8133c'], qGes: ['--area-warn', '#8a5a00'], qMir: ['--serie-2', '#1f6fb4'], qBas: ['--area-ok', '#2e7a34']
 });
 var QUAD = {
-  pri: { nome: 'Priorità: grandi e inefficienti', pos: 'alto a destra', col: 'qPri', css: '--errore' },
-  ges: { nome: 'Grandi consumatori efficienti: interventi di gestione', pos: 'alto a sinistra', col: 'qGes', css: '--attenzione' },
+  pri: { nome: 'Priorità: grandi e inefficienti', pos: 'alto a destra', col: 'qPri', css: '--area-err' },
+  ges: { nome: 'Grandi consumatori efficienti: interventi di gestione', pos: 'alto a sinistra', col: 'qGes', css: '--area-warn' },
   mir: { nome: 'Piccoli inefficienti: interventi mirati', pos: 'basso a destra', col: 'qMir', css: '--serie-2' },
-  bas: { nome: 'Bassa priorità', pos: 'basso a sinistra', col: 'qBas', css: '--successo' }
+  bas: { nome: 'Bassa priorità', pos: 'basso a sinistra', col: 'qBas', css: '--area-ok' }
 };
 
 /* ---------------------------------------------------------------- formato italiano */
@@ -539,7 +540,7 @@ function pareto() {
   var o = R.ord;
   var cv = tela('w-pareto', 'pareto', Math.max(0, o.length * 24 + 120));
   cv.setAttribute('aria-label', 'Diagramma di Pareto dei consumi delle ' + o.length + ' sedi; ' + R.k80 + ' sedi fanno l’80% del consumo');
-  var bordo = o.map(function (s) { return s.p80 ? COL.p80 : PF.mescola(COL.resto, PF.c('--inchiostro'), .25); });
+  var bordo = o.map(function (s) { return s.p80 ? COL.p80 : PF.mescola(COL.resto, PF.c('--area-testo'), .25); });
   charts.pareto = new Chart(cv, {
     data: {
       labels: o.map(function (s) { return s.codice; }),
@@ -557,16 +558,16 @@ function pareto() {
       interaction: { mode: 'index', intersect: false },
       plugins: {
         legend: { display: true, position: 'top', align: 'end', labels: { boxWidth: 14, boxHeight: 10, color: PF.tenue() } },
-        title: { display: true, text: 'Diagramma di Pareto — ' + nC().toLowerCase() + ' per sede', color: PF.c('--profondo'), font: { size: 15, weight: '600' }, align: 'start', padding: { bottom: 4 } },
+        title: { display: true, text: 'Diagramma di Pareto — ' + nC().toLowerCase() + ' per sede', color: PF.c('--area-titolo'), font: { size: 15, weight: '600' }, align: 'start', padding: { bottom: 4 } },
         tooltip: { callbacks: {
           title: function (it) { return titoloSede(o[it[0].dataIndex]); },
           label: function () { return null; },
           afterBody: function (it) { return righeSede(o[it[0].dataIndex]); } } },
         annotation: { annotations: {
           l80: { type: 'line', yScaleID: 'y2', yMin: 80, yMax: 80, borderColor: COL.soglia, borderWidth: 2, borderDash: [7, 4],
-            label: { display: true, content: '80%', position: 'end', backgroundColor: COL.soglia, color: PF.c('--foglio'), font: { size: 11, weight: '600' }, padding: { x: 5, y: 2 } } },
+            label: { display: true, content: '80%', position: 'end', backgroundColor: COL.soglia, color: PF.c('--area-pannello'), font: { size: 11, weight: '600' }, padding: { x: 5, y: 2 } } },
           k80: { type: 'line', xScaleID: 'x', xMin: R.k80 - 0.5, xMax: R.k80 - 0.5, borderColor: PF.rgba(COL.p80, .9), borderWidth: 1.5, borderDash: [3, 3],
-            label: { display: true, content: R.k80 + ' sedi su ' + R.n + ' → 80%', position: 'start', yAdjust: 6, backgroundColor: PF.rgba(COL.p80, .92), color: PF.c('--su-primario'), font: { size: 11, weight: '600' }, padding: { x: 6, y: 3 } } }
+            label: { display: true, content: R.k80 + ' sedi su ' + R.n + ' → 80%', position: 'start', yAdjust: 6, backgroundColor: PF.rgba(COL.p80, .92), color: PF.c('--area-su-accento'), font: { size: 11, weight: '600' }, padding: { x: 6, y: 3 } } }
         } }
       },
       scales: {
@@ -590,7 +591,7 @@ function incidenza() {
   var colPunto = o.map(function (s) { return s.cs === null ? 'transparent' : s.cs > R.csG ? COL.alto : COL.basso; });
   var ds = [
     { type: 'line', label: 'Consumo specifico (' + uS() + ')', data: o.map(function (s) { return s.cs; }), yAxisID: 'y2', showLine: false,
-      pointStyle: 'rectRot', pointRadius: 6, pointHoverRadius: 8, pointBackgroundColor: colPunto, pointBorderColor: PF.c('--foglio'), pointBorderWidth: 1.2,
+      pointStyle: 'rectRot', pointRadius: 6, pointHoverRadius: 8, pointBackgroundColor: colPunto, pointBorderColor: PF.c('--area-pannello'), pointBorderWidth: 1.2,
       backgroundColor: COL.alto, borderColor: COL.alto, order: 0 },
     { type: 'bar', label: 'Incidenza sul consumo (%)', data: o.map(function (s) { return s.inc; }), yAxisID: 'y', backgroundColor: PF.rgba(COL.p80, .8), borderColor: COL.p80, borderWidth: 1, borderRadius: 2, order: 2, categoryPercentage: .8, barPercentage: .92 }
   ];
@@ -605,14 +606,14 @@ function incidenza() {
       interaction: { mode: 'index', intersect: false },
       plugins: {
         legend: { position: 'top', align: 'end', labels: { boxWidth: 14, boxHeight: 10, color: PF.tenue(), usePointStyle: false } },
-        title: { display: true, text: 'Incidenza sul totale e consumo specifico', color: PF.c('--profondo'), font: { size: 15, weight: '600' }, align: 'start', padding: { bottom: 4 } },
+        title: { display: true, text: 'Incidenza sul totale e consumo specifico', color: PF.c('--area-titolo'), font: { size: 15, weight: '600' }, align: 'start', padding: { bottom: 4 } },
         tooltip: { callbacks: {
           title: function (it) { return titoloSede(o[it[0].dataIndex]); },
           label: function () { return null; },
           afterBody: function (it) { var s = o[it[0].dataIndex]; var r = righeSede(s); if (s.quota !== null) r.splice(4, 0, 'Quota di ' + nD().toLowerCase() + ': ' + fP(s.quota, 2)); return r; } } },
         annotation: { annotations: {
           csG: { type: 'line', yScaleID: 'y2', yMin: R.csG, yMax: R.csG, borderColor: COL.ink, borderWidth: 1.5, borderDash: [6, 4],
-            label: { display: true, content: 'gruppo: ' + fCS(R.csG) + ' ' + uS(), position: 'end', backgroundColor: PF.rgba(COL.ink, .85), color: PF.c('--foglio'), font: { size: 11 }, padding: { x: 5, y: 2 } } },
+            label: { display: true, content: 'gruppo: ' + fCS(R.csG) + ' ' + uS(), position: 'end', backgroundColor: PF.rgba(COL.ink, .85), color: PF.c('--area-pannello'), font: { size: 11 }, padding: { x: 5, y: 2 } } },
           incM: { type: 'line', yScaleID: 'y', yMin: R.incMedia, yMax: R.incMedia, borderColor: PF.rgba(COL.p80, .7), borderWidth: 1, borderDash: [2, 3],
             label: { display: true, content: 'incidenza media ' + fP(R.incMedia, 2), position: 'center', backgroundColor: 'transparent', color: COL.p80, font: { size: 10.5 }, yAdjust: -9 } }
         } }
@@ -637,7 +638,7 @@ var etichette = {
     if (!$('o-etich').checked) return;
     var c = ch.ctx, meta = ch.getDatasetMeta(0), dati = ch.data.datasets[0].data, occupati = [];
     var area = ch.chartArea;
-    c.save(); c.font = '600 10.5px ' + (getComputedStyle(document.documentElement).getPropertyValue('--mono') || 'monospace'); c.textBaseline = 'middle';
+    c.save(); c.font = '600 10.5px ' + (getComputedStyle(document.documentElement).getPropertyValue('--area-font-mono') || 'monospace'); c.textBaseline = 'middle';
     // prima le etichette dei punti più grandi
     var idx = dati.map(function (d, i) { return i; }).sort(function (a, b) { return dati[b].s.inc - dati[a].s.inc; });
     meta.data.forEach(function (p) { occupati.push({ x0: p.x - p.options.radius, x1: p.x + p.options.radius, y0: p.y - p.options.radius, y1: p.y + p.options.radius, punto: true }); });
@@ -651,7 +652,7 @@ var etichette = {
         var urta = occupati.some(function (o) { return !(b.x1 < o.x0 || b.x0 > o.x1 || b.y1 < o.y0 || b.y0 > o.y1) && !(o.punto && o.x0 === p.x - p.options.radius && o.y0 === p.y - p.options.radius); });
         if (urta) continue;
         occupati.push(b);
-        c.textAlign = al; c.fillStyle = PF.rgba(PF.c('--foglio'), .75); c.fillRect(b.x0, b.y0, w, h);
+        c.textAlign = al; c.fillStyle = PF.rgba(PF.c('--area-pannello'), .75); c.fillRect(b.x0, b.y0, w, h);
         c.fillStyle = PF.testo(); c.fillText(t, al === 'left' ? x + 2 : al === 'right' ? x - 2 : x, y);
         break;
       }
@@ -697,7 +698,7 @@ function mappa() {
       responsive: true, maintainAspectRatio: false, animation: { duration: 300 },
       plugins: {
         legend: { display: false },
-        title: { display: true, text: stretto ? 'Mappa a quattro quadranti' : 'Mappa a quattro quadranti — consumo specifico e incidenza sul totale', color: PF.c('--profondo'), font: { size: 15, weight: '600' }, align: 'start', padding: { bottom: 8 } },
+        title: { display: true, text: stretto ? 'Mappa a quattro quadranti' : 'Mappa a quattro quadranti — consumo specifico e incidenza sul totale', color: PF.c('--area-titolo'), font: { size: 15, weight: '600' }, align: 'start', padding: { bottom: 8 } },
         tooltip: { callbacks: {
           title: function (it) { return titoloSede(it[0].raw.s); },
           label: function () { return null; },
@@ -740,7 +741,7 @@ var COLONNE = [
   { k: 'quota', t: function () { return 'Quota ' + nD().toLowerCase(); }, f: function (s) { return fP(s.quota, 2); } },
   { k: 'cum', t: 'Cumulata', f: function (s) { return fP(s.cum, 1); } },
   { k: 'p80', t: 'Nell’80%', testo: 1, f: function (s) { return s.p80 ? 'sì' : 'no'; } },
-  { k: 'quad', t: 'Quadrante', testo: 1, f: function (s) { return s.quad ? '<span class="qtag" style="--q:var(' + QUAD[s.quad].css + ')">' + esc(QUAD[s.quad].nome) + '</span>' : '<span style="color:var(--tenue)">escluso</span>'; } }
+  { k: 'quad', t: 'Quadrante', testo: 1, f: function (s) { return s.quad ? '<span class="qtag" style="--q:var(' + QUAD[s.quad].css + ')">' + esc(QUAD[s.quad].nome) + '</span>' : '<span style="color:var(--area-tenue)">escluso</span>'; } }
 ];
 function tt(c) { return typeof c.t === 'function' ? c.t() : c.t; }
 function tabella() {

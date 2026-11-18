@@ -8,42 +8,43 @@
 <link rel="icon" href="img/favicon.svg" type="image/svg+xml">
 <script>try{var t=localStorage.getItem('pf-tema');if(t)document.documentElement.dataset.theme=t;}catch(e){}</script>
 <link rel="stylesheet" href="assets/tema.css">
+<link rel="stylesheet" href="assets/area.css">
 <link rel="stylesheet" href="assets/sito.css">
 <link rel="stylesheet" href="assets/strumenti.css">
 <style>
 .pf-app.t .wrap{max-width:none}
 .pf-app.t .chSmall{position:relative;width:100%;height:90px}
 .pf-app.t .legbox{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:8px}
-.pf-app.t .legitem{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--tenue)}
+.pf-app.t .legitem{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--area-tenue)}
 .pf-app.t .legdot{width:16px;height:3px;border-radius:1px;display:inline-block}
-.pf-app.t .upbox{border:1px dashed var(--bordo);border-radius:var(--raggio,6px);padding:.75rem 1rem;background:var(--foglio);margin-bottom:.75rem}
+.pf-app.t .upbox{border:1px dashed var(--area-bordo);border-radius:var(--area-raggio,6px);padding:.75rem 1rem;background:var(--area-pannello);margin-bottom:.75rem}
 .pf-app.t .upbox:last-child{margin-bottom:0}
-.pf-app.t .uplabel{font:600 12px/1.3 var(--titoli);color:var(--tenue);text-transform:uppercase;letter-spacing:.07em;margin-bottom:4px}
-.pf-app.t .updrop{font-size:13px;color:var(--inchiostro);margin-bottom:8px}
-.pf-app.t .updrop code{font-family:var(--mono);background:var(--rialzo);padding:0 4px;border-radius:3px}
+.pf-app.t .uplabel{font:600 12px/1.3 var(--area-font-titoli);color:var(--area-tenue);text-transform:uppercase;letter-spacing:.07em;margin-bottom:4px}
+.pf-app.t .updrop{font-size:13px;color:var(--area-testo);margin-bottom:8px}
+.pf-app.t .updrop code{font-family:var(--area-font-mono);background:var(--area-rialzo);padding:0 4px;border-radius:3px}
 .pf-app.t .uprow{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
-.pf-app.t .uphint{font-size:13px;color:var(--tenue)}
+.pf-app.t .uphint{font-size:13px;color:var(--area-tenue)}
 .pf-app.t .radio-row{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
-.pf-app.t .radio-item{display:flex;align-items:center;gap:5px;cursor:pointer;font-size:13px;color:var(--inchiostro)}
-.pf-app.t .radio-circle{width:14px;height:14px;border:1.5px solid var(--bordo);border-radius:50%;display:flex;align-items:center;justify-content:center}
+.pf-app.t .radio-item{display:flex;align-items:center;gap:5px;cursor:pointer;font-size:13px;color:var(--area-testo)}
+.pf-app.t .radio-circle{width:14px;height:14px;border:1.5px solid var(--area-bordo);border-radius:50%;display:flex;align-items:center;justify-content:center}
 .pf-app.t .radio-dot{width:7px;height:7px;border-radius:50%;background:transparent}
-.pf-app.t .help{display:none;font-size:13px;color:var(--inchiostro);background:var(--rialzo);border:1px solid var(--linea);border-radius:4px;padding:8px 10px;margin-bottom:8px;line-height:1.6}
+.pf-app.t .help{display:none;font-size:13px;color:var(--area-testo);background:var(--area-rialzo);border:1px solid var(--area-linea);border-radius:4px;padding:8px 10px;margin-bottom:8px;line-height:1.6}
 .pf-app.t .cogen-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:8px;margin-bottom:.75rem}
-.pf-app.t .cogen-field{background:var(--rialzo);border-radius:var(--raggio,6px);padding:8px 10px}
-.pf-app.t .cogen-field label{font-size:12px;color:var(--tenue);display:block;margin-bottom:4px}
+.pf-app.t .cogen-field{background:var(--area-rialzo);border-radius:var(--area-raggio,6px);padding:8px 10px}
+.pf-app.t .cogen-field label{font-size:12px;color:var(--area-tenue);display:block;margin-bottom:4px}
 .pf-app.t .cogen-field input{width:100%}
 .pf-app.t .cogen-2col{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:8px}
 .pf-app.t .cogen-2col .ch{height:260px}
 .pf-app.t .econ-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-top:.75rem}
 .pf-app.t .econ-table{width:100%;border-collapse:collapse;font-size:14px}
-.pf-app.t .econ-table td{padding:6px 10px;border-bottom:1px solid var(--linea)}
+.pf-app.t .econ-table td{padding:6px 10px;border-bottom:1px solid var(--area-linea)}
 .pf-app.t .econ-table td.num{text-align:right;font-variant-numeric:tabular-nums}
-.pf-app.t .econ-table tr.tot td{font-weight:600;border-top:1px solid var(--bordo);border-bottom:none}
-.pf-app.t .econ-saving{background:var(--rialzo);border-radius:var(--raggio,6px);padding:12px;margin-top:.75rem;display:flex;flex-wrap:wrap;align-items:baseline;gap:14px}
-.pf-app.t .econ-saving-label{font-size:13px;color:var(--tenue)}
-.pf-app.t .econ-saving-value{font:600 22px/1.2 var(--titoli);font-variant-numeric:tabular-nums}
-.pf-app.t .econ-saving-value.pos{color:var(--successo)}
-.pf-app.t .econ-saving-value.neg{color:var(--errore)}
+.pf-app.t .econ-table tr.tot td{font-weight:600;border-top:1px solid var(--area-bordo);border-bottom:none}
+.pf-app.t .econ-saving{background:var(--area-rialzo);border-radius:var(--area-raggio,6px);padding:12px;margin-top:.75rem;display:flex;flex-wrap:wrap;align-items:baseline;gap:14px}
+.pf-app.t .econ-saving-label{font-size:13px;color:var(--area-tenue)}
+.pf-app.t .econ-saving-value{font:600 22px/1.2 var(--area-font-titoli);font-variant-numeric:tabular-nums}
+.pf-app.t .econ-saving-value.pos{color:var(--area-ok)}
+.pf-app.t .econ-saving-value.neg{color:var(--area-err)}
 </style>
 </head>
 <body class="pf-pagina-strumento">
@@ -83,7 +84,7 @@
   <div class="pf-intro-azioni"><button class="pf-bottone-piccolo" type="button" data-pf-excel-scarica data-tip="Scarica una cartella Excel con un foglio per grafico: tabella dei dati e grafico modificabile">Scarica in Excel</button></div>
 </section>
 
-<div class="pf-app fam-b t">
+<div class="pf-app pf-area fam-b t">
 <div class="wrap">
 
 <div class="panel">
@@ -275,7 +276,7 @@ var cogResults={demE:0,demT:0,covE:0,covT:0,expE:0,disT:0,gas:0,valid:false};
 function isDark(){return PF.scuroAttivo();}
 function tickCol(){return PF.tenue();}
 function gridCol(){return PF.griglia();}
-var PAL=PF.tavolozza({el:['--flusso-el','#378add'],th:['--flusso-th','#e07a1a'],neutro:['--flusso-altro','#CCCCCC'],ink:['--inchiostro','#000000'],foglio:['--foglio','#ffffff'],
+var PAL=PF.tavolozza({el:['--flusso-el','#378add'],th:['--flusso-th','#e07a1a'],neutro:['--flusso-altro','#CCCCCC'],ink:['--area-testo','#000000'],foglio:['--area-pannello','#ffffff'],
   elS:function(){return PF.scuro(PAL.el,.38);},elC:function(){return PF.chiaro(PAL.el,.5);},
   thS:function(){return PF.scuro(PAL.th,.38);},thC:function(){return PF.chiaro(PAL.th,.5);}});
 function fmt(v){return Math.round(v).toLocaleString('it-IT');}
@@ -301,8 +302,8 @@ function daysInMonth(y,m){return new Date(y,m+1,0).getDate();}
 
 function setThermType(t){
   thermType=t;
-  document.getElementById('rdH').style.background=t==='hourly'?'var(--primario)':'transparent';
-  document.getElementById('rdM').style.background=t==='monthly'?'var(--primario)':'transparent';
+  document.getElementById('rdH').style.background=t==='hourly'?'var(--area-accento)':'transparent';
+  document.getElementById('rdM').style.background=t==='monthly'?'var(--area-accento)':'transparent';
 }
 setThermType('hourly');
 
@@ -629,8 +630,8 @@ function updateRadio(s){
   var ks=['Week','Month','Year'];
   for(var i=0;i<ks.length;i++){
     var a=ks[i].toLowerCase()===s;
-    document.getElementById('dot'+ks[i]).style.background=a?'var(--primario)':'transparent';
-    document.getElementById('radio'+ks[i]).style.borderColor=a?'var(--primario)':'var(--bordo)';
+    document.getElementById('dot'+ks[i]).style.background=a?'var(--area-accento)':'transparent';
+    document.getElementById('radio'+ks[i]).style.borderColor=a?'var(--area-accento)':'var(--area-bordo)';
   }
 }
 function setScale(s){scale=s;offset=0;autoScale=true;updateRadio(s);if(rowsE_view.length||rowsT_view.length)renderAll();}
@@ -652,12 +653,12 @@ document.getElementById('chartLine').addEventListener('click',function(e){
 
 function setMode(m){
   cogenMode=m;
-  document.getElementById('dotF').style.background=m==='full'?'var(--primario)':'transparent';
-  document.getElementById('rmF').style.borderColor=m==='full'?'var(--primario)':'var(--bordo)';
-  document.getElementById('dotE').style.background=m==='elec'?'var(--primario)':'transparent';
-  document.getElementById('rmE').style.borderColor=m==='elec'?'var(--primario)':'var(--bordo)';
-  document.getElementById('dotT').style.background=m==='term'?'var(--primario)':'transparent';
-  document.getElementById('rmT').style.borderColor=m==='term'?'var(--primario)':'var(--bordo)';
+  document.getElementById('dotF').style.background=m==='full'?'var(--area-accento)':'transparent';
+  document.getElementById('rmF').style.borderColor=m==='full'?'var(--area-accento)':'var(--area-bordo)';
+  document.getElementById('dotE').style.background=m==='elec'?'var(--area-accento)':'transparent';
+  document.getElementById('rmE').style.borderColor=m==='elec'?'var(--area-accento)':'var(--area-bordo)';
+  document.getElementById('dotT').style.background=m==='term'?'var(--area-accento)':'transparent';
+  document.getElementById('rmT').style.borderColor=m==='term'?'var(--area-accento)':'var(--area-bordo)';
   recalcCogen();
 }
 setMode('full');
@@ -837,7 +838,7 @@ function recalcEcon(){
   document.getElementById('tabCog').innerHTML =
     '<tbody>'+
     '<tr><td>Elettricità acquistata</td><td class="num">'+fmt(elecBuyCog)+' kWh</td><td class="num">'+fmtEuro(costElecCog_buy)+'</td></tr>'+
-    '<tr><td>Elettricità immessa (ricavo)</td><td class="num">'+fmt(expE)+' kWh</td><td class="num" style="color:var(--successo)">−'+fmtEuro(revElecCog)+'</td></tr>'+
+    '<tr><td>Elettricità immessa (ricavo)</td><td class="num">'+fmt(expE)+' kWh</td><td class="num" style="color:var(--area-ok)">−'+fmtEuro(revElecCog)+'</td></tr>'+
     '<tr><td>Metano cogeneratore</td><td class="num">'+fmt(gasCog)+' Sm³</td><td class="num">'+fmtEuro(gasCog*cGas)+'</td></tr>'+
     '<tr><td>Metano caldaia integrazione</td><td class="num">'+fmt(gasBoilerCog_Sm3)+' Sm³</td><td class="num">'+fmtEuro(gasBoilerCog_Sm3*cGas)+'</td></tr>'+
     '<tr class="tot"><td colspan="2">Costo totale</td><td class="num">'+fmtEuro(totCog)+'</td></tr>'+

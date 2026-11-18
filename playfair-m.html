@@ -8,41 +8,42 @@
 <link rel="icon" href="img/favicon.svg" type="image/svg+xml">
 <script>try{var t=localStorage.getItem('pf-tema');if(t)document.documentElement.dataset.theme=t;}catch(e){}</script>
 <link rel="stylesheet" href="assets/tema.css">
+<link rel="stylesheet" href="assets/area.css">
 <link rel="stylesheet" href="assets/sito.css">
 <link rel="stylesheet" href="assets/strumenti.css">
 <style>
 .pf-app.m .panel{padding:14px}
-.pf-app.m .panel-title{margin-bottom:10px;border-bottom:1px solid var(--linea);padding-bottom:6px}
+.pf-app.m .panel-title{margin-bottom:10px;border-bottom:1px solid var(--area-linea);padding-bottom:6px}
 .pf-app.m .row{display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end;margin-bottom:8px}
 .pf-app.m .field{min-width:110px}
 .pf-app.m .inv-list{display:flex;flex-direction:column;gap:5px}
-.pf-app.m .inv-item{display:flex;align-items:center;gap:8px;padding:6px 10px;border:1px solid var(--linea);border-radius:4px;background:var(--foglio);font-size:13px;cursor:pointer}
-.pf-app.m .inv-item:hover{background:var(--rialzo)}
-.pf-app.m .inv-item.selected{background:var(--tinta);border-color:var(--primario);box-shadow:inset 0 0 0 1px var(--primario)}
+.pf-app.m .inv-item{display:flex;align-items:center;gap:8px;padding:6px 10px;border:1px solid var(--area-linea);border-radius:4px;background:var(--area-pannello);font-size:13px;cursor:pointer}
+.pf-app.m .inv-item:hover{background:var(--area-rialzo)}
+.pf-app.m .inv-item.selected{background:var(--area-tinta);border-color:var(--area-accento);box-shadow:inset 0 0 0 1px var(--area-accento)}
 .pf-app.m .inv-dot{width:11px;height:11px;flex-shrink:0;border-radius:2px}
 .pf-app.m .inv-name{font-weight:600;flex:1}
-.pf-app.m .inv-meta{color:var(--tenue);font-size:12px;font-variant-numeric:tabular-nums}
+.pf-app.m .inv-meta{color:var(--area-tenue);font-size:12px;font-variant-numeric:tabular-nums}
 .pf-app.m .kpi-table-wrap{overflow-x:auto;margin-top:4px}
 .pf-app.m table.kpi-table{border-collapse:collapse;min-width:100%;font-size:13px;font-variant-numeric:tabular-nums}
-.pf-app.m table.kpi-table th,.pf-app.m table.kpi-table td{border-bottom:1px solid var(--linea);padding:6px 10px;white-space:nowrap;text-align:right}
-.pf-app.m table.kpi-table thead th{background:var(--rialzo);font:600 12px/1.3 var(--titoli);color:var(--inchiostro)}
-.pf-app.m table.kpi-table th.row-hdr{text-align:left;min-width:130px;cursor:pointer;font-weight:600;text-decoration:underline dotted;text-underline-offset:3px;background:var(--foglio)}
-.pf-app.m table.kpi-table tbody tr:hover > *{background:var(--rialzo)}
-.pf-app.m .good{color:var(--successo);font-weight:600}
-.pf-app.m .bad{color:var(--errore);font-weight:600}
-.pf-app.m .tabs{display:flex;gap:2px;border-bottom:1px solid var(--linea);margin-bottom:12px;flex-wrap:wrap}
-.pf-app.m .tab{padding:7px 14px;cursor:pointer;font:600 14px/1.2 var(--titoli);color:var(--tenue);border-bottom:3px solid transparent;margin-bottom:-1px}
-.pf-app.m .tab:hover{color:var(--inchiostro);border-bottom-color:var(--linea)}
-.pf-app.m .tab.active{color:var(--inchiostro);border-bottom-color:var(--primario)}
+.pf-app.m table.kpi-table th,.pf-app.m table.kpi-table td{border-bottom:1px solid var(--area-linea);padding:6px 10px;white-space:nowrap;text-align:right}
+.pf-app.m table.kpi-table thead th{background:var(--area-rialzo);font:600 12px/1.3 var(--area-font-titoli);color:var(--area-testo)}
+.pf-app.m table.kpi-table th.row-hdr{text-align:left;min-width:130px;cursor:pointer;font-weight:600;text-decoration:underline dotted;text-underline-offset:3px;background:var(--area-pannello)}
+.pf-app.m table.kpi-table tbody tr:hover > *{background:var(--area-rialzo)}
+.pf-app.m .good{color:var(--area-ok);font-weight:600}
+.pf-app.m .bad{color:var(--area-err);font-weight:600}
+.pf-app.m .tabs{display:flex;gap:2px;border-bottom:1px solid var(--area-linea);margin-bottom:12px;flex-wrap:wrap}
+.pf-app.m .tab{padding:7px 14px;cursor:pointer;font:600 14px/1.2 var(--area-font-titoli);color:var(--area-tenue);border-bottom:3px solid transparent;margin-bottom:-1px}
+.pf-app.m .tab:hover{color:var(--area-testo);border-bottom-color:var(--area-linea)}
+.pf-app.m .tab.active{color:var(--area-testo);border-bottom-color:var(--area-accento)}
 .pf-app.m .tab-content{display:none}
 .pf-app.m .tab-content.active{display:block}
 .pf-app.m .rate-mode-row{display:flex;gap:6px;margin-bottom:10px}
 .pf-app.m .rate-mode-btn{padding:4px 12px;font-size:13px}
-.pf-app.m .rate-mode-btn.active{background:var(--primario);color:var(--su-primario);border-color:var(--primario)}
+.pf-app.m .rate-mode-btn.active{background:var(--area-accento);color:var(--area-su-accento);border-color:var(--area-accento)}
 .pf-app.m .imp-list{display:flex;flex-direction:column;gap:4px;margin-top:8px}
-.pf-app.m .imp-item{display:flex;align-items:center;gap:8px;padding:4px 10px;border:1px solid var(--linea);border-radius:4px;background:var(--rialzo);font-size:13px}
+.pf-app.m .imp-item{display:flex;align-items:center;gap:8px;padding:4px 10px;border:1px solid var(--area-linea);border-radius:4px;background:var(--area-rialzo);font-size:13px}
 .pf-app.m .imp-item span{flex:1}
-.pf-app.m #bilog-wrap{max-width:100%;border-radius:4px;background:var(--foglio)}
+.pf-app.m #bilog-wrap{max-width:100%;border-radius:4px;background:var(--area-pannello)}
 </style>
 </head>
 <body class="pf-pagina-strumento">
@@ -83,7 +84,7 @@
   <div class="pf-intro-azioni"><button class="pf-bottone-piccolo" type="button" data-pf-excel-scarica data-tip="Scarica una cartella Excel con un foglio per grafico: tabella dei dati e grafico modificabile">Scarica in Excel</button></div>
 </section>
 
-<div class="pf-app fam-a m">
+<div class="pf-app pf-area fam-a m">
 <!-- TASSO -->
 <div class="panel">
   <div class="panel-title">Tasso di sconto</div>
@@ -131,16 +132,16 @@
     <button class="primary" onclick="saveCSV()">Salva su file</button>
     <button onclick="document.getElementById('modal-istr').classList.add('open')">Istruzioni</button>
   </div>
-  <div id="csv-msg" style="margin-top:6px;font-size:12px;color:var(--tenue)"></div>
+  <div id="csv-msg" style="margin-top:6px;font-size:12px;color:var(--area-tenue)"></div>
 </div>
 
 <!-- LISTA INVESTIMENTI -->
 <div class="panel">
   <div class="panel-title" style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0;border-bottom:none;padding-bottom:0">
-    <span style="text-transform:uppercase;letter-spacing:.06em;font-size:11px;font-weight:500">Investimenti caricati <span style="font-weight:400;color:var(--tenue)">(clicca per selezionare)</span></span>
+    <span style="text-transform:uppercase;letter-spacing:.06em;font-size:11px;font-weight:500">Investimenti caricati <span style="font-weight:400;color:var(--area-tenue)">(clicca per selezionare)</span></span>
     <button id="inv-toggle-btn" onclick="toggleInvPanel()" style="padding:2px 9px;font-size:12px">▲ Comprimi</button>
   </div>
-  <div id="inv-panel-body" style="margin-top:10px;border-top:1px solid var(--linea);padding-top:8px">
+  <div id="inv-panel-body" style="margin-top:10px;border-top:1px solid var(--area-linea);padding-top:8px">
     <div id="inv-list" class="inv-list"><div class="empty-state">Nessun investimento caricato</div></div>
     <div style="margin-top:8px;text-align:right"><button class="danger" onclick="removeAll()">Elimina tutti</button></div>
   </div>
@@ -173,7 +174,7 @@
       <button onclick="npvZoomReset();renderNPVChart()">Ripristina</button>
     </div>
     <div class="chart-wrap" style="height:320px"><canvas id="npvChart" data-pf-titolo="VAN cumulato per anno"></canvas></div>
-    <div id="npv-legend" style="display:flex;gap:16px;font-size:12px;color:var(--tenue);margin-top:8px;flex-wrap:wrap"></div>
+    <div id="npv-legend" style="display:flex;gap:16px;font-size:12px;color:var(--area-tenue);margin-top:8px;flex-wrap:wrap"></div>
   </div>
 
   <div id="tab-kpi" class="tab-content">
@@ -188,7 +189,7 @@
   </div>
 
   <div id="tab-bilog" class="tab-content">
-    <div id="bilog-wrap" style="width:600px;height:600px;position:relative;border:1px solid var(--linea);margin-bottom:10px">
+    <div id="bilog-wrap" style="width:600px;height:600px;position:relative;border:1px solid var(--area-linea);margin-bottom:10px">
       <canvas id="bilogChart" data-pf-excel="immagine" data-pf-titolo="Diagramma bilog CAPEX – flusso di cassa"></canvas>
     </div>
     <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px">
@@ -197,7 +198,7 @@
       <button onclick="renderBilog()">Traccia</button>
       <button onclick="bilogReset()">Ripristina</button>
     </div>
-    <div id="bilog-legend" style="display:flex;gap:16px;font-size:12px;color:var(--tenue);flex-wrap:wrap"></div>
+    <div id="bilog-legend" style="display:flex;gap:16px;font-size:12px;color:var(--area-tenue);flex-wrap:wrap"></div>
   </div>
 </div>
 
@@ -372,7 +373,7 @@ function renderList(){
 function updateImpSelect(){ var sel=document.getElementById('imp-inv'); if(!sel)return; var cur=sel.value; var h='<option value="">-- seleziona --</option>'; for(var i=0;i<investments.length;i++) h+='<option value="'+i+'">'+investments[i].name+'</option>'; sel.innerHTML=h; if(investments[parseInt(cur)])sel.value=cur; }
 function addImprevisto(){ var invIdx=parseInt(document.getElementById('imp-inv').value), value=parseFloat(document.getElementById('imp-value').value), year=parseInt(document.getElementById('imp-year').value); if(isNaN(invIdx)||!investments[invIdx]){alert('Seleziona un investimento.');return;} if(isNaN(value)||isNaN(year)||year<1){alert('Compila valore e anno.');return;} imprevisti.push({invIdx:invIdx,invName:investments[invIdx].name,value:value,year:year}); document.getElementById('imp-value').value=''; document.getElementById('imp-year').value=''; renderImprevisti(); recalcAll(); }
 function removeImprevisto(i){ imprevisti.splice(i,1); renderImprevisti(); recalcAll(); }
-function renderImprevisti(){ var el=document.getElementById('imp-list'); if(!imprevisti.length){el.innerHTML='';return;} var h=''; for(var i=0;i<imprevisti.length;i++){var imp=imprevisti[i],col=imp.value>=0?'var(--successo)':'var(--errore)',sign=imp.value>=0?'+':''; h+='<div class="imp-item"><span><strong>'+imp.invName+'</strong> &nbsp;–&nbsp; Anno '+imp.year+' &nbsp;–&nbsp; <span style="color:'+col+'">'+sign+fmtCur(imp.value)+'</span></span><button class="danger" onclick="removeImprevisto('+i+')">✕</button></div>';} el.innerHTML=h; }
+function renderImprevisti(){ var el=document.getElementById('imp-list'); if(!imprevisti.length){el.innerHTML='';return;} var h=''; for(var i=0;i<imprevisti.length;i++){var imp=imprevisti[i],col=imp.value>=0?'var(--area-ok)':'var(--area-err)',sign=imp.value>=0?'+':''; h+='<div class="imp-item"><span><strong>'+imp.invName+'</strong> &nbsp;–&nbsp; Anno '+imp.year+' &nbsp;–&nbsp; <span style="color:'+col+'">'+sign+fmtCur(imp.value)+'</span></span><button class="danger" onclick="removeImprevisto('+i+')">✕</button></div>';} el.innerHTML=h; }
 
 /* ── KPI TABLE ── */
 function renderKPI(){
@@ -498,7 +499,7 @@ function renderBilog(){
     }
     refLine(1,PF.testo(),[]); refLine(10,PF.testo(),[5,4]);
     var pbtK=parseFloat(document.getElementById('bilog-pbt').value);
-    if(!isNaN(pbtK)&&pbtK>0) refLine(pbtK,PF.c('--primario'),[6,3]);
+    if(!isNaN(pbtK)&&pbtK>0) refLine(pbtK,PF.c('--serie-1'),[6,3]);
     /* bubbles */
     var valid=[];
     for(var i=0;i<investments.length;i++){var inv=investments[i],cf=inv.revenue-inv.costs;if(inv.capex>0&&cf>0)valid.push({inv:inv,cf:cf});}
@@ -530,9 +531,9 @@ function renderBilog(){
     /* legend */
     var lh='';
     for(var i=0;i<valid.length;i++) lh+='<span style="display:flex;align-items:center;gap:4px"><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:'+valid[i].inv.color+'"></span>'+valid[i].inv.name+'</span>';
-    lh+='<span style="display:flex;align-items:center;gap:4px"><span style="display:inline-block;width:18px;border-top:1px solid var(--inchiostro)"></span>PBT 1a</span>';
-    lh+='<span style="display:flex;align-items:center;gap:4px"><span style="display:inline-block;width:18px;border-top:1px dashed var(--inchiostro)"></span>PBT 10a</span>';
-    if(!isNaN(pbtK)&&pbtK>0) lh+='<span style="display:flex;align-items:center;gap:4px"><span style="display:inline-block;width:18px;border-top:1px solid var(--primario)"></span>PBT '+pbtK+'a</span>';
+    lh+='<span style="display:flex;align-items:center;gap:4px"><span style="display:inline-block;width:18px;border-top:1px solid var(--area-testo)"></span>PBT 1a</span>';
+    lh+='<span style="display:flex;align-items:center;gap:4px"><span style="display:inline-block;width:18px;border-top:1px dashed var(--area-testo)"></span>PBT 10a</span>';
+    if(!isNaN(pbtK)&&pbtK>0) lh+='<span style="display:flex;align-items:center;gap:4px"><span style="display:inline-block;width:18px;border-top:1px solid var(--serie-1)"></span>PBT '+pbtK+'a</span>';
     leg.innerHTML=lh;
   }
 
@@ -541,7 +542,7 @@ function renderBilog(){
   if(!cvs._eb){
     cvs._eb=true;
     var tip=document.createElement('div');
-    tip.style.cssText='position:fixed;background:var(--foglio);color:var(--inchiostro);border:1px solid var(--linea);border-radius:4px;box-shadow:var(--ombra-2);padding:5px 9px;font-size:12px;pointer-events:none;display:none;z-index:9999;line-height:1.6';
+    tip.style.cssText='position:fixed;background:var(--area-pannello);color:var(--area-testo);border:1px solid var(--area-linea);border-radius:4px;box-shadow:var(--area-ombra-2);padding:5px 9px;font-size:12px;pointer-events:none;display:none;z-index:9999;line-height:1.6';
     document.body.appendChild(tip);
     cvs.addEventListener('mousemove',function(e){
       var rect=cvs.getBoundingClientRect(),sx=cvs.width/rect.width,sy=cvs.height/rect.height;
@@ -587,17 +588,17 @@ function saveCSV(){
 function loadCSV(){
   var file=document.getElementById('csv-file').files[0];
   var msg=document.getElementById('csv-msg');
-  if(!file){msg.style.color='var(--errore)';msg.textContent='Seleziona un file CSV prima.';return;}
+  if(!file){msg.style.color='var(--area-err)';msg.textContent='Seleziona un file CSV prima.';return;}
   var reader=new FileReader();
   reader.onload=function(e){
     try{
       var lines=e.target.result.split(/\r?\n/).filter(function(l){return l.trim();});
-      if(lines.length<2){msg.textContent='File vuoto.';msg.style.color='var(--errore)';return;}
+      if(lines.length<2){msg.textContent='File vuoto.';msg.style.color='var(--area-err)';return;}
       var sep=lines[0].indexOf(';')>-1?';':',';
       var headers=lines[0].split(sep).map(function(h){return h.trim().toLowerCase();});
       var req=['nome','capex','costi_annuali','ricavi_annuali','durata_anni'];
       var missing=req.filter(function(r){return headers.indexOf(r)===-1;});
-      if(missing.length){msg.style.color='var(--errore)';msg.textContent='Colonne mancanti: '+missing.join(', ');return;}
+      if(missing.length){msg.style.color='var(--area-err)';msg.textContent='Colonne mancanti: '+missing.join(', ');return;}
       investments=[];imprevisti=[];invCount=1;selectedIdx=null;
       var added=0,lastIdx=null;
       for(var i=1;i<lines.length;i++){
@@ -609,10 +610,10 @@ function loadCSV(){
         lastIdx=investments.length; row.color=COLORS[lastIdx%COLORS.length]; row.metrics=null;
         investments.push(row); investments[lastIdx].metrics=calcMetrics(investments[lastIdx]); added++;
       }
-      msg.style.color=added>0?'var(--successo)':'var(--errore)';
+      msg.style.color=added>0?'var(--area-ok)':'var(--area-err)';
       msg.textContent=added>0?'Caricati '+added+' investimenti.':'Nessuna riga valida.';
       if(added>0){updateImpSelect();selectInvestment(lastIdx);renderCompareCharts();}
-    }catch(ex){msg.style.color='var(--errore)';msg.textContent='Errore: '+ex.message;}
+    }catch(ex){msg.style.color='var(--area-err)';msg.textContent='Errore: '+ex.message;}
   };
   reader.readAsText(file);
 }

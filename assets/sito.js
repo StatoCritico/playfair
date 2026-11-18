@@ -147,6 +147,8 @@
     }
     bersaglio = el;
     bolla.textContent = testo;
+    // dentro l'area di lavoro (strumenti, Sankey) la bolla usa la palette fissa dell'area; nel menu quella del tema
+    bolla.classList.toggle("pf-tip-area", !!(el.closest && el.closest(".pf-area")));
     bolla.classList.remove("visibile", "sopra");
     var r = el.getBoundingClientRect(), vw = doc.documentElement.clientWidth, vh = window.innerHeight, m = 8;
     bolla.style.left = "0px"; bolla.style.top = "0px";
@@ -483,11 +485,12 @@
     var c = doc.createElement("canvas");
     c.width = w; c.height = h + alto;
     var g = c.getContext("2d");
-    g.fillStyle = opz.sfondo || colore("--foglio") || "#ffffff";
+    // colori dell'AREA DI LAVORO (area.css), non del tema: le immagini esportate non cambiano con la cornice
+    g.fillStyle = opz.sfondo || colore("--area-pannello") || "#ffffff";
     g.fillRect(0, 0, c.width, c.height);
     g.drawImage(sorgente, 0, 0);
-    g.fillStyle = opz.inchiostro || colore("--tenue") || "#5f5868";
-    g.font = corpo + "px " + (colore("--testo") || "sans-serif");
+    g.fillStyle = opz.inchiostro || colore("--area-tenue") || "#545b67";
+    g.font = corpo + "px " + (colore("--area-font") || "sans-serif");
     g.textBaseline = "middle";
     var testo = opz.testo || fonte(), x = Math.round(corpo * 0.9);
     while (testo.length > 20 && g.measureText(testo).width > w - 2 * x) testo = testo.slice(0, -2);

@@ -1,34 +1,36 @@
 /* =====================================================================================
    Playfair – strumenti.css
-   Stile comune degli strumenti Playfair-S/E/T/M/C. Si carica dopo tema.css e sito.css.
-   Tutti i colori passano dalle variabili di tema.css: cambiando tema.css si ristilano
-   anche gli strumenti. Le regole sono confinate dentro .pf-strumento / .pf-app, così non
-   toccano testata, menu e piè di pagina.
+   Stile comune degli strumenti Playfair-S/E/T/M/G/C. Si carica dopo tema.css, area.css e sito.css.
+   Due livelli:
+   · sezione 2 (.pf-intro, .pf-come, .pf-bottone-piccolo) = CORNICE: intestazione dello strumento, usa le
+     variabili di tema.css e cambia con il tema;
+   · sezioni 1, 3, 4, 5 (.pf-app.pf-area) = AREA DI LAVORO: pannelli, grafici, KPI, tabelle, controlli; usa solo
+     le variabili --area-* e i colori dei dati di area.css e NON cambia con il tema.
    ===================================================================================== */
 
 /* ---- 1. Alias delle variabili dell'ambiente claude.ai usate dagli artifact originali ---- */
 :root {
-  --color-text-primary: var(--inchiostro);
-  --color-text-secondary: var(--tenue);
-  --color-text-tertiary: var(--tenue);
-  --color-text-info: var(--segno);
-  --color-text-success: var(--successo);
-  --color-text-warning: var(--attenzione);
-  --color-text-danger: var(--errore);
-  --color-background-primary: var(--foglio);
-  --color-background-secondary: var(--rialzo);
-  --color-background-tertiary: var(--carta);
-  --color-background-info: var(--tinta);
-  --color-background-success: var(--successo-fondo);
-  --color-background-warning: var(--attenzione-fondo);
-  --color-background-danger: var(--errore-fondo);
-  --color-border-primary: var(--bordo);
-  --color-border-secondary: var(--linea);
-  --color-border-tertiary: var(--linea);
-  --font-sans: var(--testo);
-  --font-mono: var(--mono);
-  --border-radius-md: var(--raggio, 6px);
-  --border-radius-lg: calc(var(--raggio, 6px) + 4px);
+  --color-text-primary: var(--area-testo);
+  --color-text-secondary: var(--area-tenue);
+  --color-text-tertiary: var(--area-tenue);
+  --color-text-info: var(--area-segno);
+  --color-text-success: var(--area-ok);
+  --color-text-warning: var(--area-warn);
+  --color-text-danger: var(--area-err);
+  --color-background-primary: var(--area-pannello);
+  --color-background-secondary: var(--area-rialzo);
+  --color-background-tertiary: var(--area-fondo);
+  --color-background-info: var(--area-tinta);
+  --color-background-success: var(--area-ok-fondo);
+  --color-background-warning: var(--area-warn-fondo);
+  --color-background-danger: var(--area-err-fondo);
+  --color-border-primary: var(--area-bordo);
+  --color-border-secondary: var(--area-linea);
+  --color-border-tertiary: var(--area-linea);
+  --font-sans: var(--area-font);
+  --font-mono: var(--area-font-mono);
+  --border-radius-md: var(--area-raggio);
+  --border-radius-lg: calc(var(--area-raggio) + 4px);
 }
 
 /* ---- 2. Intestazione dello strumento e riquadro "Come si usa" ---- */
@@ -56,79 +58,84 @@ details.pf-come li + li { margin-top: .25rem; }
 details.pf-come p { font-size: .92rem; line-height: 1.6; }
 @media (prefers-reduced-motion: reduce) { details.pf-come > summary::before { transition: none; } }
 
-/* ---- 3. Base comune dell'area dello strumento ---- */
-.pf-app { color: var(--inchiostro); font-family: var(--testo); font-size: 14px; line-height: 1.45; }
+/* ---- 3. Base comune dell'area dello strumento ----
+   Il «vassoio» .pf-app ha il fondo dell'area: tutto ciò che sta dentro (anche il testo fuori dai pannelli) poggia
+   sulla palette fissa, qualunque sia il fondo della pagina scelto dal tema. */
+.pf-app { color: var(--area-testo); font-family: var(--area-font); font-size: 14px; line-height: 1.45;
+  background: var(--area-fondo); border: 1px solid var(--area-linea); border-radius: var(--area-r-l); padding: 14px;
+  box-shadow: var(--area-ombra-1); }
+@media (max-width: 600px) { .pf-app { padding: 8px; margin-inline: -4px; } }
 .pf-app, .pf-app * { box-sizing: border-box; }
 :where(.pf-app) :where(div, span, p, h2, h3, ul, ol, li, table, label, pre, canvas) { margin: 0; padding: 0; }
 .pf-app canvas { display: block; }
 .pf-app b, .pf-app strong { font-weight: 600; }
-.pf-app code { font-family: var(--mono); background: var(--rialzo); padding: 1px 4px; font-size: 12px; border-radius: 3px; }
-.pf-app pre { font-family: var(--mono); background: var(--rialzo); padding: 8px; font-size: 11px; overflow-x: auto; margin-top: 6px; border-radius: 4px; }
-:where(.pf-app) :focus-visible { outline: 3px solid var(--primario); outline-offset: 2px; }
+.pf-app code { font-family: var(--area-font-mono); background: var(--area-rialzo); padding: 1px 4px; font-size: 12px; border-radius: 3px; }
+.pf-app pre { font-family: var(--area-font-mono); background: var(--area-rialzo); padding: 8px; font-size: 11px; overflow-x: auto; margin-top: 6px; border-radius: 4px; }
+:where(.pf-app) :focus-visible { outline: 3px solid var(--area-focus); outline-offset: 2px; }
 
 /* campi e pulsanti generici (stile EuGEnio, in scala ridotta) */
 :where(.pf-app) :where(input[type=number], input[type=text], select) {
-  padding: 5px 8px; border: 1px solid var(--bordo); border-radius: 4px; font: inherit; font-size: 13px;
-  background: var(--foglio); color: var(--inchiostro); outline: none;
+  padding: 5px 8px; border: 1px solid var(--area-bordo); border-radius: 4px; font: inherit; font-size: 13px;
+  background: var(--area-pannello); color: var(--area-testo); outline: none;
 }
-:where(.pf-app) :where(input[type=number], input[type=text], select):focus { border-color: var(--primario); box-shadow: 0 0 0 2px color-mix(in srgb, var(--primario) 35%, transparent); }
+:where(.pf-app) :where(input[type=number], input[type=text], select):focus { border-color: var(--area-focus); box-shadow: 0 0 0 2px color-mix(in srgb, var(--area-focus) 35%, transparent); }
 :where(.pf-app) :where(button) {
-  padding: 5px 12px; border: 1px solid var(--bordo); border-radius: 4px; background: transparent; color: var(--inchiostro);
+  padding: 5px 12px; border: 1px solid var(--area-bordo); border-radius: 4px; background: transparent; color: var(--area-testo);
   font: inherit; font-size: 13px; cursor: pointer; white-space: nowrap;
 }
-:where(.pf-app) :where(button):hover { background: var(--rialzo); border-color: var(--inchiostro); }
-:where(.pf-app) :where(button.primary) { background: var(--primario); color: var(--su-primario); border-color: var(--primario); font-weight: 600; }
-:where(.pf-app) :where(button.primary):hover { background: var(--primario-forte); border-color: var(--primario-forte); color: var(--su-primario); }
-:where(.pf-app) :where(button.secondary) { color: var(--primario); border-color: var(--primario); }
-:where(.pf-app) :where(button.danger) { color: var(--errore); border-color: var(--errore); }
-:where(.pf-app) :where(button.danger):hover { background: var(--errore-fondo); }
-:where(.pf-app) input[type=file] { font-size: 13px; color: var(--inchiostro); }
+:where(.pf-app) :where(button):hover { background: var(--area-rialzo); border-color: var(--area-testo); }
+:where(.pf-app) :where(button.primary) { background: var(--area-accento); color: var(--area-su-accento); border-color: var(--area-accento); font-weight: 600; }
+:where(.pf-app) :where(button.primary):hover { background: var(--area-accento-forte); border-color: var(--area-accento-forte); color: var(--area-su-accento); }
+:where(.pf-app) :where(button.secondary) { color: var(--area-accento); border-color: var(--area-accento); }
+:where(.pf-app) :where(button.danger) { color: var(--area-err); border-color: var(--area-err); }
+:where(.pf-app) :where(button.danger):hover { background: var(--area-err-fondo); }
+:where(.pf-app) input[type=file] { font-size: 13px; color: var(--area-testo); }
 
 /* ---- 4. Famiglia A: Playfair-S e Playfair-M (pannelli con intestazione) ---- */
-.pf-app.fam-a .panel { background: var(--foglio); border: 1px solid var(--linea); border-radius: var(--raggio, 6px); margin-bottom: 12px; box-shadow: var(--ombra-1); }
-.pf-app.fam-a .panel-hdr { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 9px 14px; border-bottom: 1px solid var(--linea); }
-.pf-app.fam-a .panel-title { font: 600 12px/1.3 var(--titoli); color: var(--tenue); text-transform: uppercase; letter-spacing: .07em; }
+.pf-app.fam-a .panel { background: var(--area-pannello); border: 1px solid var(--area-linea); border-radius: var(--area-raggio); margin-bottom: 12px; box-shadow: var(--area-ombra-1); }
+.pf-app.fam-a .panel-hdr { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 9px 14px; border-bottom: 1px solid var(--area-linea); }
+.pf-app.fam-a .panel-title { font: 600 12px/1.3 var(--area-font-titoli); color: var(--area-tenue); text-transform: uppercase; letter-spacing: .07em; }
 .pf-app.fam-a .panel-body { padding: 14px; }
 .pf-app.fam-a .panel-body.collapsed { display: none; }
 .pf-app.fam-a .hdr-btns { display: flex; gap: 6px; }
-.pf-app.fam-a .hdr-btn { padding: 2px 9px; font-size: 12px; border: 1px solid var(--bordo); background: transparent; color: var(--inchiostro); border-radius: 4px; }
-.pf-app.fam-a .hdr-btn:hover { background: var(--rialzo); }
+.pf-app.fam-a .hdr-btn { padding: 2px 9px; font-size: 12px; border: 1px solid var(--area-bordo); background: transparent; color: var(--area-testo); border-radius: 4px; }
+.pf-app.fam-a .hdr-btn:hover { background: var(--area-rialzo); }
 .pf-app.fam-a .field { display: flex; flex-direction: column; gap: 3px; flex: 1; min-width: 120px; }
-.pf-app.fam-a .field label { font-size: 12px; color: var(--tenue); }
+.pf-app.fam-a .field label { font-size: 12px; color: var(--area-tenue); }
 .pf-app.fam-a .field input, .pf-app.fam-a .field select { width: 100%; }
 .pf-app.fam-a .file-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
-.pf-app.fam-a .empty-state { color: var(--tenue); font-size: 13px; text-align: center; padding: 20px; }
+.pf-app.fam-a .empty-state { color: var(--area-tenue); font-size: 13px; text-align: center; padding: 20px; }
 .pf-app.fam-a .chart-wrap { position: relative; width: 100%; }
 .pf-app.fam-a .modal-bg { display: none; position: fixed; inset: 0; background: rgb(0 0 0 / .55); z-index: 999; align-items: center; justify-content: center; }
 .pf-app.fam-a .modal-bg.open { display: flex; }
-.pf-app.fam-a .modal { background: var(--foglio); color: var(--inchiostro); border: 1px solid var(--linea); border-radius: 10px; box-shadow: var(--ombra-2); padding: 18px; max-width: 560px; width: 92%; max-height: 82vh; overflow-y: auto; }
-.pf-app.fam-a .modal h3 { margin-bottom: 8px; font: 600 16px var(--titoli); }
-.pf-app.fam-a .modal p, .pf-app.fam-a .modal li { font-size: 13px; line-height: 1.6; color: var(--inchiostro); }
+.pf-app.fam-a .modal { background: var(--area-pannello); color: var(--area-testo); border: 1px solid var(--area-linea); border-radius: 10px; box-shadow: var(--area-ombra-2); padding: 18px; max-width: 560px; width: 92%; max-height: 82vh; overflow-y: auto; }
+.pf-app.fam-a .modal h3 { margin-bottom: 8px; font: 600 16px var(--area-font-titoli); }
+.pf-app.fam-a .modal p, .pf-app.fam-a .modal li { font-size: 13px; line-height: 1.6; color: var(--area-testo); }
 .pf-app.fam-a .modal ul { margin-left: 18px; margin-top: 6px; }
 
 /* ---- 5. Famiglia B: Playfair-E, Playfair-T, Playfair-C (pannelli compatti con cifre) ---- */
 .pf-app.fam-b .wrap { display: flex; flex-direction: column; gap: 1rem; }
-.pf-app.fam-b .panel { border: 1px solid var(--linea); border-radius: var(--raggio, 6px); padding: 1rem 1.125rem; background: var(--foglio); box-shadow: var(--ombra-1); }
+.pf-app.fam-b .panel { border: 1px solid var(--area-linea); border-radius: var(--area-raggio); padding: 1rem 1.125rem; background: var(--area-pannello); box-shadow: var(--area-ombra-1); }
 .pf-app.fam-b .ph { display: flex; align-items: center; margin-bottom: .75rem; gap: 8px; }
-.pf-app.fam-b .ptitle { font: 600 14px/1.3 var(--titoli); color: var(--inchiostro); letter-spacing: .01em; flex: 1; margin-bottom: .5rem; }
+.pf-app.fam-b .ptitle { font: 600 14px/1.3 var(--area-font-titoli); color: var(--area-testo); letter-spacing: .01em; flex: 1; margin-bottom: .5rem; }
 .pf-app.fam-b .ph .ptitle { margin-bottom: 0; }
 .pf-app.fam-b .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 8px; }
-.pf-app.fam-b .stat { background: var(--rialzo); border-radius: var(--raggio, 6px); padding: 9px 12px; }
-.pf-app.fam-b .stat-label { font-size: 12px; color: var(--tenue); margin-bottom: 3px; }
-.pf-app.fam-b .stat-value { font: 600 19px/1.2 var(--titoli); font-variant-numeric: tabular-nums; color: var(--inchiostro); }
+.pf-app.fam-b .stat { background: var(--area-rialzo); border-radius: var(--area-raggio); padding: 9px 12px; }
+.pf-app.fam-b .stat-label { font-size: 12px; color: var(--area-tenue); margin-bottom: 3px; }
+.pf-app.fam-b .stat-value { font: 600 19px/1.2 var(--area-font-titoli); font-variant-numeric: tabular-nums; color: var(--area-testo); }
 .pf-app.fam-b .ch { position: relative; width: 100%; height: 300px; }
-.pf-app.fam-b .nodata, .pf-app.fam-b .fnodata { display: flex; align-items: center; justify-content: center; height: 100%; font-size: 13px; color: var(--tenue); border: 1px dashed var(--bordo); border-radius: 4px; }
-.pf-app.fam-b .ifield { height: 28px; padding: 0 6px; border: 1px solid var(--bordo); border-radius: 4px; background: var(--foglio); color: var(--inchiostro); font-size: 13px; width: 90px; }
-.pf-app.fam-b .ifield:focus { outline: 2px solid var(--primario); outline-offset: -1px; border-color: var(--primario); }
-.pf-app.fam-b .obtn { height: 28px; padding: 0 10px; border: 1px solid var(--bordo); border-radius: 4px; background: transparent; color: var(--inchiostro); font-size: 13px; cursor: pointer; white-space: nowrap; }
-.pf-app.fam-b .obtn:hover { background: var(--rialzo); border-color: var(--primario); color: var(--primario); }
-.pf-app.fam-b .obtn:active { background: var(--tinta); }
+.pf-app.fam-b .nodata, .pf-app.fam-b .fnodata { display: flex; align-items: center; justify-content: center; height: 100%; font-size: 13px; color: var(--area-tenue); border: 1px dashed var(--area-bordo); border-radius: 4px; }
+.pf-app.fam-b .ifield { height: 28px; padding: 0 6px; border: 1px solid var(--area-bordo); border-radius: 4px; background: var(--area-pannello); color: var(--area-testo); font-size: 13px; width: 90px; }
+.pf-app.fam-b .ifield:focus { outline: 2px solid var(--area-focus); outline-offset: -1px; border-color: var(--area-focus); }
+.pf-app.fam-b .obtn { height: 28px; padding: 0 10px; border: 1px solid var(--area-bordo); border-radius: 4px; background: transparent; color: var(--area-testo); font-size: 13px; cursor: pointer; white-space: nowrap; }
+.pf-app.fam-b .obtn:hover { background: var(--area-rialzo); border-color: var(--area-accento); color: var(--area-accento); }
+.pf-app.fam-b .obtn:active { background: var(--area-tinta); }
 .pf-app.fam-b .srow { display: flex; align-items: center; gap: 10px; margin-top: 10px; flex-wrap: wrap; }
-.pf-app.fam-b .srow label { font-size: 13px; color: var(--tenue); }
-.pf-app.fam-b .riquadro { border: 1px solid var(--linea); border-radius: var(--raggio, 6px); padding: .875rem 1.125rem; background: var(--foglio); }
-.pf-app.fam-b .etichetta { font: 600 12px/1.3 var(--titoli); color: var(--tenue); text-transform: uppercase; letter-spacing: .07em; }
-.pf-app.fam-b .aiuto { font-size: 13px; color: var(--inchiostro); background: var(--rialzo); border: 1px solid var(--linea); border-radius: 4px; padding: 8px 10px; margin-bottom: 8px; line-height: 1.6; }
-.pf-app.fam-b .radio-cerchio { display: inline-flex; align-items: center; justify-content: center; width: 16px; height: 16px; border-radius: 50%; border: 1.5px solid var(--bordo); background: var(--foglio); cursor: pointer; flex-shrink: 0; }
+.pf-app.fam-b .srow label { font-size: 13px; color: var(--area-tenue); }
+.pf-app.fam-b .riquadro { border: 1px solid var(--area-linea); border-radius: var(--area-raggio); padding: .875rem 1.125rem; background: var(--area-pannello); }
+.pf-app.fam-b .etichetta { font: 600 12px/1.3 var(--area-font-titoli); color: var(--area-tenue); text-transform: uppercase; letter-spacing: .07em; }
+.pf-app.fam-b .aiuto { font-size: 13px; color: var(--area-testo); background: var(--area-rialzo); border: 1px solid var(--area-linea); border-radius: 4px; padding: 8px 10px; margin-bottom: 8px; line-height: 1.6; }
+.pf-app.fam-b .radio-cerchio { display: inline-flex; align-items: center; justify-content: center; width: 16px; height: 16px; border-radius: 50%; border: 1.5px solid var(--area-bordo); background: var(--area-pannello); cursor: pointer; flex-shrink: 0; }
 .pf-app.fam-b .radio-punto { width: 8px; height: 8px; border-radius: 50%; background: transparent; display: block; }
 
 @media (max-width: 700px) {

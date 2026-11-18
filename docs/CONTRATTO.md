@@ -15,7 +15,8 @@ Documento vincolante per tutti gli agenti che costruiscono il sito. Lingua del s
   personaggi.html       Playfair e Sankey
   playfair-s.html  playfair-e.html  playfair-t.html  playfair-m.html  playfair-g.html  playfair-c.html
   sankey.html           editor di diagrammi a blocchi
-  assets/tema.css       SOLO variabili (colori, font, raggi, ombre): è il "CSS modificabile"
+  assets/tema.css       SOLO variabili della CORNICE (colori, font, raggi, ombre): è il "CSS modificabile"
+  assets/area.css       palette FISSA dell'AREA DI LAVORO (--area-*) + colori dei dati (--flusso-*, --serie-*)
   assets/sito.css       testata, menu, tooltip, piè di pagina, zone di trascinamento, componenti comuni
   assets/sito.js        tema chiaro/scuro, menu mobile, voce attiva, drag&drop automatico sui file
   assets/sankey.css  assets/sankey.js
@@ -27,18 +28,36 @@ Documento vincolante per tutti gli agenti che costruiscono il sito. Lingua del s
   wrangler.jsonc  .assetsignore  .gitignore  README.md  404.html
 ```
 
-## tema.css (variabili) — nomi obbligatori
-Riprendere i nomi di EuGEnio: `--carta --foglio --rialzo --tinta --linea --bordo --inchiostro --tenue --primario --primario-forte --su-primario --profondo --segno --successo(-fondo) --attenzione(-fondo) --errore(-fondo) --serie-1..6 --ombra-1 --ombra-2`. Tema scuro predefinito su `:root, [data-theme="dark"]`, chiaro con `[data-theme="light"]` su `<html>`. Il "vestito" Playfair è una variante: tenere i valori corallo di EuGEnio come base ma con un tocco "blueprint/tecnologico" solo nella home (variabili aggiuntive `--bp-fondo --bp-linea --bp-luce --bp-griglia`).
-Variabili aggiuntive obbligatorie per i vettori energetici (usate da Sankey, home, strumenti):
-`--flusso-el` (verde, kWh elettrici) `--flusso-th` (arancione, Sm³ e MWh termici) `--flusso-acqua` (azzurro, m³) `--flusso-co2` (marrone, t CO₂) `--flusso-altro` (grigio).
-Font: `--testo` e `--titoli` (+ `--mono`). Raggi: `--raggio`. Tutto ciò che è colore/tipo nelle pagine deve passare da queste variabili, così cambiando solo tema.css si ristila il sito. Documentare ogni variabile in `docs/CONTRATTO_CSS.md`.
+## Cornice e area di lavoro (dettagli in `docs/CONTRATTO_CSS.md`)
+L'aspetto ha due livelli:
+- **Cornice** — `assets/tema.css`, modificabile (es. da Claude Design): testata e menu, piè di pagina, sfondo della
+  pagina, pagine di testo (home, personaggi, link, licenza, 404), intestazioni degli strumenti (`.pf-intro`,
+  `.pf-come`, «Scarica in Excel»), tooltip del menu. Nomi ripresi da EuGEnio: `--carta --foglio --rialzo --tinta
+  --linea --bordo --inchiostro --tenue --primario --primario-forte --su-primario --profondo --segno
+  --successo(-fondo) --attenzione(-fondo) --errore(-fondo) --ombra-1 --ombra-2`, blueprint della home `--bp-*`,
+  font `--testo --titoli --mono`, raggi `--raggio …`. Tema scuro predefinito su `:root, [data-theme="dark"]`, chiaro
+  con `[data-theme="light"]` su `<html>`.
+- **Area di lavoro** — `assets/area.css`, palette **fissa e neutra** (non si tocca per ristilare): pannelli dei
+  grafici, canvas Chart.js, KPI, tabelle, controlli degli strumenti (campi, pulsanti, schede, zone di trascinamento),
+  tutta l'app Sankey, dialoghi e avvisi degli strumenti, esportazioni. Contenitore `.pf-area` (su `.pf-app`,
+  `.sk-app`, `.sk-dialogo`); variabili `--area-fondo --area-pannello --area-rialzo --area-tinta --area-linea
+  --area-bordo --area-testo --area-tenue --area-titolo --area-accento(-forte) --area-su-accento --area-focus
+  --area-segno --area-griglia --area-ok/-warn/-err(-fondo) --area-ombra-1/2 --area-font(-titoli/-mono)
+  --area-raggio …`, con valori propri per `[data-theme="dark"]` e `[data-theme="light"]` (segue l'interruttore del
+  sito). Negli script: `PF.c('--area-testo')`, `Playfair.colore('--area-pannello')`.
+- **Colori dei dati** (in `area.css`, significato fisso, non di competenza del tema):
+  `--flusso-el` (verde, kWh elettrici) `--flusso-th` (arancione, Sm³ e MWh termici) `--flusso-acqua` (azzurro, m³)
+  `--flusso-co2` (marrone, t CO₂) `--flusso-tep` (viola, tep) `--flusso-altro` (grigio); `--serie-1..6`.
+  La cornice li può leggere (home, 404, monogramma) ma non li ridefinisce: `area.css` si carica dopo `tema.css`.
 
 ## Script anti-lampo nel <head> (prima dei CSS) di OGNI pagina
 ```html
 <script>try{var t=localStorage.getItem('pf-tema');if(t)document.documentElement.dataset.theme=t;}catch(e){}</script>
 <link rel="stylesheet" href="assets/tema.css">
+<link rel="stylesheet" href="assets/area.css">
 <link rel="stylesheet" href="assets/sito.css">
 ```
+(`area.css` sempre subito dopo `tema.css`, in tutte le pagine; poi `strumenti.css` o `sankey.css`.)
 e prima di `</body>`: `<script src="assets/sito.js" defer></script>` (sempre dopo gli script della pagina oppure con defer).
 
 ## Testata (IDENTICA in ogni pagina, 9 voci; cambia solo `aria-current="page"` sulla voce attiva; in 404.html i link sono assoluti `/…`)
@@ -79,7 +98,10 @@ Piè di pagina comune (IDENTICO ovunque, link assoluti in 404.html): `<footer cl
 CSV d'esempio (6 set, N=1..6) in `/mnt/user-data/uploads/playfair/N/` — servono solo per i test, NON vanno copiati nel sito.
 
 ## Vettori energetici e colori (Sankey e home)
-verde = kWh elettrici; arancione = Sm³ gas e MWh termici; azzurro = m³ acqua; marrone = t CO₂.
+verde = kWh elettrici; arancione = Sm³ gas e MWh termici; azzurro = m³ acqua; marrone = t CO₂; viola = tep.
+Sankey: l'acqua (m³) sta su una scala separata e **ridotta**: tubi d'acqua proporzionali ai m³ tra loro, il più grande
+largo un terzo dello spessore massimo dei flussi energetici (`FRAZ_ACQUA` in `sankey.js`), segue lo slider «Spessore
+tubi»; legenda «acqua: scala separata, ridotta».
 
 ## Regole
 - Nessun dato inviato a server; nessun tracker; nessuna CDN (tutto in assets/vendor).

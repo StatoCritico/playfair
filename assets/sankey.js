@@ -58,8 +58,12 @@
     { id: 'carb-tep',  nome: 'Carbone → TEP',                           f: 0.0007,   num: 'tep',    den: 'kg' }
   ];
   const copiaFattori = () => FATTORI_TIPICI.map((x) => ({ ...x }));
+  /* Colori dell'AREA DI LAVORO (assets/area.css), mai del tema: nome interno → variabile CSS.
+     A schermo si scrive var(--…) negli attributi SVG; nelle esportazioni si leggono i valori della modalità chiara. */
+  const VAR_COLORI = { carta: 'area-fondo', foglio: 'area-pannello', rialzo: 'area-rialzo', linea: 'area-linea', bordo: 'area-bordo', inchiostro: 'area-testo', tenue: 'area-tenue', primario: 'area-accento', segno: 'area-segno', successo: 'area-ok', errore: 'area-err', 'errore-fondo': 'area-err-fondo', attenzione: 'area-warn' };
+  const varColore = (n) => VAR_COLORI[n] || n;
   const NOMI_COLORI = ['carta', 'foglio', 'rialzo', 'linea', 'bordo', 'inchiostro', 'tenue', 'primario', 'segno', 'successo', 'errore', 'errore-fondo', 'attenzione', 'flusso-el', 'flusso-th', 'flusso-acqua', 'flusso-co2', 'flusso-tep', 'flusso-altro'];
-  const RISERVA_CHIARA = { carta: '#ffffff', foglio: '#ffffff', rialzo: '#efedf1', linea: '#e1dde6', bordo: '#847c8e', inchiostro: '#1c1820', tenue: '#5f5868', primario: '#c4452b', segno: '#3f4fd6', successo: '#2e7d32', errore: '#c62828', 'errore-fondo': '#fdecec', attenzione: '#b7791f', 'flusso-el': '#2e9e4f', 'flusso-th': '#e8870e', 'flusso-acqua': '#2f9fd8', 'flusso-co2': '#8b5a2b', 'flusso-tep': '#7b2fa8', 'flusso-altro': '#8d8d8d' };
+  const RISERVA_CHIARA = { carta: '#ffffff', foglio: '#ffffff', rialzo: '#eceef2', linea: '#dcdfe5', bordo: '#7f8693', inchiostro: '#181b20', tenue: '#545b67', primario: '#262d38', segno: '#3045c2', successo: '#2a7a35', errore: '#b1183f', 'errore-fondo': '#fbe6ea', attenzione: '#845700', 'flusso-el': '#1b8a45', 'flusso-th': '#d45a00', 'flusso-acqua': '#1272b0', 'flusso-co2': '#7a4a26', 'flusso-tep': '#7b2fa8', 'flusso-altro': '#706a7a' };
 
   const $ = (s, r = document) => r.querySelector(s);
   const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
@@ -708,7 +712,12 @@
   }
 
   /** Spessore dei tubi. Scala unica (predefinita): proporzionale all'equivalente in tep, una sola scala per tutto il
-      diagramma; acqua e flussi senza equivalente su scale proprie. Senza scala unica: una scala per unità (o per energia). */
+      diagramma; acqua e flussi senza equivalente su scale proprie. Senza scala unica: una scala per unità (o per energia).
+      ACQUA (m³): scala separata e RIDOTTA, con o senza scala unica. Lo spessore è proporzionale ai m³ tra i soli tubi
+      d'acqua, ma il tubo d'acqua più grande è largo FRAZ_ACQUA (un terzo) dello spessore massimo dei flussi energetici,
+      cioè spessoreMax × scalaTubi × FRAZ_ACQUA: segue lo slider «Spessore tubi» e resta visivamente secondario
+      (l'acqua non è energia e non è confrontabile con i flussi energetici). */
+  const FRAZ_ACQUA = 1 / 3;
   function larghezzeTubi(d, mb) {
     const opz = d.opzioni; const info = new Map(); const maxG = new Map();
     const unica = opz.scalaUnica !== false;
@@ -724,11 +733,13 @@
       info.set(l.id, { un, G, v, q, scala, calc: l.valore == null && l.calc != null });
       if (q != null && scala) maxG.set(scala, Math.max(maxG.get(scala) || 0, q));
     });
-    const max = (opz.spessoreMax || 40) * (opz.scalaTubi > 0 ? opz.scalaTubi : 1);
+    const st = opz.scalaTubi > 0 ? opz.scalaTubi : 1;
+    const max = (opz.spessoreMax || 40) * st;
     info.forEach((i) => {
-      if (!opz.proporzionale) i.w = 10 * (opz.scalaTubi > 0 ? opz.scalaTubi : 1);
-      else if (i.q == null) i.w = 4;
-      else { const mx = maxG.get(i.scala) || 0; i.w = mx > 0 ? Math.max(1.5, max * i.q / mx) : 2; }
+      const acqua = !!(i.un && i.un.u === 'm3');
+      if (!opz.proporzionale) i.w = (acqua ? 10 * FRAZ_ACQUA * 1.5 : 10) * st;   // bozza: tubi uguali, acqua più sottile
+      else if (i.q == null) i.w = acqua ? 3 : 4;
+      else { const mx = maxG.get(i.scala) || 0; i.w = mx > 0 ? Math.max(1.5, (acqua ? max * FRAZ_ACQUA : max) * i.q / mx) : 2; }
       i.w = Math.round(i.w * 10) / 10;
     });
     info.scale = new Set([...info.values()].map((i) => i.scala).filter(Boolean));
@@ -992,7 +1003,7 @@
     });
     piazzaEtichette(scTubi, ost, affollato);
     const scBlocchi = d.blocchi.map((b) => ({ b: mb.get(b.id), g: geo.get(b.id) }));
-    return { blocchi: scBlocchi, tubi: scTubi, geo, scale: tubi.scale, unica: d.opzioni.scalaUnica !== false && d.opzioni.proporzionale };
+    return { blocchi: scBlocchi, tubi: scTubi, geo, scale: tubi.scale, unica: d.opzioni.scalaUnica !== false && d.opzioni.proporzionale, proporzionale: !!d.opzioni.proporzionale };
   }
 
   /** Colloca le etichette dei tubi evitando blocchi, altre etichette e (se possibile) gli altri tubi:
@@ -1076,7 +1087,7 @@
   /* ================= 5. DISEGNO SVG ================= */
   function svgCorpo(sc, modo, ctx) {
     const schermo = modo === 'schermo';
-    const col = (nome) => (schermo ? `var(--${nome})` : ctx.pal[nome]);
+    const col = (nome) => (schermo ? `var(--${varColore(nome)})` : ctx.pal[nome]);
     const ver = ctx.esito ? stato.verifica : null;
     let s = '<g class="sk-tubi">';
     sc.tubi.forEach((t) => {
@@ -1202,7 +1213,7 @@
         const r = g.righe.find((x) => x.dt.id === stato.collega.d);
         const y = b.y + (r ? r.cy : g.cyCentro); const m = stato.mouse;
         const x0 = m.x >= b.x + g.w / 2 ? b.x + g.w : b.x; const xm = (x0 + m.x) / 2;
-        s += `<path class="sk-anteprima" d="M${r2(x0)} ${r2(y)}H${r2(xm)}V${r2(m.y)}H${r2(m.x)}"/><circle cx="${r2(m.x)}" cy="${r2(m.y)}" r="4" style="fill:var(--primario)"/>`;
+        s += `<path class="sk-anteprima" d="M${r2(x0)} ${r2(y)}H${r2(xm)}V${r2(m.y)}H${r2(m.x)}"/><circle cx="${r2(m.x)}" cy="${r2(m.y)}" r="4" style="fill:var(--area-accento)"/>`;
       }
     }
     if (dr && dr.tipo === 'riquadro' && dr.mosso) {
@@ -1687,7 +1698,7 @@
     h += `<label class="sk-campo"><span>PCI del gas naturale (kWh/Sm³)</span><input class="sk-num" inputmode="decimal" data-campo="o-pci" value="${fmtCampo(o.pci)}"${o.conversione ? '' : ' disabled'}></label>`;
     h += `<label class="sk-check"><input type="checkbox" data-campo="o-prop"${o.proporzionale ? ' checked' : ''}> Spessore proporzionale ai valori</label>`;
     h += `<label class="sk-check"><input type="checkbox" data-campo="o-unica"${o.scalaUnica !== false ? ' checked' : ''}> Scala unica (equivalente TEP)</label>`;
-    h += '<p class="sk-nota">Con la scala unica lo spessore di ogni tubo è proporzionale al suo equivalente in tep, su una sola scala per tutto il diagramma: elettricità, gas e calore con i fattori qui sotto; t CO₂ e le altre unità non energetiche ereditano l\'equivalente attraverso i blocchi di conversione (uscita = ingresso × rendimento, il fattore delle unità non conta), una riga che somma più tubi vale la somma, il risultato di un Confronta |A − B|. Così le perdite escono sottili e il tubo delle emissioni totali è spesso quanto la somma dei flussi iniziali. L\'acqua resta su una scala separata. Senza scala unica: una scala per unità di misura.</p>';
+    h += '<p class="sk-nota">Con la scala unica lo spessore di ogni tubo è proporzionale al suo equivalente in tep, su una sola scala per tutto il diagramma: elettricità, gas e calore con i fattori qui sotto; t CO₂ e le altre unità non energetiche ereditano l\'equivalente attraverso i blocchi di conversione (uscita = ingresso × rendimento, il fattore delle unità non conta), una riga che somma più tubi vale la somma, il risultato di un Confronta |A − B|. Così le perdite escono sottili e il tubo delle emissioni totali è spesso quanto la somma dei flussi iniziali. L\'acqua (m³) resta su una <strong>scala separata e ridotta</strong>: i tubi d\'acqua sono proporzionali ai m³ tra loro, ma il più grande è spesso un terzo del tubo energetico più grande, così l\'acqua resta visivamente secondaria (lo slider «Spessore tubi» la scala insieme agli altri). Senza scala unica: una scala per unità di misura, acqua sempre ridotta allo stesso modo.</p>';
     h += '<h3>Fattori di equivalenza per lo spessore</h3><div class="sk-libreria">' + ['el-tep', 'gas-tep', 'th-tep'].map((id) => fattoreDi(id)).filter(Boolean).map((x) => `<label class="sk-lib-voce"><span>${esc(x.nome)}</span><span class="sk-fattore"><input class="sk-num" inputmode="decimal" data-campo="fl-f" data-id="${esc(x.id)}" value="${fmtCampo(x.f)}" aria-label="${esc(x.nome)}, fattore di equivalenza"><span class="sk-fattore-u">${esc(breveU(x.num) + '/' + breveU(x.den))}</span></span></label>`).join('') + '</div><p class="sk-nota">Gli stessi valori della libreria dei fattori tipici; tep = 1.</p>';
     h += `<label class="sk-check"><input type="checkbox" data-campo="o-aggancio"${o.aggancio ? ' checked' : ''}> Aggancio alla griglia (10 px)</label>`;
     h += '<h3>Verifica dei bilanci</h3>';
@@ -1712,7 +1723,7 @@
     h += `<details class="sk-semantica"><summary>Come vengono verificati i bilanci</summary><ol>
       <li><strong>Dato collegato.</strong> Il valore di un dato (riga) è uguale alla somma dei tubi che arrivano a quella riga e, separatamente, alla somma dei tubi che partono da quella riga.</li>
       <li><strong>Blocco.</strong> Per ogni vettore (unità di misura o, con la conversione, energia in kWh): se il blocco ha sia ingressi sia uscite, Σ ingressi = Σ uscite + Σ dati con ruolo «Perdita». Un blocco senza ingressi è una <em>sorgente</em>, senza uscite è un'<em>utenza</em>: non ha vincoli di blocco.</li>
-      <li><strong>Caselle vuote.</strong> Un dato o un tubo con l'unità ma senza valore è un'incognita: Aggiorna risolve il sistema lineare dei bilanci e scrive in <em style="color:var(--segno)">corsivo colorato</em> i valori determinati in modo univoco. Se i dati non bastano, segnala «non determinabile». «Fissa» trasforma un valore calcolato in inserito.</li>
+      <li><strong>Caselle vuote.</strong> Un dato o un tubo con l'unità ma senza valore è un'incognita: Aggiorna risolve il sistema lineare dei bilanci e scrive in <em style="color:var(--area-segno)">corsivo colorato</em> i valori determinati in modo univoco. Se i dati non bastano, segnala «non determinabile». «Fissa» trasforma un valore calcolato in inserito.</li>
       <li><strong>Blocco di conversione</strong> (angoli smussati, icona ⇄). Trasforma un vettore in un altro: ogni riga d'uscita vale <em>riga d'ingresso × fattore delle unità di misura × rendimento η</em> (es. t CO₂ = kWh × 0,216 kg CO₂/kWh × 100%; MWh termici di una caldaia = Sm³ × 9,59 kWh/Sm³ × 90%). Il fattore converte le unità, il rendimento (predefinito 100%) dice quanta energia diventa utile. Qui il bilancio ingressi = uscite tra unità diverse <em>non</em> si applica: valgono le equazioni di conversione, che Aggiorna usa in avanti e all'indietro; se entrambi i valori sono inseriti e non tornano, il blocco diventa rosso. I prefissi (kg↔t, kWh↔MWh) sono gestiti da soli. L'acqua (m³) non è convertibile in energia né in emissioni: in un blocco di conversione viene trascurata con un avviso.</li>
       <li><strong>Blocco Confronta</strong> (parallelogramma, «A−B»). Per ogni riga di risultato vale <em>A − B</em> tra due righe della stessa grandezza: A = scenario di riferimento, B = alternativa. Positivo = <em>riduzione</em>, negativo = <em>aumento</em>; la percentuale è riferita ad A. Se inserisci un risultato diverso, il blocco diventa rosso.</li>
       <li><strong>Somme.</strong> Un blocco con una sola riga e più tubi in arrivo (es. «Emissioni totali (t CO₂)», «Energia primaria totale (TEP)») ne calcola la somma.</li>
@@ -2037,7 +2048,7 @@
     const html = document.documentElement; const prec = html.getAttribute('data-theme');
     html.setAttribute('data-theme', 'light');
     const cs = getComputedStyle(html); const p = {};
-    NOMI_COLORI.forEach((n) => { p[n] = normalizzaColore(cs.getPropertyValue('--' + n).trim(), RISERVA_CHIARA[n]); });
+    NOMI_COLORI.forEach((n) => { p[n] = normalizzaColore(cs.getPropertyValue('--' + varColore(n)).trim(), RISERVA_CHIARA[n]); });
     if (prec == null) html.removeAttribute('data-theme'); else html.setAttribute('data-theme', prec);
     p.foglio = '#ffffff'; p.carta = '#ffffff';
     return p;
@@ -2111,9 +2122,12 @@
   /** Testo della legenda per le note grafiche (conversione, tratteggio, corsivo). */
   /** Nota sulle scale degli spessori (scala unica in tep, acqua separata, scale proprie). */
   function notaScale(sc) {
-    if (!sc || !sc.unica) return '';
-    const sc2 = sc.scale || new Set(); let t = 'spessore ∝ equivalente in tep (scala unica)';
-    if (sc2.has('*acqua')) t += ' · acqua: scala separata';
+    if (!sc) return '';
+    const sc2 = sc.scale || new Set();
+    const acqua = sc.proporzionale && (sc2.has('*acqua') || sc2.has('m3') || sc.tubi.some((t) => t.vettore === 'acqua'));
+    if (!sc.unica) return acqua ? 'acqua: scala separata, ridotta' : '';
+    let t = 'spessore ∝ equivalente in tep (scala unica)';
+    if (acqua) t += ' · acqua: scala separata, ridotta';
     if ([...sc2].some((x) => String(x).startsWith('*propria'))) t += ' · flussi senza equivalente: scala propria';
     return t;
   }
@@ -2548,9 +2562,9 @@
     ['Benvenuto nell\'editor Sankey', '<p>Qui disegni <strong>diagrammi di flusso energetico</strong>: blocchi (impianti, reparti, utenze) uniti da <strong>tubi</strong> il cui spessore è proporzionale al flusso, come nel celebre diagramma della macchina a vapore di Matthew Sankey (1898).</p><p>Tutto resta nel tuo browser: il lavoro si salva da solo e puoi esportarlo in JPG, PDF o SVG.</p>'],
     ['1 · Crea i blocchi', '<p>Premi <strong>Blocco</strong> nel menu a sinistra (o il tasto <kbd>B</kbd>) e clicca nell\'area di disegno: ogni clic crea un blocco. Trascinali per spostarli; <kbd>Esc</kbd> esce dalla modalità.</p><p>Rotellina per lo zoom, trascina lo sfondo per spostare la vista, <kbd>0</kbd> per adattare.</p>'],
     ['2 · Inserisci i dati', '<p>Clicca un blocco: nel pannello a destra dai un nome e aggiungi <strong>uno o più dati</strong> con etichetta, valore e unità (kWh, MWh el., Sm³, MWh o kWh termici, m³ acqua, t o kg CO₂, tep, kg o libera). Ogni dato è una riga del blocco.</p><p>Puoi lasciare vuoto il valore e indicare solo l\'unità: lo calcolerà il programma.</p>'],
-    ['3 · Collega i blocchi', '<p>Premi <strong>Collegamento</strong> (<kbd>L</kbd>), clicca la <strong>riga del dato</strong> di partenza e poi quella di arrivo. Il tubo esce e arriva all\'altezza di quella riga e prende il colore del vettore: <span style="color:var(--flusso-el)">verde</span> elettricità, <span style="color:var(--flusso-th)">arancione</span> gas e calore, <span style="color:var(--flusso-acqua)">azzurro</span> acqua, <span style="color:var(--flusso-co2)">marrone</span> CO₂, <span style="color:var(--flusso-tep)">viola</span> tep (energia primaria).</p>'],
+    ['3 · Collega i blocchi', '<p>Premi <strong>Collegamento</strong> (<kbd>L</kbd>), clicca la <strong>riga del dato</strong> di partenza e poi quella di arrivo. Il tubo esce e arriva all\'altezza di quella riga e prende il colore del vettore: <span style="color:var(--flusso-el)">verde</span> elettricità, <span style="color:var(--flusso-th)">arancione</span> gas e calore, <span style="color:var(--flusso-acqua)">azzurro</span> acqua (su una scala separata e ridotta: il tubo d\'acqua più grande è un terzo di quello energetico più grande), <span style="color:var(--flusso-co2)">marrone</span> CO₂, <span style="color:var(--flusso-tep)">viola</span> tep (energia primaria).</p>'],
     ['4 · Converti e confronta', '<p><strong>Conversione</strong> (<kbd>C</kbd>) crea un blocco ad <strong>angoli smussati ⇄</strong>: ogni uscita vale <em>ingresso × fattore delle unità di misura × rendimento η</em> (es. Sm³ × 9,59 kWh/Sm³ × 90% per una caldaia; kWh × 0,216 kg CO₂/kWh × 100%). Il fattore viene dalla libreria «Fattore tipico» o lo scrivi tu; i prefissi (kg↔t, kWh↔MWh) sono automatici. Aggiorna calcola in avanti e all\'indietro; l\'acqua (m³) non si converte.</p><p>Un blocco a una riga con più tubi in arrivo ne fa la <strong>somma</strong> (es. t CO₂ totali, <span style="color:var(--flusso-tep)">tep</span> totali). <strong>Confronta</strong> (<kbd>K</kbd>, parallelogramma) fa invece la <strong>differenza</strong> A − B tra due scenari: riduzione o aumento, assoluto e in %.</p>'],
-    ['5 · Aggiorna ed esporta', '<p>Premi <strong>Aggiorna</strong> (<kbd>A</kbd>): gli spessori diventano proporzionali ai valori, i bilanci vengono verificati (bordo <span style="color:var(--successo)">verde</span> se tornano, <span style="color:var(--errore)">rosso</span> con lo scarto se no) e le caselle vuote vengono compilate <em style="color:var(--segno)">in corsivo</em>.</p><p>Per iniziare puoi caricare un esempio dal menu «Progetto». Buon lavoro!</p>']
+    ['5 · Aggiorna ed esporta', '<p>Premi <strong>Aggiorna</strong> (<kbd>A</kbd>): gli spessori diventano proporzionali ai valori, i bilanci vengono verificati (bordo <span style="color:var(--area-ok)">verde</span> se tornano, <span style="color:var(--area-err)">rosso</span> con lo scarto se no) e le caselle vuote vengono compilate <em style="color:var(--area-segno)">in corsivo</em>.</p><p>Per iniziare puoi caricare un esempio dal menu «Progetto». Buon lavoro!</p>']
   ];
   let passo = 0;
   function mostraPasso() {

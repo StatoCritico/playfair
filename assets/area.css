@@ -1,0 +1,128 @@
+/* =====================================================================================================
+   Playfair · area.css — palette FISSA dell'AREA DI LAVORO (non fa parte del tema: non modificare per ristilare)
+
+   Il sito ha due livelli di aspetto:
+   · CORNICE  (assets/tema.css, modificabile, es. da Claude Design): testata e menu, piè di pagina, sfondo della
+     pagina, pagine di testo (home, personaggi, link, licenza, 404), intestazioni degli strumenti, tooltip del menu.
+   · AREA DI LAVORO (questo file): pannelli dei grafici, canvas Chart.js, KPI, tabelle dei risultati, controlli degli
+     strumenti (campi, pulsanti, schede, zone di trascinamento), tutta l'app Sankey, dialoghi e avvisi degli strumenti,
+     esportazioni (PNG/JPG/PDF/SVG/Excel). Palette neutra e fredda, studiata per far risaltare i colori dei dati.
+
+   Contenitore: .pf-area (sugli strumenti insieme a .pf-app, sull'app Sankey insieme a .sk-app, sui dialoghi).
+   Le regole dell'area usano solo variabili --area-* (più i colori dei dati --flusso-* e --serie-*).
+   I COLORI DEI DATI (vettori energetici e serie) stanno qui e non in tema.css: hanno un significato fisso.
+   La cornice può leggerli (la home blueprint e il monogramma usano --flusso-*) ma non li ridefinisce:
+   area.css si carica DOPO tema.css, quindi un'eventuale ridefinizione in tema.css non avrebbe effetto.
+
+   Modalità chiara/scura: segue l'interruttore del sito (data-theme su <html>), ma con valori propri.
+   Contrasti WCAG AA verificati: testo, tenue, segno e stati ≥ 4,5:1 su fondo, pannello e rialzo; bordo ≥ 3:1.
+   Documentazione: docs/CONTRATTO_CSS.md, sezione «Area di lavoro».
+   ===================================================================================================== */
+
+/* ---- caratteri dell'area (stessi file di tema.css, dichiarati anche qui: l'area non dipende dai font del tema) ---- */
+@font-face { font-family: "PF Area Testo"; font-style: normal; font-weight: 400; font-display: swap; src: url("font/hanken-grotesk-latin-400-normal.woff2") format("woff2"); }
+@font-face { font-family: "PF Area Testo"; font-style: italic; font-weight: 400; font-display: swap; src: url("font/hanken-grotesk-latin-400-italic.woff2") format("woff2"); }
+@font-face { font-family: "PF Area Testo"; font-style: normal; font-weight: 600; font-display: swap; src: url("font/hanken-grotesk-latin-600-normal.woff2") format("woff2"); }
+@font-face { font-family: "PF Area Testo"; font-style: normal; font-weight: 700; font-display: swap; src: url("font/hanken-grotesk-latin-700-normal.woff2") format("woff2"); }
+@font-face { font-family: "PF Area Titoli"; font-style: normal; font-weight: 500; font-display: swap; src: url("font/barlow-latin-500-normal.woff2") format("woff2"); }
+@font-face { font-family: "PF Area Titoli"; font-style: normal; font-weight: 600; font-display: swap; src: url("font/barlow-latin-600-normal.woff2") format("woff2"); }
+@font-face { font-family: "PF Area Titoli"; font-style: normal; font-weight: 700; font-display: swap; src: url("font/barlow-latin-700-normal.woff2") format("woff2"); }
+@font-face { font-family: "PF Area Mono"; font-style: normal; font-weight: 400; font-display: swap; src: url("font/ibm-plex-mono-latin-400-normal.woff2") format("woff2"); }
+@font-face { font-family: "PF Area Mono"; font-style: normal; font-weight: 500; font-display: swap; src: url("font/ibm-plex-mono-latin-500-normal.woff2") format("woff2"); }
+@font-face { font-family: "PF Area Mono"; font-style: normal; font-weight: 600; font-display: swap; src: url("font/ibm-plex-mono-latin-600-normal.woff2") format("woff2"); }
+
+/* ---------------------------------------------------------------------------------- area scura (predefinita) */
+:root, [data-theme="dark"] {
+  /* superfici: grafite fredda e neutra, senza tinta di marca */
+  --area-fondo: #14161a;        /* fondo del vassoio degli strumenti e dell'app Sankey, campi */
+  --area-pannello: #1c1f24;     /* pannelli dei grafici, menu e pannello del Sankey, blocchi */
+  --area-rialzo: #262a31;       /* KPI, intestazioni di tabella, passaggio del mouse */
+  --area-tinta: #2a3240;        /* selezione, scheda/zona attiva */
+  --area-linea: #30353d;        /* bordi sottili, separatori */
+  --area-bordo: #737b88;        /* bordi di campi e pulsanti (≥ 3:1) */
+  /* testo */
+  --area-testo: #eef0f3;        /* 14,5:1 sul pannello */
+  --area-tenue: #a8afba;        /* 7,5:1 sul pannello */
+  --area-titolo: #f7f8fa;       /* titoli dei grafici e del Sankey, cifre in evidenza */
+  /* accento: monocromatico, così i soli colori saturi dell'area sono quelli dei dati */
+  --area-accento: #e2e6ec;      /* pulsante principale, scheda attiva, selezione */
+  --area-accento-forte: #ffffff;
+  --area-su-accento: #14161a;   /* testo sull'accento: 13:1 */
+  --area-focus: #8fa2ff;        /* anello del focus da tastiera (6,9:1) */
+  --area-segno: #9db0ff;        /* valori calcolati, soglie e linee di riferimento */
+  --area-griglia: rgb(238 240 243 / .10);
+  /* stati */
+  --area-ok: #7fd08a;   --area-ok-fondo: #17261a;
+  --area-warn: #f0c24f; --area-warn-fondo: #2b2513;
+  --area-err: #ff8d8d;  --area-err-fondo: #341a1d;
+  /* ombre */
+  --area-ombra-1: 0 1px 2px rgb(0 0 0 / .35);
+  --area-ombra-2: 0 8px 24px rgb(0 0 0 / .5);
+
+  /* ---- COLORI DEI DATI (significato fisso, non di competenza del tema) ---- */
+  /* serie dei grafici, in ordine fisso */
+  --serie-1: #ff7a50; --serie-2: #8ccbf2; --serie-3: #f2d16b; --serie-4: #e070ad; --serie-5: #9ccf8f; --serie-6: #b9b2ad;
+  /* vettori energetici */
+  --flusso-el: #4fd68a;         /* verde: kWh elettrici, lavoro utile */
+  --flusso-th: #ff9a3d;         /* arancione: Sm³ gas, MWh termici, calore e vapore */
+  --flusso-acqua: #4cc6f5;      /* azzurro: m³ d'acqua, ritorni */
+  --flusso-co2: #c4946a;        /* marrone: t CO₂ */
+  --flusso-altro: #9b96a6;      /* grigio: perdite, altro */
+  --flusso-tep: #c58af0;        /* viola: tep, energia primaria */
+}
+
+/* ---------------------------------------------------------------------------------- area chiara */
+[data-theme="light"] {
+  --area-fondo: #f3f4f6; --area-pannello: #ffffff; --area-rialzo: #eceef2; --area-tinta: #e2e8f3;
+  --area-linea: #dcdfe5; --area-bordo: #7f8693;
+  --area-testo: #181b20; --area-tenue: #545b67; --area-titolo: #11151b;
+  --area-accento: #262d38; --area-accento-forte: #0f1319; --area-su-accento: #ffffff;
+  --area-focus: #3448d1; --area-segno: #3045c2;
+  --area-griglia: rgb(24 27 32 / .09);
+  --area-ok: #2a7a35;   --area-ok-fondo: #e4f2e6;
+  --area-warn: #845700; --area-warn-fondo: #fbf1d6;
+  --area-err: #b1183f;  --area-err-fondo: #fbe6ea;
+  --area-ombra-1: 0 1px 2px rgb(20 24 32 / .08);
+  --area-ombra-2: 0 8px 24px rgb(20 24 32 / .16);
+  --serie-1: #c43c12; --serie-2: #1f6fb4; --serie-3: #a87800; --serie-4: #b3418a; --serie-5: #4f7f22; --serie-6: #6b625d;
+  --flusso-el: #1b8a45; --flusso-th: #d45a00; --flusso-acqua: #1272b0; --flusso-co2: #7a4a26; --flusso-altro: #706a7a; --flusso-tep: #7b2fa8;
+}
+
+/* ---------------------------------------------------------------------------------- comuni ai due modi */
+:root {
+  --area-font: "PF Area Testo", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --area-font-titoli: "PF Area Titoli", "PF Area Testo", system-ui, sans-serif;
+  --area-font-mono: "PF Area Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --area-raggio: 6px; --area-r-s: 4px; --area-r-l: 10px; --area-r-tondo: 999px;
+  --area-durata: .18s;
+
+  /* alias per il codice degli artifact Playfair originali (references/design.md): puntano all'area */
+  --pf-blue: var(--serie-1); --pf-green: var(--area-ok); --pf-red: var(--area-err); --pf-amber: var(--area-warn);
+  --pf-bg-app: var(--area-fondo); --pf-bg-panel: var(--area-pannello); --pf-border: var(--area-linea); --pf-focus: var(--area-focus);
+  --pf-text-primary: var(--area-testo); --pf-text-secondary: var(--area-tenue); --pf-text-hint: var(--area-tenue); --pf-divider: var(--area-linea);
+  --pf-s1: var(--serie-1); --pf-s2: var(--serie-2); --pf-s3: var(--serie-3); --pf-s4: var(--serie-4);
+}
+
+/* ---------------------------------------------------------------------------------- contenitore dell'area
+   Rete di sicurezza: dentro l'area i nomi delle variabili della cornice puntano ai valori dell'area. Il codice
+   dell'area usa già solo --area-*; se però una regola o un attributo style futuro scrivesse var(--inchiostro),
+   var(--primario) o var(--testo) dentro .pf-area, otterrebbe comunque la palette fissa e non quella del tema. */
+.pf-area {
+  --carta: var(--area-fondo); --foglio: var(--area-pannello); --rialzo: var(--area-rialzo); --tinta: var(--area-tinta);
+  --linea: var(--area-linea); --bordo: var(--area-bordo); --inchiostro: var(--area-testo); --tenue: var(--area-tenue);
+  --primario: var(--area-accento); --primario-forte: var(--area-accento-forte); --su-primario: var(--area-su-accento);
+  --profondo: var(--area-titolo); --segno: var(--area-segno);
+  --successo: var(--area-ok); --successo-fondo: var(--area-ok-fondo); --attenzione: var(--area-warn); --attenzione-fondo: var(--area-warn-fondo);
+  --errore: var(--area-err); --errore-fondo: var(--area-err-fondo); --ombra-1: var(--area-ombra-1); --ombra-2: var(--area-ombra-2);
+  --testo: var(--area-font); --titoli: var(--area-font-titoli); --mono: var(--area-font-mono);
+  --raggio: var(--area-raggio); --r: var(--area-raggio); --r-s: var(--area-r-s); --r-l: var(--area-r-l); --r-tondo: var(--area-r-tondo);
+  --durata: var(--area-durata);
+  color: var(--area-testo); font-family: var(--area-font);
+}
+.pf-area :focus-visible { outline-color: var(--area-focus); }
+.pf-area ::selection { background: color-mix(in srgb, var(--area-focus) 40%, transparent); color: var(--area-testo); }
+.pf-area a { color: var(--area-segno); }
+.pf-area a:hover { color: var(--area-testo); }
+/* controlli nativi (caselle, cursori, barre di scorrimento, menu a tendina) nella modalità dell'area, non del tema */
+:root :is(.pf-area, .pf-dialogo, .pf-velo), [data-theme="dark"] :is(.pf-area, .pf-dialogo, .pf-velo) { color-scheme: dark; }
+[data-theme="light"] :is(.pf-area, .pf-dialogo, .pf-velo) { color-scheme: light; }

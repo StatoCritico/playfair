@@ -165,7 +165,7 @@ Se PowerShell rifiuta lo script («l'esecuzione di script è disabilitata»), un
 `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned` (oppure lancia con
 `powershell -ExecutionPolicy Bypass -File .\docs\pubblica.ps1`).
 
-**Cambiare aspetto**: sostituisci solo `assets\tema.css` (variabili descritte in `docs\CONTRATTO_CSS.md`), prova in
+**Cambiare aspetto**: sostituisci solo `assets\tema.css` (cornice; variabili descritte in `docs\CONTRATTO_CSS.md`; l'area di lavoro in `assets\area.css` non si tocca), prova in
 locale, poi pubblica. Se il browser mostra ancora il vecchio stile: Ctrl+F5.
 
 ### E2. Ripubblicare senza modifiche

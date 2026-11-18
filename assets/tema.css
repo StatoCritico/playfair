@@ -1,6 +1,9 @@
 /* =====================================================================================================
-   Playfair · tema.css — il "CSS modificabile"
-   SOLO variabili e caratteri. Cambiando questo file (e nient'altro) si ristila tutto il sito.
+   Playfair · tema.css — il "CSS modificabile" della CORNICE
+   SOLO variabili e caratteri. Cambiando questo file (e nient'altro) si ristila la cornice del sito: testata e menu,
+   piè di pagina, sfondo della pagina, pagine di testo (home, personaggi, link, licenza, 404), intestazioni degli
+   strumenti, tooltip del menu. NON tocca l'area di lavoro (pannelli dei grafici, controlli degli strumenti, app
+   Sankey, esportazioni) né i colori dei dati (--flusso-*, --serie-*): quelli stanno in assets/area.css, palette fissa.
    Base: vestito Corallo di EuGEnio (stesso autore), con un tocco "blueprint" per la tavola della home.
    Tema scuro predefinito; tema chiaro con data-theme="light" su <html>.
    Documentazione di ogni variabile: docs/CONTRATTO_CSS.md
@@ -40,15 +43,8 @@
   --successo: #8fcf86;   --successo-fondo: #1f2a1d;
   --attenzione: #f2c14e; --attenzione-fondo: #2f2715;
   --errore: #ff8a8a;     --errore-fondo: #361a1c;
-  /* serie dei grafici */
-  --serie-1: #ff7a50; --serie-2: #8ccbf2; --serie-3: #f2d16b; --serie-4: #e070ad; --serie-5: #9ccf8f; --serie-6: #b9b2ad;
-  /* vettori energetici (Sankey, home, strumenti) */
-  --flusso-el: #4fd68a;      /* verde: kWh elettrici, lavoro utile */
-  --flusso-th: #ff9a3d;      /* arancione: Sm³ gas, MWh termici, calore e vapore */
-  --flusso-acqua: #4cc6f5;   /* azzurro: m³ d'acqua, ritorni */
-  --flusso-co2: #c4946a;     /* marrone: t CO₂ */
-  --flusso-altro: #9b96a6;   /* grigio: perdite, altro */
-  --flusso-tep: #c58af0;     /* viola: tep, energia primaria */
+  /* serie dei grafici e vettori energetici (--serie-*, --flusso-*): NON stanno qui, ma in area.css (colori dei dati,
+     significato fisso). La cornice può usarli in lettura (home blueprint, monogramma). */
   /* blueprint (tavola della home) */
   --bp-fondo: #0a1830;       /* blu notte */
   --bp-fondo-2: #0f2140;     /* riquadri di annotazione */
@@ -71,8 +67,6 @@
   --successo: #2e7a34;   --successo-fondo: #e7f2e4;
   --attenzione: #8a5a00; --attenzione-fondo: #fbf0d6;
   --errore: #a8133c;     --errore-fondo: #fbe5ea;
-  --serie-1: #c43c12; --serie-2: #1f6fb4; --serie-3: #a87800; --serie-4: #b3418a; --serie-5: #4f7f22; --serie-6: #6b625d;
-  --flusso-el: #1b8a45; --flusso-th: #d45a00; --flusso-acqua: #1272b0; --flusso-co2: #7a4a26; --flusso-altro: #706a7a; --flusso-tep: #7b2fa8;
   --bp-fondo: #e8eff8; --bp-fondo-2: #f6f9fd; --bp-linea: #23477e; --bp-luce: #0069b4;
   --bp-griglia: rgb(35 71 126 / .07); --bp-testo: #0f2547; --bp-tenue: #44618a;
   --ombra-1: 0 1px 2px rgb(42 29 25 / .08);
@@ -101,10 +95,4 @@
   /* movimento */
   --durata: .18s;
   --ritardo-tip: .35s;
-
-  /* alias per gli artifact Playfair originali (references/design.md): puntano alle variabili del tema */
-  --pf-blue: var(--primario); --pf-green: var(--successo); --pf-red: var(--errore); --pf-amber: var(--attenzione);
-  --pf-bg-app: var(--carta); --pf-bg-panel: var(--foglio); --pf-border: var(--linea); --pf-focus: var(--primario);
-  --pf-text-primary: var(--inchiostro); --pf-text-secondary: var(--tenue); --pf-text-hint: var(--tenue); --pf-divider: var(--linea);
-  --pf-s1: var(--serie-1); --pf-s2: var(--serie-2); --pf-s3: var(--serie-3); --pf-s4: var(--serie-4);
 }

@@ -1,6 +1,9 @@
 /* =====================================================================================================
    Playfair · sito.css — testata, menu, tooltip, piè di pagina, zone di trascinamento, componenti comuni.
-   Nessun colore o carattere scritto qui: tutto passa dalle variabili di tema.css.
+   Nessun colore o carattere scritto qui: tutto passa dalle variabili.
+   · CORNICE (testata, menu, tooltip del menu, piè, pagine di testo, componenti .pf-btn/.pf-pannello…): tema.css.
+   · AREA DI LAVORO (zone di trascinamento, velo, annunci, dialogo dei fogli, tooltip dentro gli strumenti):
+     solo --area-* di area.css, nella sezione delimitata più sotto.
    ===================================================================================================== */
 
 /* ------------------------------------------------------------------------------------------- basi */
@@ -179,58 +182,77 @@ input.pf-input, select.pf-input, textarea.pf-input {
 .pf-tabella tbody tr:hover { background: var(--rialzo); }
 .pf-tabella td.num, .pf-tabella th.num { text-align: right; font-variant-numeric: tabular-nums; }
 
+/* =====================================================================================================
+   AREA DI LAVORO — da qui fino a «pagine di testo» le regole usano solo le variabili --area-* di area.css
+   (palette fissa, non cambia con tema.css): zone di trascinamento, velo, annunci, dialogo di scelta del foglio,
+   bolla dei tooltip dentro gli strumenti. Sono controlli degli strumenti, non cornice.
+   ===================================================================================================== */
 /* ------------------------------------------------------------------------------------------- trascinamento dei file
    .pf-drop: zona in stile EuGEnio (#zona-file). .pieno = file sopra o caricato. Creata da sito.js per ogni input file. */
 .pf-drop {
   position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: .3rem;
-  border: 2px dashed var(--bordo); border-radius: var(--r-l); padding: var(--s5) var(--s4); text-align: center; cursor: pointer;
-  background: var(--carta); color: var(--inchiostro); font-weight: 400; transition: border-color var(--durata), background-color var(--durata);
+  border: 2px dashed var(--area-bordo); border-radius: var(--area-r-l); padding: 1.5rem 1rem; text-align: center; cursor: pointer;
+  background: var(--area-fondo); color: var(--area-testo); font-family: var(--area-font); font-weight: 400; transition: border-color var(--area-durata), background-color var(--area-durata);
 }
 .pf-drop > input[type="file"] { position: absolute; opacity: 0; width: 1px; height: 1px; pointer-events: none; }
-.pf-drop:hover, .pf-drop.sopra { border-color: var(--primario); background: var(--tinta); }
-.pf-drop.pieno { border-style: solid; border-color: var(--primario); }
-.pf-drop:has(:focus-visible) { outline: 3px solid var(--primario); outline-offset: 2px; }
-.pf-drop-titolo { font: 600 var(--c-l)/1.2 var(--titoli); }
-.pf-drop-titolo::before { content: "↧ "; color: var(--primario); }
-.pf-drop-nome { color: var(--tenue); font-size: var(--c-s); overflow-wrap: anywhere; }
-.pf-drop.pieno .pf-drop-nome { color: var(--inchiostro); font-weight: 600; }
-.pf-drop.pieno .pf-drop-nome::before { content: "✓ "; color: var(--successo); }
+.pf-drop:hover, .pf-drop.sopra { border-color: var(--area-focus); background: var(--area-tinta); }
+.pf-drop.pieno { border-style: solid; border-color: var(--area-bordo); }
+.pf-drop:has(:focus-visible) { outline: 3px solid var(--area-focus); outline-offset: 2px; }
+.pf-drop-titolo { font: 600 1.125rem/1.2 var(--area-font-titoli); }
+.pf-drop-titolo::before { content: "↧ "; color: var(--area-accento); }
+.pf-drop-nome { color: var(--area-tenue); font-size: .875rem; overflow-wrap: anywhere; }
+.pf-drop.pieno .pf-drop-nome { color: var(--area-testo); font-weight: 600; }
+.pf-drop.pieno .pf-drop-nome::before { content: "✓ "; color: var(--area-ok); }
 /* zona "leggera": l'input è nascosto e la pagina ha già il suo pulsante; si evidenzia solo durante il trascinamento */
-.pf-drop-leggera { position: relative; border-radius: var(--r-l); transition: box-shadow var(--durata), background-color var(--durata); }
-.pf-drop-leggera.sopra { box-shadow: 0 0 0 2px var(--primario); background: var(--tinta); }
+.pf-drop-leggera { position: relative; border-radius: var(--area-r-l); transition: box-shadow var(--area-durata), background-color var(--area-durata); }
+.pf-drop-leggera.sopra { box-shadow: 0 0 0 2px var(--area-focus); background: var(--area-tinta); }
 .pf-drop-leggera .pf-drop-nome { display: block; margin-top: .25rem; }
 
 /* velo a tutta pagina durante il trascinamento (pointer-events: none: sotto si vede quale zona riceve) */
 .pf-velo {
   position: fixed; inset: 0; z-index: 150; display: grid; place-items: center; pointer-events: none;
-  background: color-mix(in srgb, var(--carta) 72%, transparent); opacity: 0; visibility: hidden; transition: opacity .15s, visibility .15s;
+  background: color-mix(in srgb, var(--area-fondo) 72%, transparent); opacity: 0; visibility: hidden; transition: opacity .15s, visibility .15s;
 }
 .pf-velo.visibile { opacity: 1; visibility: visible; }
 .pf-velo-riquadro {
-  margin: var(--s5); padding: var(--s6) var(--s7); max-width: 34rem; text-align: center; border: 2px dashed var(--primario);
-  border-radius: calc(var(--r-l) * 1.6); background: var(--foglio); box-shadow: var(--ombra-2);
+  margin: 1.5rem; padding: 2rem 3rem; max-width: 34rem; text-align: center; border: 2px dashed var(--area-accento);
+  border-radius: calc(var(--area-r-l) * 1.6); background: var(--area-pannello); color: var(--area-testo); font-family: var(--area-font); box-shadow: var(--area-ombra-2);
 }
-.pf-velo-riquadro b { display: block; font: 700 var(--c-2xl)/1.15 var(--titoli); }
-.pf-velo-riquadro b::before { content: "↧"; display: block; font-size: 2.5rem; color: var(--primario); line-height: 1.1; }
-.pf-velo-riquadro span { display: block; margin-top: var(--s2); color: var(--tenue); font-size: var(--c-s); }
-.pf-annuncio { position: fixed; left: 50%; bottom: var(--s5); z-index: 160; transform: translate(-50%, 1rem); max-width: calc(100vw - 2rem);
-  padding: .6rem 1rem; border-radius: var(--raggio); background: var(--inchiostro); color: var(--carta); font-size: var(--c-s);
-  box-shadow: var(--ombra-2); opacity: 0; transition: opacity .2s, transform .2s; pointer-events: none; }
+.pf-velo-riquadro b { display: block; font: 700 1.75rem/1.15 var(--area-font-titoli); }
+.pf-velo-riquadro b::before { content: "↧"; display: block; font-size: 2.5rem; color: var(--area-accento); line-height: 1.1; }
+.pf-velo-riquadro span { display: block; margin-top: .5rem; color: var(--area-tenue); font-size: .875rem; }
+.pf-annuncio { position: fixed; left: 50%; bottom: 1.5rem; z-index: 160; transform: translate(-50%, 1rem); max-width: calc(100vw - 2rem);
+  padding: .6rem 1rem; border-radius: var(--area-raggio); background: var(--area-testo); color: var(--area-fondo); font-family: var(--area-font); font-size: .875rem;
+  box-shadow: var(--area-ombra-2); opacity: 0; transition: opacity .2s, transform .2s; pointer-events: none; }
 .pf-annuncio.visibile { opacity: 1; transform: translate(-50%, 0); }
 
 /* ------------------------------------------------------------------------------------------- scelta del foglio (file Excel/ODS con più fogli) */
-.pf-dialogo { max-width: min(34rem, calc(100vw - 2rem)); padding: var(--s5); border: 1px solid var(--linea); border-radius: var(--r-l);
-  background: var(--foglio); color: var(--inchiostro); box-shadow: var(--ombra-2); font-family: var(--testo); }
-.pf-dialogo::backdrop { background: color-mix(in srgb, var(--carta) 70%, transparent); }
-.pf-dialogo h2 { margin: 0 0 var(--s2); font: 700 var(--c-xl)/1.2 var(--titoli); }
-.pf-dialogo p { margin: 0 0 var(--s4); color: var(--tenue); font-size: var(--c-s); overflow-wrap: anywhere; }
-.pf-dialogo-scelte { display: flex; flex-direction: column; gap: var(--s2); }
+.pf-dialogo { max-width: min(34rem, calc(100vw - 2rem)); padding: 1.5rem; border: 1px solid var(--area-linea); border-radius: var(--area-r-l);
+  background: var(--area-pannello); color: var(--area-testo); box-shadow: var(--area-ombra-2); font-family: var(--area-font); }
+.pf-dialogo::backdrop { background: color-mix(in srgb, var(--area-fondo) 70%, transparent); }
+.pf-dialogo h2 { margin: 0 0 .5rem; font: 700 1.375rem/1.2 var(--area-font-titoli); }
+.pf-dialogo p { margin: 0 0 1rem; color: var(--area-tenue); font-size: .875rem; overflow-wrap: anywhere; }
+.pf-dialogo-scelte { display: flex; flex-direction: column; gap: .5rem; }
 .pf-dialogo-scelte .pf-btn { justify-content: flex-start; text-align: left; }
-.pf-dialogo-piede { display: flex; justify-content: flex-end; margin-top: var(--s4); }
+.pf-dialogo-piede { display: flex; justify-content: flex-end; margin-top: 1rem; }
 
 /* pulsante «Scarica in Excel» durante la preparazione del file */
 [data-pf-excel-scarica][aria-busy="true"] { opacity: .65; cursor: progress; }
 
+/* tooltip dentro l'area di lavoro (sito.js aggiunge .pf-tip-area se il bersaglio sta in .pf-area) */
+.pf-tip.pf-tip-area { background: var(--area-testo); color: var(--area-fondo); box-shadow: var(--area-ombra-2);
+  font-family: var(--area-font); border-radius: var(--area-raggio); }
+/* pulsanti del dialogo di scelta del foglio (stessa forma di .pf-btn, colori dell'area) */
+.pf-dialogo .pf-btn { background: var(--area-accento); border-color: var(--area-accento); color: var(--area-su-accento);
+  border-radius: var(--area-raggio); font-family: var(--area-font); }
+.pf-dialogo .pf-btn:hover { background: var(--area-accento-forte); border-color: var(--area-accento-forte); color: var(--area-su-accento); }
+.pf-dialogo .pf-btn.secondario { background: transparent; color: var(--area-testo); border-color: var(--area-bordo); }
+.pf-dialogo .pf-btn.secondario:hover { background: var(--area-rialzo); border-color: var(--area-testo); }
+.pf-dialogo :focus-visible { outline-color: var(--area-focus); }
+
+/* =====================================================================================================
+   fine dell'AREA DI LAVORO — da qui di nuovo CORNICE (variabili di tema.css)
+   ===================================================================================================== */
 /* ------------------------------------------------------------------------------------------- pagine di testo */
 .pf-intestazione { padding-block: var(--s7) var(--s5); }
 .pf-intestazione h1 { margin: 0 0 var(--s3); }

@@ -1,7 +1,8 @@
 /* =====================================================================================
    Playfair – strumenti.js
-   Aiuti comuni per gli strumenti Playfair-S/E/T/M/C: legge i colori dalle variabili di
-   assets/tema.css, li converte nei formati che servono a Chart.js e al canvas, imposta i
+   Aiuti comuni per gli strumenti Playfair-S/E/T/M/G/C: legge i colori dalle variabili
+   dell'AREA DI LAVORO (assets/area.css: --area-*, --serie-*, --flusso-*), mai da quelle
+   della cornice (tema.css), li converte nei formati che servono a Chart.js e al canvas, imposta i
    valori predefiniti di Chart.js (locale it-IT, colori di testi e griglie) e richiama le
    funzioni registrate dalle pagine quando cambia il tema (evento 'pf-tema' su window
    oppure cambio dell'attributo data-theme su <html>).
@@ -41,10 +42,23 @@
     return [parseInt(h.substr(1, 2), 16), parseInt(h.substr(3, 2), 16), parseInt(h.substr(5, 2), 16)];
   }
 
-  /* PF.c('--inchiostro', '#000') → '#rrggbb' del tema in uso */
+  /* Nomi della cornice → variabili dell'area: un PF.c('--inchiostro') rimasto (o scritto in futuro) dentro uno
+     strumento legge comunque la palette fissa dell'area, non il tema. */
+  var AREA = {
+    '--carta': '--area-fondo', '--foglio': '--area-pannello', '--rialzo': '--area-rialzo', '--tinta': '--area-tinta',
+    '--linea': '--area-linea', '--bordo': '--area-bordo', '--inchiostro': '--area-testo', '--tenue': '--area-tenue',
+    '--primario': '--area-accento', '--primario-forte': '--area-accento-forte', '--su-primario': '--area-su-accento',
+    '--profondo': '--area-titolo', '--segno': '--area-segno', '--successo': '--area-ok', '--successo-fondo': '--area-ok-fondo',
+    '--attenzione': '--area-warn', '--attenzione-fondo': '--area-warn-fondo', '--errore': '--area-err', '--errore-fondo': '--area-err-fondo',
+    '--testo': '--area-font', '--titoli': '--area-font-titoli', '--mono': '--area-font-mono'
+  };
+  PF.AREA = AREA;
+
+  /* PF.c('--area-testo', '#000') → '#rrggbb' della modalità (chiara/scura) in uso */
   PF.c = function (nome, riserva) {
     if (nome.charAt(0) === '#' || nome.indexOf('(') > -1) return inHex(nome) || nome;
     if (nome.indexOf('--') !== 0) nome = '--' + nome;
+    if (AREA[nome]) nome = AREA[nome];
     var k = nome + '|' + (riserva || '');
     if (memo[k]) return memo[k];
     var v = inHex(grezzo(nome)) || inHex(riserva) || '#808080';
@@ -68,9 +82,9 @@
   /* tema scuro? (predefinito: scuro; chiaro con data-theme="light") */
   PF.scuroAttivo = function () { return radice.getAttribute('data-theme') !== 'light'; };
   /* colori ricorrenti */
-  PF.testo = function () { return PF.c('--inchiostro', '#1c1820'); };
-  PF.tenue = function () { return PF.c('--tenue', '#5f5868'); };
-  PF.griglia = function () { return PF.rgba(PF.testo(), PF.scuroAttivo() ? 0.10 : 0.09); };
+  PF.testo = function () { return PF.c('--area-testo', '#181b20'); };
+  PF.tenue = function () { return PF.c('--area-tenue', '#545b67'); };
+  PF.griglia = function () { return PF.rgba(PF.testo(), PF.scuroAttivo() ? 0.10 : 0.09); };   /* = --area-griglia */
   /* numero all'italiana */
   PF.num = function (v, dec) {
     dec = dec || 0;
@@ -98,12 +112,12 @@
     d.locale = 'it-IT';
     d.color = PF.tenue();
     d.borderColor = PF.griglia();
-    var fam = grezzo('--testo');
+    var fam = grezzo('--area-font');
     if (fam) d.font.family = fam;
     if (d.plugins && d.plugins.tooltip) {
-      d.plugins.tooltip.backgroundColor = PF.rgba(PF.c('--inchiostro', '#1c1820'), 0.92);
-      d.plugins.tooltip.titleColor = PF.c('--carta', '#f7f6f8');
-      d.plugins.tooltip.bodyColor = PF.c('--carta', '#f7f6f8');
+      d.plugins.tooltip.backgroundColor = PF.rgba(PF.c('--area-testo', '#181b20'), 0.94);
+      d.plugins.tooltip.titleColor = PF.c('--area-fondo', '#f3f4f6');
+      d.plugins.tooltip.bodyColor = PF.c('--area-fondo', '#f3f4f6');
     }
   }
 

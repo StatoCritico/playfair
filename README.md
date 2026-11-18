@@ -21,7 +21,8 @@ licenza.html            licenza AGPL-3.0, termini aggiuntivi, crediti di terzi
 sankey.html             editor di diagrammi a blocchi
 404.html                pagina «non trovata»
 guida-rapida.pdf        guida utente
-assets/tema.css         SOLO variabili (colori, font, raggi, ombre): l'aspetto del sito
+assets/tema.css         SOLO variabili della cornice (colori, font, raggi, ombre): l'aspetto del sito
+assets/area.css         palette fissa dell'area di lavoro (strumenti, Sankey) e colori dei dati: non modificare
 assets/sito.css|js      testata, menu, tema, trascinamento dei file, fogli di calcolo → CSV, fonte nei download
 assets/excel.js         «Scarica in Excel»: OOXML con grafici nativi (caricato a richiesta con JSZip)
 assets/vendor/          librerie locali (Chart.js, PapaParse, chartjs-plugin-annotation, jsPDF, SheetJS, JSZip)
@@ -49,8 +50,11 @@ docs/                   documentazione interna, non pubblicata
 
 ## Cambiare aspetto
 
-Tutti i colori, i font, i raggi e le ombre stanno nel solo **`assets/tema.css`** (tema scuro predefinito, chiaro con
-`[data-theme="light"]`). Si ristila il sito sostituendo quel file, senza toccare l'HTML. L'elenco delle variabili e le
+I colori, i font, i raggi e le ombre della **cornice** (testata, menu, piè, sfondo, pagine di testo, intestazioni
+degli strumenti) stanno nel solo **`assets/tema.css`** (tema scuro predefinito, chiaro con `[data-theme="light"]`).
+Si ristila il sito sostituendo quel file, senza toccare l'HTML. L'**area di lavoro** (pannelli dei grafici, controlli
+degli strumenti, app Sankey, esportazioni) e i colori dei dati (vettori energetici, serie) hanno una palette fissa in
+`assets/area.css`, che il tema non cambia. L'elenco delle variabili e le
 regole sono in [`docs/CONTRATTO_CSS.md`](docs/CONTRATTO_CSS.md). Le regole generali del sito sono in
 [`docs/CONTRATTO.md`](docs/CONTRATTO.md).
 

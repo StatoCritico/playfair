@@ -8,6 +8,7 @@
 <link rel="icon" href="img/favicon.svg" type="image/svg+xml">
 <script>try{var t=localStorage.getItem('pf-tema');if(t)document.documentElement.dataset.theme=t;}catch(e){}</script>
 <link rel="stylesheet" href="assets/tema.css">
+<link rel="stylesheet" href="assets/area.css">
 <link rel="stylesheet" href="assets/sito.css">
 <link rel="stylesheet" href="assets/sankey.css">
 </head>
@@ -29,7 +30,7 @@
   <button class="pf-tema" type="button" aria-label="Cambia tema chiaro/scuro">◐</button>
 </header>
 
-<main class="sk-app" id="sk-app">
+<main class="sk-app pf-area" id="sk-app">
   <h1 class="sk-sr">Sankey — editor di diagrammi di flusso energetico</h1>
 
   <!-- ============ MENU A SINISTRA ============ -->
@@ -68,7 +69,7 @@
         <span>Scala blocchi <output id="sk-scala-blocchi-val">100%</output></span>
         <input type="range" id="sk-scala-blocchi" min="50" max="200" step="5" value="100">
       </label>
-      <label class="sk-cursore" data-tip="Ispessisce o assottiglia tutti i tubi insieme, mantenendo le proporzioni tra loro">
+      <label class="sk-cursore" data-tip="Ispessisce o assottiglia tutti i tubi insieme, mantenendo le proporzioni tra loro. L’acqua resta su una scala separata e ridotta: al massimo un terzo del tubo energetico più spesso">
         <span>Spessore tubi <output id="sk-scala-tubi-val">100%</output></span>
         <input type="range" id="sk-scala-tubi" min="50" max="200" step="5" value="100">
       </label>
@@ -195,7 +196,7 @@
   <p class="pf-piede-nota">I dati caricati restano nel browser: nulla viene inviato a server. <span class="pf-piede-attribuzione">Playfair © 2026 Paolo Bianco – Stato Critico – <a href="https://playfair.statocritico.it">https://playfair.statocritico.it</a></span></p>
 </footer>
 
-<dialog class="sk-dialogo" id="sk-tutorial" aria-labelledby="sk-tut-tit">
+<dialog class="sk-dialogo pf-area" id="sk-tutorial" aria-labelledby="sk-tut-tit">
   <form method="dialog" class="sk-tut">
     <p class="sk-tut-passo" id="sk-tut-passo">1 / 6</p>
     <h2 id="sk-tut-tit">Benvenuto nell'editor Sankey</h2>
