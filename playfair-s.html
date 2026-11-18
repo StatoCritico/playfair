@@ -45,17 +45,18 @@
   <p class="pf-occhiello">Strumento · Site</p>
   <h1 id="titolo-strumento">Playfair-S <span class="pf-sotto">— analisi di singolo sito</span> <small>v0.75</small></h1>
   <p class="pf-sommario">Costi e consumi mensili di un sito: elettricità, gas, teleriscaldamento e acqua. Calcola energia primaria (TEP) ed emissioni di CO₂ con fattori modificabili e mostra gli andamenti Rolling 12 (mese su mese dell’anno prima) e MAT (totale mobile annuo).</p>
-  <p class="pf-file"><b>File accettato:</b> un CSV mensile come <code>1_consumi.csv</code>, separatore <code>;</code> o <code>,</code>, decimali con la virgola e senza separatore delle migliaia. Colonne: <code>anno</code>, <code>mese</code> (1–12 o nome), <code>consumo_elettrico</code> (kWh), <code>costo_elettrico</code> (€), <code>consumo_gas</code> (Sm³), <code>costo_gas</code>, <code>consumo_teleriscaldamento</code> (MWh), <code>costo_teleriscaldamento</code>, <code>consumo_acqua</code> (m³), <code>costo_acqua</code>. Le colonne possono restare vuote; il nome del file diventa il nome del sito.</p>
+  <p class="pf-file"><b>File accettato:</b> un CSV mensile come <code>1_consumi.csv</code>, separatore <code>;</code> o <code>,</code>, decimali con la virgola e senza separatore delle migliaia. Colonne: <code>anno</code>, <code>mese</code> (1–12 o nome), <code>consumo_elettrico</code> (kWh), <code>costo_elettrico</code> (€), <code>consumo_gas</code> (Sm³), <code>costo_gas</code>, <code>consumo_teleriscaldamento</code> (MWh), <code>costo_teleriscaldamento</code>, <code>consumo_acqua</code> (m³), <code>costo_acqua</code>. Le colonne possono restare vuote; il nome del file diventa il nome del sito. Vanno bene anche i file <b>Excel</b> (<code>.xlsx</code>, <code>.xls</code>) e <b>LibreOffice</b> (<code>.ods</code>) con le stesse colonne: si usa il primo foglio con dati (se ce n’è più d’uno, lo scegli tu) e viene convertito in CSV nel browser.</p>
   <details class="pf-come">
     <summary>Come si usa</summary>
     <ol>
-      <li>Trascina il file CSV in un punto qualsiasi della pagina, oppure sceglilo nel riquadro «Caricamento dati».</li>
+      <li>Trascina il file (CSV, Excel o LibreOffice) in un punto qualsiasi della pagina, oppure sceglilo nel riquadro «Caricamento dati».</li>
       <li>Con le frecce ← → accanto al file scegli l’anno delle torte dell’impronta ecologica (costi, TEP, CO₂).</li>
       <li>Nel pannello «Fattori di conversione» puoi cambiare i coefficienti TEP e CO₂: i grafici si aggiornano subito.</li>
       <li>In «Andamenti» scegli vettore e intervallo di anni; la rotella del mouse sopra i grafici sposta la finestra di un mese.</li>
       <li>I pulsanti ▲/▼ comprimono ed espandono i pannelli; passa sopra barre e torte per leggere i valori.</li>
     </ol>
   </details>
+  <div class="pf-intro-azioni"><button class="pf-bottone-piccolo" type="button" data-pf-excel-scarica data-tip="Scarica una cartella Excel con un foglio per grafico: tabella dei dati e grafico modificabile">Scarica in Excel</button></div>
 </section>
 
 <div class="pf-app fam-a s">
@@ -74,7 +75,7 @@
   <div class="panel-body" id="body-panel-load">
     <div class="file-row">
       <button onclick="document.getElementById('modal-istr').classList.add('open')">Istruzioni</button>
-      <input type="file" id="csv-file" accept=".csv" style="font-size:13px;flex:1;min-width:180px" onchange="loadCSV()" aria-label="File CSV dei consumi mensili (es. 1_consumi.csv)">
+      <input type="file" id="csv-file" accept=".csv,.xlsx,.xls,.ods,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,application/vnd.oasis.opendocument.spreadsheet" style="font-size:13px;flex:1;min-width:180px" onchange="loadCSV()" aria-label="File CSV dei consumi mensili (es. 1_consumi.csv)">
       <div class="year-nav">
         <button onclick="prevYear()">&#8592;</button>
         <span class="year-label" id="year-label">–</span>
@@ -179,8 +180,8 @@
 </main>
 
 <footer class="pf-piede">
-  <p>Playfair · un progetto di <a href="https://statocritico.it">Stato Critico</a> · <a href="guida-rapida.pdf">Guida rapida</a> · Immagini storiche: pubblico dominio (Wikimedia Commons)</p>
-  <p>I dati caricati restano nel browser: nulla viene inviato a server.</p>
+  <p>Playfair · un progetto di <a href="https://statocritico.it">Stato Critico</a> · <a href="guida-rapida.pdf">Guida rapida</a> · <a href="licenza.html">Licenza AGPL-3.0</a> · Immagini storiche: pubblico dominio (Wikimedia Commons)</p>
+  <p class="pf-piede-nota">I dati caricati restano nel browser: nulla viene inviato a server. <span class="pf-piede-attribuzione">Playfair © 2026 Paolo Bianco – Stato Critico – <a href="https://playfair.statocritico.it">https://playfair.statocritico.it</a></span></p>
 </footer>
 
 <script src="assets/vendor/chart.umd.js"></script>
@@ -348,7 +349,7 @@ function renderEco(selYear){
     '<div><div class="chart-wrap" style="height:240px"><canvas id="eco-co2-pie"></canvas></div></div></div></div>'+
     '<div class="eco-section"><div class="eco-section-title">Consumi idrici (m³)</div>'+
     '<div class="charts-row"><div><div class="chart-wrap" style="height:240px"><canvas id="eco-acq-bar"></canvas></div></div>'+
-    '<div><div class="chart-wrap" style="height:240px"><canvas id="eco-acq-pie"></canvas></div></div></div></div>';
+    '<div><div class="chart-wrap" style="height:240px"><canvas id="eco-acq-pie" data-pf-excel="no"></canvas></div></div></div></div>';
 
   renderStackedBar('eco-cost-bar','Costi annui totali (€)',yLabels,[
     {label:'Elettricità',data:sums.map(function(s){return s.cel;}), backgroundColor:COLOR_EL+'cc', borderColor:COLOR_EL, borderWidth:1},
@@ -539,6 +540,7 @@ function renderAndamenti(){
 /* ── integrazione nel sito: ridisegno al cambio di tema ── */
 PF.alCambioTema(function(){ if(years.length) updateAll(); });
 </script>
+<script>window.PF_EXCEL={strumento:'Playfair-S'};</script>
 <script src="assets/sito.js" defer></script>
 </body>
 </html>

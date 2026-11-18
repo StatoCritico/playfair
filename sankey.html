@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Sankey — editor di diagrammi di flusso energetico · Playfair</title>
-<meta name="description" content="Disegna diagrammi di Sankey a blocchi: flussi di elettricità, gas, calore, acqua e CO₂ con spessori proporzionali, verifica dei bilanci, calcolo dei valori mancanti ed esportazione in JPG, PDF e SVG. Tutto nel browser.">
+<meta name="description" content="Disegna diagrammi di Sankey a blocchi: flussi di elettricità, gas, calore, acqua e CO₂ con spessori proporzionali, verifica dei bilanci, calcolo dei valori mancanti ed esportazione in JPG, PDF, SVG ed Excel. Tutto nel browser.">
 <link rel="icon" href="img/favicon.svg" type="image/svg+xml">
 <script>try{var t=localStorage.getItem('pf-tema');if(t)document.documentElement.dataset.theme=t;}catch(e){}</script>
 <link rel="stylesheet" href="assets/tema.css">
@@ -111,10 +111,11 @@
 
     <section class="sk-gruppo" aria-labelledby="sk-g-esp">
       <h2 id="sk-g-esp" class="sk-gruppo-tit">Esporta</h2>
-      <div class="sk-griglia-btn sk-tre">
+      <div class="sk-griglia-btn">
         <button type="button" class="sk-btn sk-piccolo" id="sk-esp-jpg" data-tip="Immagine JPG ad alta risoluzione con titolo, legenda e data">JPG</button>
         <button type="button" class="sk-btn sk-piccolo" id="sk-esp-pdf" data-tip="PDF vettoriale A4 con titolo, nota, legenda e data, impaginato per la stampa">PDF</button>
         <button type="button" class="sk-btn sk-piccolo" id="sk-esp-svg" data-tip="SVG vettoriale, modificabile con Inkscape o Illustrator">SVG</button>
+        <button type="button" class="sk-btn sk-piccolo" id="sk-esp-xlsx" data-tip="Cartella Excel: immagine del diagramma e tabelle dei blocchi e dei flussi (sorgente, destinazione, valore, unità, equivalente in tep)">Excel</button>
       </div>
       <div class="sk-riga-ctl">
         <label for="sk-formato" class="sk-campo-inline">PDF A4</label>
@@ -190,8 +191,8 @@
 </main>
 
 <footer class="pf-piede">
-  <p>Playfair · un progetto di <a href="https://statocritico.it">Stato Critico</a> · <a href="guida-rapida.pdf">Guida rapida</a> · Immagini storiche: pubblico dominio (Wikimedia Commons)</p>
-  <p>I dati caricati restano nel browser: nulla viene inviato a server.</p>
+  <p>Playfair · un progetto di <a href="https://statocritico.it">Stato Critico</a> · <a href="guida-rapida.pdf">Guida rapida</a> · <a href="licenza.html">Licenza AGPL-3.0</a> · Immagini storiche: pubblico dominio (Wikimedia Commons)</p>
+  <p class="pf-piede-nota">I dati caricati restano nel browser: nulla viene inviato a server. <span class="pf-piede-attribuzione">Playfair © 2026 Paolo Bianco – Stato Critico – <a href="https://playfair.statocritico.it">https://playfair.statocritico.it</a></span></p>
 </footer>
 
 <dialog class="sk-dialogo" id="sk-tutorial" aria-labelledby="sk-tut-tit">

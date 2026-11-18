@@ -104,17 +104,18 @@
   <p class="pf-occhiello">Strumento · Group</p>
   <h1 id="titolo-strumento">Playfair-G <span class="pf-sotto">— analisi di un gruppo di sedi</span> <small>v1.0</small></h1>
   <p class="pf-sommario">Prima della diagnosi energetica serve orientarsi nel patrimonio senza analizzarlo tutto: per ogni sede il consumo specifico (consumo ÷ dimensione) e l’incidenza sul consumo del gruppo, il diagramma di Pareto con la soglia dell’80% e la mappa a quattro quadranti delle priorità.</p>
-  <p class="pf-file"><b>File accettato:</b> un CSV con una riga per sede, tutte riferite allo stesso periodo (es. un anno). Colonne: <code>codice</code>, <code>denominazione</code>, <code>dimensione</code> (superficie m², volume, posti letto… è l’energy driver) e <code>consumo</code> (kWh, MWh, Sm³…). Separatore <code>;</code>, <code>,</code> o tabulazione; decimali con la virgola o con il punto, migliaia con il punto. Le unità si leggono dall’intestazione (<code>superficie m²</code>, <code>consumo [kWh]</code>) o da una seconda riga di unità, oppure si scrivono qui sotto.</p>
+  <p class="pf-file"><b>File accettato:</b> un CSV con una riga per sede, tutte riferite allo stesso periodo (es. un anno). Colonne: <code>codice</code>, <code>denominazione</code>, <code>dimensione</code> (superficie m², volume, posti letto… è l’energy driver) e <code>consumo</code> (kWh, MWh, Sm³…). Separatore <code>;</code>, <code>,</code> o tabulazione; decimali con la virgola o con il punto, migliaia con il punto. Le unità si leggono dall’intestazione (<code>superficie m²</code>, <code>consumo [kWh]</code>) o da una seconda riga di unità, oppure si scrivono qui sotto. Vanno bene anche i file <b>Excel</b> (<code>.xlsx</code>, <code>.xls</code>) e <b>LibreOffice</b> (<code>.ods</code>) con le stesse colonne: si usa il primo foglio con dati (se ce n’è più d’uno, lo scegli tu) e viene convertito in CSV nel browser.</p>
   <details class="pf-come">
     <summary>Come si usa</summary>
     <ol>
-      <li>Trascina il CSV in un punto qualsiasi della pagina oppure sceglilo nella zona «File dati». Righe vuote ignorate; le sedi con dimensione nulla o mancante sono segnalate ed escluse dal consumo specifico e dalla mappa.</li>
+      <li>Trascina il file (CSV, Excel o LibreOffice) in un punto qualsiasi della pagina oppure sceglilo nella zona «File dati». Righe vuote ignorate; le sedi con dimensione nulla o mancante sono segnalate ed escluse dal consumo specifico e dalla mappa.</li>
       <li>Controlla in «File dati» le colonne riconosciute, le unità di misura e il formato dei numeri (se l’automatico sbaglia, forzalo).</li>
       <li>Leggi gli indicatori del gruppo: totali, consumo specifico del gruppo (totale ÷ totale), mediana e quante sedi fanno l’80% del consumo.</li>
       <li>Nelle schede: <b>Pareto</b> (le sedi da guardare per prime), <b>Incidenza</b> (quanto pesa ogni sede e quanto è efficiente), <b>Quadranti</b> (priorità d’intervento). Ogni scheda ha il suo riquadro «Come si legge».</li>
       <li>Nella tabella fai clic sulle intestazioni per ordinare; «Scarica CSV» salva la tabella calcolata (separatore <code>;</code>, decimali con la virgola), «Scarica PNG» salva il grafico della scheda.</li>
     </ol>
   </details>
+  <div class="pf-intro-azioni"><button class="pf-bottone-piccolo" type="button" data-pf-excel-scarica data-tip="Scarica una cartella Excel con un foglio per grafico: tabella dei dati e grafico modificabile">Scarica in Excel</button></div>
 </section>
 
 <div class="pf-app fam-a g">
@@ -125,7 +126,7 @@
   <div class="row">
     <div class="field largo">
       <label class="pf-drop" for="csv-file">
-        <input type="file" id="csv-file" accept=".csv,.txt,text/csv" aria-label="File CSV delle sedi del gruppo">
+        <input type="file" id="csv-file" accept=".csv,.xlsx,.xls,.ods,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,application/vnd.oasis.opendocument.spreadsheet" aria-label="File CSV delle sedi del gruppo">
         <span class="pf-drop-titolo">Scegli il CSV delle sedi o trascinalo qui</span>
         <span class="pf-drop-nome">nessun file scelto</span>
       </label>
@@ -221,8 +222,8 @@
 </main>
 
 <footer class="pf-piede">
-  <p>Playfair · un progetto di <a href="https://statocritico.it">Stato Critico</a> · <a href="guida-rapida.pdf">Guida rapida</a> · Immagini storiche: pubblico dominio (Wikimedia Commons)</p>
-  <p>I dati caricati restano nel browser: nulla viene inviato a server.</p>
+  <p>Playfair · un progetto di <a href="https://statocritico.it">Stato Critico</a> · <a href="guida-rapida.pdf">Guida rapida</a> · <a href="licenza.html">Licenza AGPL-3.0</a> · Immagini storiche: pubblico dominio (Wikimedia Commons)</p>
+  <p class="pf-piede-nota">I dati caricati restano nel browser: nulla viene inviato a server. <span class="pf-piede-attribuzione">Playfair © 2026 Paolo Bianco – Stato Critico – <a href="https://playfair.statocritico.it">https://playfair.statocritico.it</a></span></p>
 </footer>
 
 <script src="assets/vendor/chart.umd.js"></script>
@@ -773,11 +774,7 @@ $('tabella').addEventListener('click', function (e) {
 });
 
 /* ---------------------------------------------------------------- esportazioni */
-function scarica(blob, nome) {
-  var url = URL.createObjectURL(blob), a = document.createElement('a');
-  a.href = url; a.download = nome; document.body.appendChild(a); a.click(); document.body.removeChild(a);
-  setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
-}
+function scarica(blob, nome) { Playfair.scarica(blob, nome); }   // funzione comune del sito (sito.js)
 function base() { return (S.file || 'gruppo').replace(/\.[^.]+$/, '').replace(/[^\w\-]+/g, '_'); }
 function nCsv(v, d) { return v === null || v === undefined || !isFinite(v) ? '' : (d === undefined ? String(+v.toFixed(6)) : v.toFixed(d)).replace('.', ','); }
 function cCsv(s) { s = String(s); return /[;"\n\r]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s; }
@@ -792,14 +789,14 @@ $('b-csv').addEventListener('click', function () {
       s.p80 ? 'sì' : 'no', s.quad ? QUAD[s.quad].nome : 'escluso (dimensione nulla)'].map(cCsv).join(';'));
   });
   righe.push(['', 'GRUPPO', R.n + ' sedi', nCsv(R.totD), nCsv(R.totC), nCsv(R.csG, 4), '', '100', '100', '', R.k80 + ' sedi', ''].map(cCsv).join(';'));
+  righe.push(Playfair.rigaFonteCsv());   // «# Fonte: Playfair …»: ricaricando il file la riga viene ignorata
   scarica(new Blob(['﻿' + righe.join('\r\n') + '\r\n'], { type: 'text/csv;charset=utf-8' }), 'playfair-g_' + base() + '.csv');
 });
 document.querySelectorAll('[data-png]').forEach(function (b) {
   b.addEventListener('click', function () {
     var ch = charts[b.dataset.png]; if (!ch) return;
-    var url = ch.toBase64Image('image/png', 1);
-    var a = document.createElement('a'); a.href = url; a.download = 'playfair-g_' + base() + '_' + b.dataset.png + '.png';
-    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    // sfondo del pannello e didascalia con la fonte (funzione comune del sito)
+    Playfair.scaricaImmagine(ch.canvas, 'playfair-g_' + base() + '_' + b.dataset.png + '.png');
   });
 });
 
@@ -840,6 +837,22 @@ PF.alCambioTema(function () { if (R) { kpi(); disegnaScheda(); } });
 /* per i test automatici: risultati in sola lettura */
 window.PlayfairG = { risultati: function () { return R && { gruppo: { totC: R.totC, totD: R.totD, csG: R.csG, csM: R.csM, incMedia: R.incMedia, incMed: R.incMed, k80: R.k80, cum80: R.cum80, n: R.n, nValide: R.nValide, soglie: soglie() },
   sedi: S.sedi.map(function (s) { return { codice: s.codice, nome: s.nome, dim: s.dim, cons: s.cons, zero: s.zero, cs: s.cs, inc: s.inc, quota: s.quota, cum: s.cum, rango: s.rango, p80: s.p80, quad: s.quad }; }) }; } };
+/* ── «Scarica in Excel»: crea anche i grafici delle schede non ancora aperte; la mappa a quadranti va come grafico
+   nativo a bolle e come immagine (riquadri ed etichette dei codici non hanno equivalente in Excel) ── */
+window.PF_EXCEL={
+  strumento:'Playfair-G',
+  prima:function(){
+    if(!R)return;
+    if(!charts.pareto)pareto();
+    if(!charts.incid)incidenza();
+    if(!charts.quad)mappa();
+    if(charts.quad)charts.quad.canvas.setAttribute('data-pf-excel','entrambi');
+    if(charts.pareto)charts.pareto.canvas.setAttribute('data-pf-titolo','Diagramma di Pareto');
+    if(charts.incid)charts.incid.canvas.setAttribute('data-pf-titolo','Incidenza e consumo specifico');
+    if(charts.quad)charts.quad.canvas.setAttribute('data-pf-titolo','Mappa a quattro quadranti');
+  },
+  tabelle:{}
+};
 })();
 </script>
 <script src="assets/sito.js" defer></script>

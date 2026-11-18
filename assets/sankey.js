@@ -1988,13 +1988,16 @@
   }
   const slug = (s) => (String(s || 'sankey').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'sankey').slice(0, 60);
   const oggi = () => new Date().toLocaleDateString('it-IT', { day: '2-digit', month: '2-digit', year: 'numeric' });
+  /** riga di fonte comune a tutti i file scaricati dal sito (Playfair.fonte() in sito.js) */
+  const fonte = () => (window.Playfair && window.Playfair.fonte ? window.Playfair.fonte() : `Fonte: Playfair — playfair.statocritico.it · elaborazione del ${oggi()} su dati forniti dall'utente · licenza AGPL-3.0`);
   function scarica(blob, nome) {
+    if (window.Playfair && window.Playfair.scarica) { window.Playfair.scarica(blob, nome); return; }
     const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = nome;
     document.body.appendChild(a); a.click();
     setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 2000);
   }
   function salvaJSON() {
-    const dati = { ...doc, versione: VERSIONE, vista: stato.vista, salvato: new Date().toISOString() };
+    const dati = { ...doc, versione: VERSIONE, vista: stato.vista, salvato: new Date().toISOString(), fonte: fonte() };
     scarica(new Blob([JSON.stringify(dati, null, 2)], { type: 'application/json' }), slug(doc.titolo) + '.json');
     messaggio('Progetto salvato come ' + slug(doc.titolo) + '.json', 'successo');
   }
@@ -2081,7 +2084,7 @@
     voci.forEach((v) => { if (lr + v.w > W - margine * 2 && riga.length) { righeLeg.push(riga); riga = []; lr = 0; } riga.push(v); lr += v.w; });
     if (riga.length) righeLeg.push(riga);
     const altLeg = righeLeg.length * 22 + 26;
-    const H = Math.ceil(testa + bb.h + altLeg + 20);
+    const H = Math.ceil(testa + bb.h + altLeg + 20 + 22);
     const ox = (W - bb.w) / 2 - bb.x, oy = testa - bb.y;
     let s = `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}"><style>${stileExport(pal)}</style>`;
     s += `<rect width="${W}" height="${H}" fill="#ffffff"/>`;
@@ -2101,6 +2104,7 @@
       });
       y += 22;
     });
+    s += `<text x="${margine}" y="${H - 16}" style="font-size:11px;fill:${pal.tenue}">${esc(fonte())}</text>`;
     s += '</svg>';
     return { svg: s, W, H, ox, oy, righeLeg };
   }
@@ -2158,6 +2162,52 @@
       messaggio(`Esportato JPG (${c.width} × ${c.height} px).`, 'successo');
     } catch (err) { messaggio('Esportazione JPG non riuscita: ' + err.message, 'errore'); }
   }
+  /** Cartella Excel: foglio con l'immagine del diagramma + fogli «Blocchi» e «Flussi» (con l'equivalente in tep). */
+  async function esportaXLSX() {
+    const x = preparaExport(); if (!x) return null;
+    if (!window.Playfair || !window.Playfair.esportaExcel) { messaggio('Esportazione in Excel non disponibile.', 'errore'); return null; }
+    const r = costruisciSVG(x);
+    const mb = mappaBlocchi(doc);
+    const eq = equivalenti(doc, mb);
+    const val = (o) => (o.valore != null ? o.valore : o.calc);
+    const tep = (v) => (v == null || !isFinite(v) ? null : Math.round(v * 1e6) / 1e6);
+    const tipoB = { bilancio: 'bilancio', conversione: 'conversione', confronto: 'confronto' };
+    const righeB = [];
+    doc.blocchi.forEach((b) => {
+      if (!b.dati.length) { righeB.push([b.nome, tipoB[b.tipo] || b.tipo, '', null, '', '', '', null]); return; }
+      b.dati.forEach((dt) => {
+        const v = val(dt);
+        righeB.push([b.nome, tipoB[b.tipo] || b.tipo, dt.etichetta || '', v == null ? null : v, testoUnita(dt.u, dt.ua), dt.ruolo === 'perdita' ? 'perdita' : (dt.ruolo || 'valore'),
+          dt.valore == null && dt.calc != null ? 'calcolato' : (dt.valore != null ? 'inserito' : 'mancante'), tep(eq.eqR.get(dt.id))]);
+      });
+    });
+    const nomeEstremo = (e) => { const b = mb.get(e.b); const dt = datoDi(b, e.d); return (b ? b.nome : '?') + (dt && dt.etichetta ? ' · ' + dt.etichetta : ''); };
+    const righeF = doc.collegamenti.filter((l) => mb.has(l.da.b) && mb.has(l.a.b)).map((l) => {
+      const un = unitaEffettiva(l, mb); const v = val(l);
+      return [nomeEstremo(l.da), nomeEstremo(l.a), v == null ? null : v, un ? testoUnita(un.u, un.ua) : '', tep(eq.eqL.get(l.id)),
+        l.valore == null && l.calc != null ? 'calcolato' : (l.valore != null ? 'inserito' : 'mancante'), l.etichetta || ''];
+    });
+    let png = null;
+    try {
+      const c = await svgInCanvas(r.svg, r.W, r.H, clamp(2400 / r.W, 1, 2.5));
+      png = { base64: c.toDataURL('image/png').split(',')[1], w: c.width, h: c.height };
+    } catch (err) { messaggio('Immagine del diagramma non disponibile: ' + err.message, 'avviso'); }
+    const nota = 'Equivalente in tep: fattori del progetto (elettricità ' + fmtFattore(fattoreEq(doc, 'MWh_el')) + ' tep/MWh, gas ' + fmtFattore(fattoreEq(doc, 'Sm3')) + ' tep/Sm³, calore ' + fmtFattore(fattoreEq(doc, 'MWh_th')) + ' tep/MWh); vuoto se il flusso non ha un equivalente energetico (acqua, unità libere).';
+    const fogli = [
+      { nome: 'Diagramma', titolo: doc.titolo, immagine: png, grafico: null, tabella: { colonne: [], righe: [] },
+        nota: 'Diagramma di Sankey come immagine: i dati sono nei fogli «Blocchi» e «Flussi».' },
+      { nome: 'Blocchi', titolo: doc.titolo + ' — blocchi e righe', grafico: null, immagine: null, solaTabella: true, nota,
+        tabella: { colonne: ['Blocco', 'Tipo', 'Riga', 'Valore', 'Unità', 'Ruolo', 'Origine del valore', 'Equivalente [tep]'], righe: righeB } },
+      { nome: 'Flussi', titolo: doc.titolo + ' — flussi', grafico: null, immagine: null, solaTabella: true, nota,
+        tabella: { colonne: ['Sorgente', 'Destinazione', 'Valore', 'Unità', 'Equivalente [tep]', 'Origine del valore', 'Etichetta'], righe: righeF } }
+    ];
+    if (png == null) fogli.shift();
+    try {
+      const esito = await window.Playfair.esportaExcel(fogli, { strumento: 'Playfair Sankey', nomeFile: 'playfair-sankey', titolo: doc.titolo, righeFonte: doc.nota ? [['Nota del diagramma', doc.nota]] : [] });
+      messaggio('Esportato ' + esito.nome + ' (diagramma, blocchi, flussi e fonte).', 'successo');
+      return esito;
+    } catch (err) { messaggio('Esportazione Excel non riuscita: ' + (err && err.message ? err.message : err), 'errore'); return null; }
+  }
   // l'Helvetica standard di jsPDF non disegna ² e ³ (glifo vuoto): Sm³ → Sm3, m³ → m3, CO₂ → CO2
   const pdfTesto = (s) => String(s).replace(/₂/g, '2').replace(/³/g, '3').replace(/rendimento η/g, 'rendimento').replace(/η\./g, 'rend.').replace(/η /g, 'rend. ').replace(/η/g, 'rend.').replace(/²/g, '2').replace(/≠/g, '!=').replace(/≈/g, '~').replace(/−/g, '-').replace(/→/g, '->').replace(/[^\x00-\xFF—–…·€‘’“”•]/g, '');
   /** PDF vettoriale disegnato con le primitive di jsPDF a partire dalla stessa scena. */
@@ -2190,11 +2240,11 @@
       const righeNota = doc.nota ? t.splitTextToSize(pdfTesto(doc.nota), PW - 2 * mg) : [];
       t.setFontSize(8);
       const voci = vett.map((kk) => ({ kk, t: pdfTesto(VETTORI[kk].nome) })).map((v) => ({ ...v, w: 9 + t.getTextWidth(v.t) + 5 }));
-      const note = pdfTesto(notaLegenda(sc).replace('∝ ', 'proporzionale all\'')) + ' · i flussi senza etichetta valgono quanto la riga da cui partono o a cui arrivano · Pagina generata nel browser: nessun dato inviato a server.';
+      const note = pdfTesto(notaLegenda(sc).replace('∝ ', 'proporzionale all\'')) + ' · i flussi senza etichetta valgono quanto la riga da cui partono o a cui arrivano · pagina generata nel browser: nessun dato inviato a server.';
       const righeLeg = []; let riga = [], lr = 0;
       voci.forEach((v) => { if (lr + v.w > PW - 2 * mg && riga.length) { righeLeg.push(riga); riga = []; lr = 0; } riga.push(v); lr += v.w; });
       if (riga.length) righeLeg.push(riga);
-      const righeNoteLeg = t.splitTextToSize(note, PW - 2 * mg);
+      const righeNoteLeg = t.splitTextToSize(note, PW - 2 * mg).concat(t.splitTextToSize(pdfTesto(fonte()), PW - 2 * mg));
       const yLinea = mg + 13 + (righeNota.length ? righeNota.length * 3.6 + 1.5 : 0);
       const altLeg = righeLeg.length * 4.2 + righeNoteLeg.length * 3.4 + 3;
       const top = yLinea + 4, fondo = PH - mg - altLeg - 2;
@@ -2205,7 +2255,7 @@
     const L = opzioni.reduce((m, o) => (o.k > m.k ? o : m));
     const { PW, PH, k, top, fondo } = L;
     const pdf = new jsPDF({ orientation: L.orient, unit: 'mm', format: 'a4', compress: true });
-    pdf.setProperties({ title: doc.titolo, subject: 'Diagramma di Sankey', creator: 'Playfair · playfair.statocritico.it' });
+    pdf.setProperties({ title: doc.titolo, subject: 'Diagramma di Sankey', creator: 'Playfair · playfair.statocritico.it', keywords: pdfTesto(fonte()) });
     pdf.setFont('helvetica', 'bold'); pdf.setFontSize(15); pdf.setTextColor(pal.inchiostro);
     pdf.text(pdf.splitTextToSize(pdfTesto(doc.titolo), PW - 2 * mg)[0], mg, mg + 3, { baseline: 'middle' });
     pdf.setFont('helvetica', 'normal'); pdf.setFontSize(8.5); pdf.setTextColor(pal.tenue);
@@ -2572,6 +2622,7 @@
     $('#sk-esp-jpg').addEventListener('click', esportaJPG);
     $('#sk-esp-pdf').addEventListener('click', esportaPDF);
     $('#sk-esp-svg').addEventListener('click', esportaSVG);
+    $('#sk-esp-xlsx').addEventListener('click', esportaXLSX);
     $('#sk-zoom-piu').addEventListener('click', () => zoomA(stato.vista.s * 1.25));
     $('#sk-zoom-meno').addEventListener('click', () => zoomA(stato.vista.s / 1.25));
     $('#sk-zoom-100').addEventListener('click', () => zoomA(1));
@@ -2609,7 +2660,7 @@
     // API per test e integrazioni (nessun dato esce dal browser)
     window.PlayfairSankey = {
       get doc() { return doc; }, carica: (o) => caricaDoc(normalizza(o)), esempio: caricaEsempio, aggiorna, analizza: () => analizza(doc),
-      scena: () => calcolaScena(doc, { famiglia: famigliaPagina }), esportaPDF, esportaJPG, esportaSVG, svg: () => { const x = preparaExport(); return x ? costruisciSVG(x).svg : null; },
+      scena: () => calcolaScena(doc, { famiglia: famigliaPagina }), esportaPDF, esportaJPG, esportaSVG, esportaXLSX, svg: () => { const x = preparaExport(); return x ? costruisciSVG(x).svg : null; },
       vista: () => ({ ...stato.vista }), adatta, scenaStampa: () => { const c = docPerStampa(); const sc = calcolaScena(c, { famiglia: FONT_EXP, compatto: true }); return { bb: confiniScena(sc), blocchi: sc.blocchi.map(({ b, g }) => [b.nome, Math.round(b.x), Math.round(b.y), g.w, g.h]) }; }, leggiNumero, fmt
     };
   }

@@ -62,7 +62,7 @@ e prima di `</body>`: `<script src="assets/sito.js" defer></script>` (sempre dop
 ```
 Tooltip: CSS su `[data-tip]` (comparsa al passaggio del mouse e al focus da tastiera, piccolo ritardo, freccina), `sito.js` aggiunge anche `aria-describedby`/`title` accessibile. Su mobile il menu si apre con "Menu".
 
-Piè di pagina comune: `<footer class="pf-piede">` con: "Playfair · un progetto di <a href="https://statocritico.it">Stato Critico</a> · <a href="guida-rapida.pdf">Guida rapida</a> · Immagini storiche: pubblico dominio (Wikimedia Commons)". I dati caricati restano nel browser: nulla viene inviato a server.
+Piè di pagina comune (IDENTICO ovunque, link assoluti in 404.html): `<footer class="pf-piede">` con "Playfair · un progetto di Stato Critico · Guida rapida · **Licenza AGPL-3.0** (`licenza.html`) · Immagini storiche: pubblico dominio (Wikimedia Commons)" e `<p class="pf-piede-nota">` «I dati caricati restano nel browser: nulla viene inviato a server.» + attribuzione obbligatoria «Playfair © 2026 Paolo Bianco – Stato Critico – https://playfair.statocritico.it». La licenza NON va nel menu.
 
 ## Drag & drop dei file (OBBLIGATORIO per tutti gli strumenti)
 `sito.js` trasforma automaticamente ogni `<input type="file">` in una zona di trascinamento in stile EuGEnio (classe `.pf-drop`, stato `.pieno` quando sopra/caricato, mostra il nome del file). Meccanismo: al drop imposta `input.files = e.dataTransfer.files` e lancia `input.dispatchEvent(new Event('change',{bubbles:true}))`, così il codice esistente (onchange="loadCSV()" o addEventListener('change')) funziona senza modifiche. Se la pagina ha un solo input file, si può trascinare il file **ovunque nella pagina** (velo a tutto schermo "Rilascia il file CSV"). Con più input (Playfair-T) il file trascinato sulla pagina va all'input il cui attributo `data-pf-pattern` (regex sul nome file, es. `termico` / `curva`) corrisponde; altrimenti si usa la zona specifica. Se si trascinano più file insieme, vengono smistati con lo stesso criterio. Il pulsante "scegli file" classico deve continuare a funzionare. API esposta: `window.Playfair.drop(inputEl, opzioni)` e `window.Playfair.tema()`.
@@ -92,3 +92,23 @@ verde = kWh elettrici; arancione = Sm³ gas e MWh termici; azzurro = m³ acqua; 
 - Consumo specifico = consumo/dimensione; del gruppo = Σconsumi/Σdimensioni (sedi con dimensione valida). Incidenza = consumo sede/Σconsumi. Sedi "nell'80%" = insieme minimo, in ordine decrescente, la cui cumulata raggiunge l'80%.
 - Quadranti: X = consumo specifico, Y = incidenza %; soglie sulla media (X: specifico del gruppo; Y: incidenza media = 100/N) o sulla mediana; valori uguali alla soglia vanno in basso/sinistra.
 - Nella home è il riquadro 08 «Radiation · le perdite» (parte `radiation`: tutte le perdite per irraggiamento, tratti grigi sottili).
+
+## Licenza
+Codice © 2026 Paolo Bianco – Stato Critico, **GNU AGPL-3.0** (`LICENSE` nella radice, pubblicato come `/LICENSE` con
+`Content-Type: text/plain` da `_headers`) con termini aggiuntivi ex sez. 7 (`TERMINI_AGGIUNTIVI.md`, non pubblicato).
+Pagina pubblica: `licenza.html` (dati, AGPL, termini aggiuntivi, nome e logo, crediti di terzi, testo completo).
+
+## Fogli di calcolo in ingresso (sito.js)
+Ogni `<input type="file">` accetta `.csv .xlsx .xls .ods`. `sito.js` intercetta il `change` (in cattura), carica
+`assets/vendor/xlsx.full.min.js` solo se serve, converte il primo foglio non vuoto (dialogo `.pf-dialogo` se più d'uno) in
+CSV `;` e rilancia `change` con il File CSV: il codice degli strumenti non cambia. Numeri senza migliaia, decimali con la
+virgola (`data-pf-decimali="punto"` sull'input per Playfair-M), percentuali come appaiono, date `gg/mm/aaaa [hh:mm]`.
+I CSV passano dallo stesso filtro, che toglie le righe `# Fonte: Playfair …`. `data-pf-fogli="no"` disattiva.
+
+## Download: fonte e «Scarica in Excel»
+- `Playfair.fonte()`, `Playfair.rigaFonteCsv()` (ultima riga dei CSV), `Playfair.scarica(blob,nome)`,
+  `Playfair.scaricaImmagine(canvas,nome)` (sfondo + didascalia), `Playfair.esportaExcel(fogli?, meta?)`.
+- Pulsante `[data-pf-excel-scarica]` → `assets/excel.js` + JSZip (a richiesta): un foglio per grafico (titolo, fonte,
+  tabella, grafico nativo OOXML; immagine PNG se non rappresentabile) + foglio «Fonte». Nome `playfair-x_AAAA-MM-GG.xlsx`.
+- Attributi dei `<canvas>`: `data-pf-titolo`, `data-pf-periodo` (selettore), `data-pf-excel="no|immagine|entrambi"`.
+  Personalizzazioni per pagina: `window.PF_EXCEL = { strumento, prima(), tabelle:{id:fn}, immagini:{id:fn}, dopo(fogli) }`.

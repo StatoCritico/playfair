@@ -4,7 +4,8 @@ Sito divulgativo di formazione sull'energia, dedicato a **William Playfair** (17
 linee, a barre e a torta. Fa parte di [Stato Critico](https://statocritico.it) ed è pubblicato su
 **https://playfair.statocritico.it**.
 
-Contiene strumenti che trasformano un file CSV in grafici per esercitazioni (Playfair-S, -E, -T, -M, -C), un editor di
+Contiene strumenti che trasformano un file CSV, Excel (`.xlsx`, `.xls`) o LibreOffice (`.ods`) in grafici per esercitazioni
+(Playfair-S, -E, -T, -M, -G, -C), scaricabili anche come cartella Excel con grafici nativi, un editor di
 diagrammi di Sankey e due pagine sui personaggi. **I dati caricati restano nel browser**: nulla viene inviato a server,
 nessun cookie, nessun tracker, nessuna CDN.
 
@@ -15,13 +16,17 @@ Sito statico, **nessuna build**: HTML + CSS + JS puri, con link relativi (funzio
 ```
 index.html              home
 personaggi.html         William Playfair e Matthew H. P. R. Sankey
-playfair-s|e|t|m|c.html gli strumenti
+playfair-s|e|t|m|g|c.html gli strumenti
+licenza.html            licenza AGPL-3.0, termini aggiuntivi, crediti di terzi
 sankey.html             editor di diagrammi a blocchi
 404.html                pagina «non trovata»
 guida-rapida.pdf        guida utente
 assets/tema.css         SOLO variabili (colori, font, raggi, ombre): l'aspetto del sito
-assets/sito.css|js      testata, menu, tema chiaro/scuro, trascinamento dei file
-assets/vendor/          librerie locali (Chart.js, PapaParse, chartjs-plugin-annotation, jsPDF)
+assets/sito.css|js      testata, menu, tema, trascinamento dei file, fogli di calcolo → CSV, fonte nei download
+assets/excel.js         «Scarica in Excel»: OOXML con grafici nativi (caricato a richiesta con JSZip)
+assets/vendor/          librerie locali (Chart.js, PapaParse, chartjs-plugin-annotation, jsPDF, SheetJS, JSZip)
+LICENSE                 testo della GNU AGPL-3.0 (pubblicato come /LICENSE)
+TERMINI_AGGIUNTIVI.md   termini aggiuntivi ex sezione 7 (non pubblicato: la pagina pubblica è licenza.html)
 assets/font/            font woff2 self-hosted con le loro licenze OFL
 img/                    immagini
 _headers                intestazioni HTTP (cache, sicurezza) per Cloudflare
@@ -55,10 +60,15 @@ Ogni `git push` su `main` ripubblica il sito in un paio di minuti (Cloudflare Wo
 Guida passo passo: [`docs/ISTRUZIONI_PUBBLICAZIONE.md`](docs/ISTRUZIONI_PUBBLICAZIONE.md); scorciatoia da PowerShell:
 `docs\pubblica.ps1`.
 
-## Licenze e crediti
+## Licenza e crediti
 
-- **Immagini storiche** (ritratti, grafici originali di Playfair e Sankey): **pubblico dominio**, da Wikimedia Commons.
+- **Codice**: © 2026 Paolo Bianco – Stato Critico, **GNU AGPL-3.0** (file `LICENSE`) con i termini aggiuntivi della
+  sezione 7 in `TERMINI_AGGIUNTIVI.md` (attribuzione «Playfair © 2026 Paolo Bianco – Stato Critico –
+  https://playfair.statocritico.it» da conservare, origine riconoscibile, nomi e logo). Riassunto in `licenza.html`,
+  collegata dal piè di ogni pagina.
+- **File scaricati** (xlsx, CSV, PNG/JPG, PDF/SVG, JSON): contengono la riga «Fonte: Playfair — playfair.statocritico.it ·
+  elaborazione del GG/MM/AAAA su dati forniti dall'utente · licenza AGPL-3.0» (`Playfair.fonte()` in `sito.js`).
+- **Immagini storiche**: pubblico dominio, da Wikimedia Commons.
 - **Font**: Barlow, Hanken Grotesk, IBM Plex Mono – SIL Open Font License 1.1 (testi in `assets/font/OFL-*.txt`).
-- **Librerie**: Chart.js, chartjs-plugin-annotation, PapaParse, jsPDF – licenza MIT.
+- **Librerie**: Chart.js, chartjs-plugin-annotation, PapaParse, jsPDF, JSZip – MIT; SheetJS CE 0.18.5 – Apache-2.0.
 - **Stile** ripreso da EuGEnio, dello stesso autore.
-- Testi e strumenti: © Stato Critico.

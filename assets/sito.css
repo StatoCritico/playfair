@@ -218,6 +218,19 @@ input.pf-input, select.pf-input, textarea.pf-input {
   box-shadow: var(--ombra-2); opacity: 0; transition: opacity .2s, transform .2s; pointer-events: none; }
 .pf-annuncio.visibile { opacity: 1; transform: translate(-50%, 0); }
 
+/* ------------------------------------------------------------------------------------------- scelta del foglio (file Excel/ODS con più fogli) */
+.pf-dialogo { max-width: min(34rem, calc(100vw - 2rem)); padding: var(--s5); border: 1px solid var(--linea); border-radius: var(--r-l);
+  background: var(--foglio); color: var(--inchiostro); box-shadow: var(--ombra-2); font-family: var(--testo); }
+.pf-dialogo::backdrop { background: color-mix(in srgb, var(--carta) 70%, transparent); }
+.pf-dialogo h2 { margin: 0 0 var(--s2); font: 700 var(--c-xl)/1.2 var(--titoli); }
+.pf-dialogo p { margin: 0 0 var(--s4); color: var(--tenue); font-size: var(--c-s); overflow-wrap: anywhere; }
+.pf-dialogo-scelte { display: flex; flex-direction: column; gap: var(--s2); }
+.pf-dialogo-scelte .pf-btn { justify-content: flex-start; text-align: left; }
+.pf-dialogo-piede { display: flex; justify-content: flex-end; margin-top: var(--s4); }
+
+/* pulsante «Scarica in Excel» durante la preparazione del file */
+[data-pf-excel-scarica][aria-busy="true"] { opacity: .65; cursor: progress; }
+
 /* ------------------------------------------------------------------------------------------- pagine di testo */
 .pf-intestazione { padding-block: var(--s7) var(--s5); }
 .pf-intestazione h1 { margin: 0 0 var(--s3); }

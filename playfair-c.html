@@ -42,18 +42,18 @@
   <p class="pf-occhiello">Strumento · Cusum</p>
   <h1 id="titolo-strumento">Playfair-C <span class="pf-sotto">— CUSUM secondo ISO 50006</span> <small>v0.75</small></h1>
   <p class="pf-sommario">Monitoraggio della prestazione energetica secondo ISO 50006: regressione lineare tra consumo ed energy driver sul periodo di riferimento (baseline), scarti tra consumo reale e consumo atteso e carta CUSUM, la somma cumulata degli scarti che rivela risparmi o peggioramenti nel tempo.</p>
-  <p class="pf-file"><b>File accettato:</b> un CSV come <code>consumo_cusum.csv</code> a due colonne, separatore <code>;</code> o <code>,</code>: la 1ª è il consumo, la 2ª l’energy driver (pezzi prodotti, gradi giorno…). Riga 1: nomi (es. <code>consumo;pezzi</code>), riga 2: unità di misura (es. <code>kWh;n</code>), poi un intervallo (giorno, settimana, mese) per riga.</p>
+  <p class="pf-file"><b>File accettato:</b> un CSV come <code>consumo_cusum.csv</code> a due colonne, separatore <code>;</code> o <code>,</code>: la 1ª è il consumo, la 2ª l’energy driver (pezzi prodotti, gradi giorno…). Riga 1: nomi (es. <code>consumo;pezzi</code>), riga 2: unità di misura (es. <code>kWh;n</code>), poi un intervallo (giorno, settimana, mese) per riga. Vanno bene anche i file <b>Excel</b> (<code>.xlsx</code>, <code>.xls</code>) e <b>LibreOffice</b> (<code>.ods</code>) con le stesse colonne: si usa il primo foglio con dati (se ce n’è più d’uno, lo scegli tu) e viene convertito in CSV nel browser.</p>
   <details class="pf-come">
     <summary>Come si usa</summary>
     <ol>
-      <li>Trascina il file CSV in un punto qualsiasi della pagina, oppure sceglilo nel riquadro «Dati energetici».</li>
+      <li>Trascina il file (CSV, Excel o LibreOffice) in un punto qualsiasi della pagina, oppure sceglilo nel riquadro «Dati energetici».</li>
       <li>«Intervalli per stima» è il numero di intervalli iniziali usati come baseline (proposto: 20% dei dati); premi «Stima» per ricalcolare.</li>
       <li>Fai clic su Formula, R², χ² e p-value per leggere cosa significano.</li>
       <li>Trascina i grafici con il mouse per scorrere e usa la rotella per lo zoom; «Reimposta scala» torna alla vista iniziale.</li>
       <li>Nella carta CUSUM imposta una Soglia per tracciare i limiti ±: una pendenza negativa e stabile indica un risparmio.</li>
     </ol>
   </details>
-  <div class="pf-intro-azioni"><button class="pf-bottone-piccolo" id="contactBtn" type="button" onclick="contactAuthor()">Contatta l’autore</button></div>
+  <div class="pf-intro-azioni"><button class="pf-bottone-piccolo" type="button" data-pf-excel-scarica data-tip="Scarica una cartella Excel con un foglio per grafico: tabella dei dati e grafico modificabile">Scarica in Excel</button> <button class="pf-bottone-piccolo" id="contactBtn" type="button" onclick="contactAuthor()">Contatta l’autore</button></div>
 </section>
 
 <div class="pf-app fam-b c">
@@ -69,7 +69,7 @@
     Caricare un file .csv con due colonne: consumo energetico ed energy driver. Riga 1: intestazioni, riga 2: unità di misura, righe seguenti: valori.
   </div>
   <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
-    <input type="file" id="csvFile" accept=".csv" aria-label="File CSV consumo ed energy driver (es. consumo_cusum.csv)">
+    <input type="file" id="csvFile" accept=".csv,.xlsx,.xls,.ods,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,application/vnd.oasis.opendocument.spreadsheet" aria-label="File CSV consumo ed energy driver (es. consumo_cusum.csv)">
     <button class="obtn" onclick="toggleHelp()">Istruzioni</button>
     <span style="font-size:12px;color:var(--color-text-tertiary)" id="fileStatus">Attesa file .csv</span>
   </div>
@@ -99,7 +99,7 @@
     </div>
     <div class="ch" id="outerReg">
       <div class="nodata" id="ndReg">Nessun dato caricato</div>
-      <canvas id="cReg" style="display:none;position:absolute;top:0;left:0;width:100%;height:100%"></canvas>
+      <canvas id="cReg" data-pf-titolo="Regressione lineare" style="display:none;position:absolute;top:0;left:0;width:100%;height:100%"></canvas>
     </div>
     <div class="sgrid" id="regStats"></div>
   </div>
@@ -111,7 +111,7 @@
   <div id="bodyScarti">
     <div class="ch" id="outerScarti" style="cursor:grab">
       <div class="nodata" id="ndScarti">Nessun dato caricato</div>
-      <canvas id="cScarti" style="display:none;position:absolute;top:0;left:0;width:100%;height:100%"></canvas>
+      <canvas id="cScarti" data-pf-titolo="Progressione scarti" style="display:none;position:absolute;top:0;left:0;width:100%;height:100%"></canvas>
     </div>
   </div>
 </div>
@@ -122,7 +122,7 @@
   <div id="bodyCusum">
     <div class="ch" id="outerCusum" style="cursor:grab">
       <div class="nodata" id="ndCusum">Nessun dato caricato</div>
-      <canvas id="cCusum" style="display:none;position:absolute;top:0;left:0;width:100%;height:100%"></canvas>
+      <canvas id="cCusum" data-pf-titolo="Confronto CuSum" style="display:none;position:absolute;top:0;left:0;width:100%;height:100%"></canvas>
     </div>
     <div class="srow">
       <label>Soglia</label>
@@ -136,8 +136,8 @@
 </main>
 
 <footer class="pf-piede">
-  <p>Playfair · un progetto di <a href="https://statocritico.it">Stato Critico</a> · <a href="guida-rapida.pdf">Guida rapida</a> · Immagini storiche: pubblico dominio (Wikimedia Commons)</p>
-  <p>I dati caricati restano nel browser: nulla viene inviato a server.</p>
+  <p>Playfair · un progetto di <a href="https://statocritico.it">Stato Critico</a> · <a href="guida-rapida.pdf">Guida rapida</a> · <a href="licenza.html">Licenza AGPL-3.0</a> · Immagini storiche: pubblico dominio (Wikimedia Commons)</p>
+  <p class="pf-piede-nota">I dati caricati restano nel browser: nulla viene inviato a server. <span class="pf-piede-attribuzione">Playfair © 2026 Paolo Bianco – Stato Critico – <a href="https://playfair.statocritico.it">https://playfair.statocritico.it</a></span></p>
 </footer>
 
 <script src="assets/vendor/chart.umd.js"></script>
@@ -460,6 +460,7 @@ function lg(x){var c=[76.18009172947146,-86.50532032941677,24.01409824083091,-1.
 /* ── integrazione nel sito: ridisegno al cambio di tema ── */
 PF.alCambioTema(function(){ if(DATA.length) renderAll(); });
 </script>
+<script>window.PF_EXCEL={strumento:'Playfair-C'};</script>
 <script src="assets/sito.js" defer></script>
 </body>
 </html>

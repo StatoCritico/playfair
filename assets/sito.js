@@ -4,13 +4,22 @@
    - menu del telefono, voce attiva automatica (aria-current)
    - tooltip accessibili da [data-tip]
    - trascinamento dei file automatico su ogni <input type="file"> (anche creati dopo: MutationObserver)
-   API: window.Playfair = { tema, drop, colore, colori, annuncia, versione }
+   - fogli di calcolo (.xlsx .xls .ods) convertiti in CSV prima che li veda lo strumento (SheetJS caricato solo se serve)
+   - fonte uniforme nei file scaricati e pulsante «Scarica in Excel» ([data-pf-excel], JSZip + excel.js caricati a richiesta)
+   API: window.Playfair = { tema, drop, colore, colori, annuncia, versione, fonte, scarica, scaricaImmagine, telaConFonte,
+                            rigaFonteCsv, carica, esportaExcel, fogliDiCalcolo }
    ===================================================================================================== */
 (function () {
   "use strict";
   if (window.Playfair && window.Playfair.versione) return;   // già caricato
   var doc = document, root = doc.documentElement;
   root.classList.add("pf-js");
+  /* cartella assets/ ricavata dall'indirizzo di questo script: serve a caricare le librerie solo quando servono */
+  var BASE = (function () {
+    var sc = doc.currentScript || doc.querySelector('script[src*="sito.js"]');
+    var src = sc && sc.src ? sc.src : "assets/sito.js";
+    return src.replace(/sito\.js(?:[?#].*)?$/, "");
+  })();
 
   /* ------------------------------------------------------------------------------- tema */
   function temaAttuale() {
@@ -206,6 +215,7 @@
     if (opz.etichetta) return opz.etichetta;
     if (input.dataset.pfEtichetta) return input.dataset.pfEtichetta;
     var acc = (input.getAttribute("accept") || "").toLowerCase();
+    if ((acc.indexOf(".csv") >= 0 || acc.indexOf("text/csv") >= 0) && /\.(xlsx|ods)/.test(acc)) return "il file CSV, Excel o LibreOffice";
     if (acc.indexOf(".csv") >= 0 || acc.indexOf("text/csv") >= 0) return "il file CSV";
     if (acc.indexOf(".json") >= 0) return "il file JSON";
     if (acc.indexOf("image") >= 0) return "l'immagine";
@@ -231,7 +241,7 @@
   }
   function mostraNome(z) {
     var f = z.input.files;
-    var testo = f && f.length ? Array.prototype.map.call(f, function (x) { return x.name; }).join(", ") : (z.testoVuoto || "");
+    var testo = f && f.length ? Array.prototype.map.call(f, function (x) { return (x.__pfOrigine) || x.name; }).join(", ") : (z.testoVuoto || "");
     if (z.nome) z.nome.textContent = testo;
     z.zona.classList.toggle("pieno", !!(f && f.length));
   }
@@ -282,7 +292,7 @@
         input.parentNode.insertBefore(zona, input);
         zona.appendChild(input);
         var t = doc.createElement("span"); t.className = "pf-drop-titolo";
-        t.textContent = opz.testo || input.dataset.pfTesto || "Scegli " + etichetta(input, opz) + " o trascinalo qui";
+        t.textContent = opz.testo || input.dataset.pfTesto || "Scegli o trascina qui " + etichetta(input, opz);
         zona.appendChild(t);
         testoVuoto = "nessun file scelto";
       }
@@ -420,6 +430,263 @@
     cercaInput(doc);
   }
 
+
+  /* ------------------------------------------------------------------------------- caricamento pigro delle librerie */
+  var promesseScript = {};
+  /** Playfair.carica('vendor/jszip.min.js') → Promise: carica (una volta sola) uno script di assets/. */
+  function carica(rel) {
+    var url = /^(https?:)?\/\/|^\//.test(rel) ? rel : BASE + rel;
+    if (promesseScript[url]) return promesseScript[url];
+    promesseScript[url] = new Promise(function (ok, ko) {
+      var s = doc.createElement("script");
+      s.src = url; s.async = true;
+      s.onload = function () { ok(); };
+      s.onerror = function () { delete promesseScript[url]; ko(new Error("impossibile caricare " + rel)); };
+      doc.head.appendChild(s);
+    });
+    return promesseScript[url];
+  }
+
+  /* ------------------------------------------------------------------------------- fonte nei file scaricati */
+  function dataIt(d) {
+    d = d || new Date();
+    var p = function (n) { return (n < 10 ? "0" : "") + n; };
+    return p(d.getDate()) + "/" + p(d.getMonth() + 1) + "/" + d.getFullYear();
+  }
+  function dataIso(d) {
+    d = d || new Date();
+    var p = function (n) { return (n < 10 ? "0" : "") + n; };
+    return d.getFullYear() + "-" + p(d.getMonth() + 1) + "-" + p(d.getDate());
+  }
+  /** Playfair.fonte() → la riga di fonte comune a tutti i file generati dal sito. */
+  function fonte(d) {
+    return "Fonte: Playfair — playfair.statocritico.it · elaborazione del " + dataIt(d) + " su dati forniti dall'utente · licenza AGPL-3.0";
+  }
+  /** riga di commento da mettere in fondo ai CSV: gli strumenti la scartano quando il file viene ricaricato */
+  function rigaFonteCsv() { return "# " + fonte(); }
+  var RE_FONTE_CSV = /^﻿?#\s*Fonte: Playfair\b.*$/gm;
+
+  /** Playfair.scarica(blob | dataURL, nome): scarica un file generato nel browser. */
+  function scarica(dati, nome) {
+    var url = typeof dati === "string" ? dati : URL.createObjectURL(dati);
+    var a = doc.createElement("a");
+    a.href = url; a.download = nome; a.rel = "noopener"; a.style.display = "none";
+    doc.body.appendChild(a); a.click();
+    setTimeout(function () { if (typeof dati !== "string") URL.revokeObjectURL(url); a.remove(); }, 2000);
+  }
+  /** Playfair.telaConFonte(canvas, {sfondo, testo}) → nuova tela con sfondo pieno e didascalia della fonte in basso. */
+  function telaConFonte(sorgente, opz) {
+    opz = opz || {};
+    var w = sorgente.width, h = sorgente.height;
+    var corpo = Math.max(11, Math.round(Math.min(w, 2400) / 95));
+    var alto = Math.round(corpo * 2.1);
+    var c = doc.createElement("canvas");
+    c.width = w; c.height = h + alto;
+    var g = c.getContext("2d");
+    g.fillStyle = opz.sfondo || colore("--foglio") || "#ffffff";
+    g.fillRect(0, 0, c.width, c.height);
+    g.drawImage(sorgente, 0, 0);
+    g.fillStyle = opz.inchiostro || colore("--tenue") || "#5f5868";
+    g.font = corpo + "px " + (colore("--testo") || "sans-serif");
+    g.textBaseline = "middle";
+    var testo = opz.testo || fonte(), x = Math.round(corpo * 0.9);
+    while (testo.length > 20 && g.measureText(testo).width > w - 2 * x) testo = testo.slice(0, -2);
+    if (testo !== (opz.testo || fonte())) testo = testo.replace(/\s*\S*$/, "") + "…";
+    g.fillText(testo, x, h + alto / 2);
+    return c;
+  }
+  /** Playfair.scaricaImmagine(canvas, nome, opz): PNG (o JPG con opz.tipo) con sfondo e didascalia della fonte. */
+  function scaricaImmagine(sorgente, nome, opz) {
+    opz = opz || {};
+    var c = telaConFonte(sorgente, opz);
+    var tipo = opz.tipo || (/\.jpe?g$/i.test(nome) ? "image/jpeg" : "image/png");
+    return new Promise(function (ok) {
+      c.toBlob(function (b) { scarica(b, nome); ok(b); }, tipo, opz.qualita || 0.93);
+    });
+  }
+
+  /* ------------------------------------------------------------------------------- fogli di calcolo → CSV
+     Un file .xlsx/.xlsm/.xls/.ods scelto con il pulsante o trascinato viene letto con SheetJS (caricato solo ora),
+     il foglio (il primo non vuoto, o quello scelto) diventa un CSV con separatore ';' e lo strumento riceve quel CSV
+     con un nuovo evento 'change': il codice degli strumenti non cambia. Numeri senza separatore delle migliaia,
+     decimali con la virgola (o con il punto se l'input ha data-pf-decimali="punto"), date gg/mm/aaaa [hh:mm].
+     Anche i CSV passano di qui: si tolgono le righe «# Fonte: Playfair …» messe dal sito nei CSV scaricati. */
+  var RE_FOGLIO = /\.(xlsx|xlsm|xlsb|xls|ods|fods)$/i;
+  var RE_TESTO = /\.(csv|txt|tsv)$/i;
+  var codaScelte = Promise.resolve();
+
+  function numeroCsv(v, punto) {
+    if (!isFinite(v)) return "";
+    var n = Number(Number(v).toPrecision(15));
+    var s = String(n);
+    if (/e/i.test(s)) {
+      s = Math.abs(n) < 1 ? n.toFixed(20).replace(/0+$/, "").replace(/\.$/, "") : n.toLocaleString("en-US", { useGrouping: false, maximumFractionDigits: 0 });
+    }
+    return punto ? s : s.replace(".", ",");
+  }
+  function due(n) { return (n < 10 ? "0" : "") + n; }
+  function dataCsv(y, m, d, H, M, soloOra) {
+    var ora = due(H) + ":" + due(M);
+    if (soloOra) return ora;
+    return due(d) + "/" + due(m) + "/" + y + (H || M ? " " + ora : "");
+  }
+  function cellaCsv(cella, punto, date1904) {
+    if (!cella || cella.t === "z" || cella.t === "e") return "";
+    var v = cella.v;
+    if (cella.t === "s") return String(v == null ? "" : v).replace(/\r\n?|\n/g, " ");
+    if (cella.t === "b") return v ? "VERO" : "FALSO";
+    if (cella.t === "d" && v instanceof Date) {
+      return dataCsv(v.getFullYear(), v.getMonth() + 1, v.getDate(), v.getHours(), v.getMinutes(), false);
+    }
+    if (cella.t === "n") {
+      var fmt = cella.z || "General";
+      var X = window.XLSX;
+      if (typeof fmt === "number") fmt = (X.SSF._table || X.SSF.get_table())[fmt] || "General";
+      if (X && X.SSF && X.SSF.is_date(fmt)) {
+        var r = Math.round(v * 1440) / 1440;   // al minuto: niente errori di arrotondamento o di fuso
+        var p = X.SSF.parse_date_code(r, { date1904: !!date1904 });
+        if (p) return dataCsv(p.y, p.m, p.d, p.H, p.M, r < 1);
+      }
+      if (/%/.test(String(fmt).replace(/"[^"]*"/g, ""))) v = v * 100;   // 8% → 8, come appare
+      return numeroCsv(v, punto);
+    }
+    return String(v == null ? "" : v);
+  }
+  function campoCsv(s) { return /[;"\r\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s; }
+  function righeFoglio(ws, punto, date1904) {
+    var X = window.XLSX;
+    if (!ws || !ws["!ref"]) return [];
+    var rg = X.utils.decode_range(ws["!ref"]), righe = [], maxC = -1;
+    for (var r = rg.s.r; r <= rg.e.r; r++) {
+      var riga = [], piena = false;
+      for (var c = rg.s.c; c <= rg.e.c; c++) {
+        var t = cellaCsv(ws[X.utils.encode_cell({ r: r, c: c })], punto, date1904);
+        if (t !== "") { piena = true; if (c - rg.s.c > maxC) maxC = c - rg.s.c; }
+        riga.push(t);
+      }
+      if (piena) righe.push(riga);
+    }
+    return righe.map(function (r) { return r.slice(0, maxC + 1); });
+  }
+  function scegliFoglio(fogli, nomeFile) {
+    return new Promise(function (ok) {
+      var d = doc.createElement("dialog");
+      d.className = "pf-dialogo";
+      d.setAttribute("aria-labelledby", "pf-dialogo-titolo");
+      var h = '<h2 id="pf-dialogo-titolo">Quale foglio vuoi usare?</h2><p>Il file <b></b> contiene più fogli con dati. Scegli quello da caricare nello strumento.</p><div class="pf-dialogo-scelte"></div><div class="pf-dialogo-piede"><button type="button" class="pf-btn secondario piccolo" value="">Annulla</button></div>';
+      d.innerHTML = h;
+      d.querySelector("b").textContent = nomeFile;
+      var box = d.querySelector(".pf-dialogo-scelte");
+      fogli.forEach(function (f, i) {
+        var b = doc.createElement("button");
+        b.type = "button"; b.className = "pf-btn piccolo"; b.value = String(i);
+        b.textContent = f.nome + " · " + f.righe.length + (f.righe.length === 1 ? " riga" : " righe");
+        box.appendChild(b);
+      });
+      var fatto = false;
+      function chiudi(v) { if (fatto) return; fatto = true; try { d.close(); } catch (e) { /* già chiuso */ } d.remove(); ok(v === "" || v == null ? null : fogli[+v]); }
+      d.addEventListener("click", function (e) { var b = e.target.closest("button"); if (b) chiudi(b.value); });
+      d.addEventListener("cancel", function (e) { e.preventDefault(); chiudi(""); });
+      doc.body.appendChild(d);
+      if (d.showModal) d.showModal(); else d.setAttribute("open", "");
+      var primo = box.querySelector("button"); if (primo) primo.focus();
+    });
+  }
+  /** converte un foglio di calcolo in un File CSV; null se l'utente annulla la scelta del foglio */
+  function foglioInCsv(file, input) {
+    var punto = (input && input.dataset.pfDecimali) === "punto";
+    return Promise.all([carica("vendor/xlsx.full.min.js"), file.arrayBuffer()]).then(function (r) {
+      var X = window.XLSX;
+      var wb = X.read(new Uint8Array(r[1]), { type: "array", cellNF: true, cellDates: false, cellText: false });
+      var date1904 = !!(wb.Workbook && wb.Workbook.WBProps && wb.Workbook.WBProps.date1904);
+      var info = (wb.Workbook && wb.Workbook.Sheets) || [];
+      var fogli = wb.SheetNames.map(function (n, i) {
+        return { nome: n, nascosto: !!(info[i] && info[i].Hidden), righe: righeFoglio(wb.Sheets[n], punto, date1904) };
+      }).filter(function (f) { return f.righe.length && !f.nascosto; });
+      if (!fogli.length) throw new Error("nel file non ci sono fogli con dati");
+      var scelta = fogli.length === 1 ? Promise.resolve(fogli[0]) : (codaScelte = codaScelte.then(function () { return scegliFoglio(fogli, file.name); }));
+      return scelta.then(function (f) {
+        if (!f) return null;
+        var testo = f.righe.map(function (r) { return r.map(campoCsv).join(";"); }).join("\r\n") + "\r\n";
+        var nome = file.name.replace(/\.[^.]+$/, "") + ".csv";
+        var nuovo = new File([testo], nome, { type: "text/csv", lastModified: file.lastModified || Date.now() });
+        nuovo.__pfOrigine = file.name + (fogli.length > 1 ? " (foglio «" + f.nome + "»)" : "");
+        nuovo.__pfFoglio = f.nome;
+        return nuovo;
+      });
+    });
+  }
+  /** CSV scaricati dal sito: tolgo la riga di fonte prima di passarli allo strumento */
+  function pulisciCsv(file) {
+    if (!file.text || file.size > 60 * 1024 * 1024) return Promise.resolve(file);
+    return file.text().then(function (t) {
+      RE_FONTE_CSV.lastIndex = 0;
+      if (!RE_FONTE_CSV.test(t)) return file;
+      var pulito = t.replace(RE_FONTE_CSV, "").replace(/(\r?\n){2,}$/, "$1");
+      var f = new File([pulito], file.name, { type: file.type || "text/csv", lastModified: file.lastModified || Date.now() });
+      return f;
+    }, function () { return file; });
+  }
+  function fogliDiCalcolo() {
+    doc.addEventListener("change", function (e) {
+      var input = e.target;
+      if (!input || input.type !== "file" || e.__pfPronto || input.dataset.pfFogli === "no") return;
+      var files = Array.prototype.slice.call(input.files || []);
+      if (!files.length) return;
+      var foglio = files.some(function (f) { return RE_FOGLIO.test(f.name); });
+      var testo = files.some(function (f) { return RE_TESTO.test(f.name); });
+      if (!foglio && !testo) return;
+      e.stopImmediatePropagation();          // lo strumento riceverà il CSV con un nuovo 'change'
+      if (foglio) annuncia("Lettura del foglio di calcolo…");
+      Promise.all(files.map(function (f) {
+        if (RE_FOGLIO.test(f.name)) return foglioInCsv(f, input);
+        if (RE_TESTO.test(f.name)) return pulisciCsv(f);
+        return f;
+      })).then(function (nuovi) {
+        if (nuovi.some(function (f) { return f === null; })) { annuncia("Caricamento annullato."); return; }
+        var cambiati = nuovi.some(function (f, i) { return f !== files[i]; });
+        if (cambiati) {
+          var dt = new DataTransfer();
+          nuovi.forEach(function (f) { dt.items.add(f); });
+          // DataTransfer copia i File: riporto il nome originale per la zona di trascinamento
+          input.files = dt.files;
+          Array.prototype.forEach.call(input.files, function (f, i) { if (nuovi[i].__pfOrigine) f.__pfOrigine = nuovi[i].__pfOrigine; });
+        }
+        var ev = new Event("change", { bubbles: true });
+        ev.__pfPronto = true;
+        input.dispatchEvent(ev);
+        var conv = nuovi.filter(function (f) { return f.__pfOrigine; });
+        if (conv.length) annuncia("Convertito in CSV: " + conv.map(function (f) { return f.__pfOrigine; }).join(", "));
+      }).catch(function (err) {
+        annuncia("Impossibile leggere il file: " + (err && err.message ? err.message : "formato non riconosciuto"));
+      });
+    }, true);
+  }
+
+  /* ------------------------------------------------------------------------------- esportazione in Excel */
+  /** Playfair.esportaExcel(fogli?, meta?) → Promise: senza fogli raccoglie i grafici della pagina. */
+  function esportaExcel(fogli, meta) {
+    return carica("vendor/jszip.min.js").then(function () { return carica("excel.js"); }).then(function () {
+      return window.PlayfairExcel.scarica(fogli || null, meta || {});
+    });
+  }
+  function pulsantiExcel() {
+    doc.addEventListener("click", function (e) {
+      var b = e.target.closest && e.target.closest("[data-pf-excel-scarica]");
+      if (!b) return;
+      e.preventDefault();
+      if (b.getAttribute("aria-busy") === "true") return;
+      b.setAttribute("aria-busy", "true");
+      annuncia("Preparo il file Excel…");
+      esportaExcel().then(function (r) {
+        if (r && r.vuoto) annuncia("Non ci sono ancora grafici da esportare: carica prima i dati.");
+        else if (r) annuncia("Scaricato " + r.nome + " (" + r.fogli + (r.fogli === 1 ? " foglio" : " fogli") + ")");
+      }).catch(function (err) {
+        annuncia("Esportazione in Excel non riuscita: " + (err && err.message ? err.message : err));
+      }).then(function () { b.removeAttribute("aria-busy"); });
+    });
+  }
+
   /* ------------------------------------------------------------------------------- avvio */
   function avvia() {
     doc.querySelectorAll(".pf-tema").forEach(function (b) { b.addEventListener("click", function () { tema("cambia"); }); });
@@ -428,16 +695,28 @@
     menuMobile();
     altezzaTestata();
     tooltip();
+    fogliDiCalcolo();
     trascinamento();
+    pulsantiExcel();
   }
 
   window.Playfair = {
-    versione: "1.0",
+    versione: "1.1",
     tema: tema,
     drop: drop,
     colore: colore,
     colori: colori,
-    annuncia: annuncia
+    annuncia: annuncia,
+    fonte: fonte,
+    rigaFonteCsv: rigaFonteCsv,
+    dataIt: dataIt,
+    dataIso: dataIso,
+    scarica: scarica,
+    telaConFonte: telaConFonte,
+    scaricaImmagine: scaricaImmagine,
+    carica: carica,
+    esportaExcel: esportaExcel,
+    fogliDiCalcolo: { inCsv: foglioInCsv }
   };
   if (doc.readyState === "loading") doc.addEventListener("DOMContentLoaded", avvia); else avvia();
 })();

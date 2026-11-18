@@ -54,11 +54,11 @@
   <p class="pf-occhiello">Strumento · Electric</p>
   <h1 id="titolo-strumento">Playfair-E <span class="pf-sotto">— consumi elettrici</span> <small>v0.99</small></h1>
   <p class="pf-sommario">Analisi della curva di carico elettrica oraria: totale, media e picco del periodo, ripartizione nelle fasce F1/F2/F3, curva cumulata (curva di durata) con ore piene ed equivalenti, analisi multioraria, carpet plot e box plot per ora del giorno.</p>
-  <p class="pf-file"><b>File accettato:</b> un CSV orario come <code>1_curva_di_carico.csv</code>, separatore <code>;</code> o <code>,</code>, tre colonne: data (<code>gg/mm/aaaa</code>, anche con l’ora), ora da <code>1</code> a <code>24</code>, consumo in kWh (decimali con la virgola). Le colonne si riconoscono dai nomi <code>data</code>/<code>ora</code>/<code>kWh</code>; altrimenti si usano le prime tre (es. <code>DATA_MISURA;ORA;sito 1</code>).</p>
+  <p class="pf-file"><b>File accettato:</b> un CSV orario come <code>1_curva_di_carico.csv</code>, separatore <code>;</code> o <code>,</code>, tre colonne: data (<code>gg/mm/aaaa</code>, anche con l’ora), ora da <code>1</code> a <code>24</code>, consumo in kWh (decimali con la virgola). Le colonne si riconoscono dai nomi <code>data</code>/<code>ora</code>/<code>kWh</code>; altrimenti si usano le prime tre (es. <code>DATA_MISURA;ORA;sito 1</code>). Vanno bene anche i file <b>Excel</b> (<code>.xlsx</code>, <code>.xls</code>) e <b>LibreOffice</b> (<code>.ods</code>) con le stesse colonne: si usa il primo foglio con dati (se ce n’è più d’uno, lo scegli tu) e viene convertito in CSV nel browser.</p>
   <details class="pf-come">
     <summary>Come si usa</summary>
     <ol>
-      <li>Trascina il file CSV in un punto qualsiasi della pagina, oppure sceglilo nel riquadro «Consumi elettrici».</li>
+      <li>Trascina il file (CSV, Excel o LibreOffice) in un punto qualsiasi della pagina, oppure sceglilo nel riquadro «Consumi elettrici».</li>
       <li>Scegli Settimana, Mese o Anno; spostati con le frecce o con la rotella del mouse sopra i grafici.</li>
       <li>Fai clic sulla curva di carico, sulla multioraria o sul carpet plot per ingrandire: anno → mese → settimana.</li>
       <li>Imposta Minimo, Massimo e Riferimento per fissare la scala e tracciare una potenza di riferimento.</li>
@@ -66,7 +66,7 @@
       <li>Nell’analisi multioraria accendi o spegni le singole ore con i pulsanti 1:00 … 24:00.</li>
     </ol>
   </details>
-  <div class="pf-intro-azioni"><button class="pf-bottone-piccolo" id="contactBtn" type="button" onclick="contactAuthor()">Contatta l’autore</button></div>
+  <div class="pf-intro-azioni"><button class="pf-bottone-piccolo" type="button" data-pf-excel-scarica data-tip="Scarica una cartella Excel con un foglio per grafico: tabella dei dati e grafico modificabile">Scarica in Excel</button> <button class="pf-bottone-piccolo" id="contactBtn" type="button" onclick="contactAuthor()">Contatta l’autore</button></div>
 </section>
 
 <div class="pf-app fam-b e">
@@ -79,7 +79,7 @@
   </div>
   <div id="helpBox" class="aiuto" style="display:none">Caricare un file .csv con data, ora (1-24) e consumo elettrico; i grafici si aggiornano automaticamente selezionando il periodo con le frecce, muovendo la rotella del mouse sopra i grafici oppure cliccando per ingrandire il periodo selezionato.</div>
   <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
-    <input type="file" id="csvFile" accept=".csv" aria-label="File CSV della curva di carico (es. 1_curva_di_carico.csv)">
+    <input type="file" id="csvFile" accept=".csv,.xlsx,.xls,.ods,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,application/vnd.oasis.opendocument.spreadsheet" aria-label="File CSV della curva di carico (es. 1_curva_di_carico.csv)">
     <span style="font-size:12px;color:var(--color-text-tertiary)" id="fileStatus">Attesa file .csv — colonne: data, ora (1–24), kWh</span>
   </div>
 </div>
@@ -126,8 +126,8 @@
   </div>
   <div class="frow">
     <div class="fnodata" id="fasceNoData">Nessun dato caricato</div>
-    <div id="fasceBar" style="display:none;position:relative;height:180px"><canvas id="chartBar"></canvas></div>
-    <div id="fasceDough" style="display:none;position:relative;height:180px"><canvas id="chartDough"></canvas></div>
+    <div id="fasceBar" style="display:none;position:relative;height:180px"><canvas id="chartBar" data-pf-titolo="Fasce orarie – consumo" data-pf-periodo="#periodLabel"></canvas></div>
+    <div id="fasceDough" style="display:none;position:relative;height:180px"><canvas id="chartDough" data-pf-titolo="Fasce orarie – ripartizione" data-pf-periodo="#periodLabel"></canvas></div>
   </div>
 </div>
 
@@ -139,7 +139,7 @@
   <div id="bodyLine">
     <div class="ch" id="outerLine">
       <div class="nodata" id="nodataLine">Nessun dato caricato</div>
-      <canvas id="chartLine" style="display:none;position:absolute;top:0;left:0;width:100%;height:100%;cursor:pointer"></canvas>
+      <canvas id="chartLine" data-pf-titolo="Curva di carico" data-pf-periodo="#periodLabel" style="display:none;position:absolute;top:0;left:0;width:100%;height:100%;cursor:pointer"></canvas>
     </div>
     <div class="srow">
       <label>Minimo</label><input type="number" id="yMin" class="ifield" step="any" oninput="applyLineScale()">
@@ -158,7 +158,7 @@
   <div id="bodyCum">
     <div class="ch" id="outerCum" style="position:relative">
       <div class="nodata" id="nodataCum">Nessun dato caricato</div>
-      <canvas id="chartCum" style="display:none;position:absolute;top:0;left:0;width:100%;height:100%"></canvas>
+      <canvas id="chartCum" data-pf-titolo="Curva cumulata" data-pf-periodo="#periodLabel" style="display:none;position:absolute;top:0;left:0;width:100%;height:100%"></canvas>
       <canvas id="cumOverlay" style="display:none;position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none"></canvas>
     </div>
     <div class="srow">
@@ -188,7 +188,7 @@
   <div id="bodyMulti">
     <div class="ch" id="outerMulti">
       <div class="nodata" id="nodataMulti">Nessun dato caricato</div>
-      <canvas id="chartMulti" style="display:none;position:absolute;top:0;left:0;width:100%;height:100%"></canvas>
+      <canvas id="chartMulti" data-pf-titolo="Analisi multioraria" data-pf-periodo="#periodLabel" style="display:none;position:absolute;top:0;left:0;width:100%;height:100%"></canvas>
     </div>
     <div class="srow" style="margin-top:10px">
       <button class="obtn" onclick="setAllHours(true)">Accendi tutto</button>
@@ -208,7 +208,7 @@
     <div id="carpetViz" style="display:none">
       <div class="carpet-inner">
         <div class="carpet-yl" id="yLabels"></div>
-        <div class="carpet-cw"><canvas id="carpetCanvas"></canvas></div>
+        <div class="carpet-cw"><canvas id="carpetCanvas" data-pf-excel="immagine" data-pf-titolo="Carpet plot" data-pf-periodo="#periodLabel"></canvas></div>
       </div>
       <div class="carpet-leg">
         <span id="legMin">0 kWh</span><canvas id="legBar"></canvas><span id="legMax">—</span>
@@ -230,7 +230,7 @@
   <div id="bodyBox">
     <div class="ch2" id="outerBox">
       <div class="nodata" id="nodataBox">Nessun dato caricato</div>
-      <canvas id="chartBox" style="display:none;position:absolute;top:0;left:0;width:100%;height:100%"></canvas>
+      <canvas id="chartBox" data-pf-excel="immagine" data-pf-titolo="Box plot per fascia oraria" data-pf-periodo="#periodLabel" style="display:none;position:absolute;top:0;left:0;width:100%;height:100%"></canvas>
     </div>
   </div>
 </div>
@@ -240,8 +240,8 @@
 </main>
 
 <footer class="pf-piede">
-  <p>Playfair · un progetto di <a href="https://statocritico.it">Stato Critico</a> · <a href="guida-rapida.pdf">Guida rapida</a> · Immagini storiche: pubblico dominio (Wikimedia Commons)</p>
-  <p>I dati caricati restano nel browser: nulla viene inviato a server.</p>
+  <p>Playfair · un progetto di <a href="https://statocritico.it">Stato Critico</a> · <a href="guida-rapida.pdf">Guida rapida</a> · <a href="licenza.html">Licenza AGPL-3.0</a> · Immagini storiche: pubblico dominio (Wikimedia Commons)</p>
+  <p class="pf-piede-nota">I dati caricati restano nel browser: nulla viene inviato a server. <span class="pf-piede-attribuzione">Playfair © 2026 Paolo Bianco – Stato Critico – <a href="https://playfair.statocritico.it">https://playfair.statocritico.it</a></span></p>
 </footer>
 
 <script src="assets/vendor/chart.umd.js"></script>
@@ -545,6 +545,44 @@ window.addEventListener('resize',function(){
 
 /* ── integrazione nel sito: ridisegno al cambio di tema ── */
 PF.alCambioTema(function(){ if(rows.length) renderAll(); });
+</script>
+<script>
+/* ── «Scarica in Excel»: il carpet plot e il box plot diventano immagini con le loro tabelle di dati ── */
+window.PF_EXCEL={
+  strumento:'Playfair-E',
+  tabelle:{
+    carpetCanvas:function(){
+      if(!lastB)return null;
+      var col=['Giorno'];for(var h=1;h<=24;h++)col.push(h+':00 (kWh)');
+      return{colonne:col,righe:dayList(lastB).map(function(d){var k=dk(d),r=[d.toLocaleDateString('it-IT')];for(var h=1;h<=24;h++){var v=lastMap[k+'_'+h];r.push(v===undefined?null:v);}return r;})};
+    },
+    chartBox:function(){
+      if(!lastB)return null;
+      var s0=dk(lastB.s),e0=dk(lastB.e),byH={},h;for(h=1;h<=24;h++)byH[h]=[];
+      rows.forEach(function(r){if(r.dk>=s0&&r.dk<=e0)byH[r.h].push(r.v);});
+      var righe=[];for(h=1;h<=24;h++){var st=boxStats(byH[h]);righe.push(st?[h+':00',st.min,st.q1,st.med,st.mean,st.q3,st.max]:[h+':00',null,null,null,null,null,null]);}
+      return{colonne:['Ora','Minimo (kWh)','1° quartile (kWh)','Mediana (kWh)','Media (kWh)','3° quartile (kWh)','Massimo (kWh)'],righe:righe};
+    }
+  },
+  immagini:{
+    /* carpet plot con ore, giorni e scala dei colori */
+    carpetCanvas:function(_,cv){
+      if(!lastB||!cv.width)return null;
+      var days=dayList(lastB),L=56,T=12,B=74,R=16,W=cv.width+L+R,H=cv.height+T+B;
+      var c=document.createElement('canvas');c.width=W;c.height=H;var g=c.getContext('2d');
+      g.fillStyle=PF.c('--foglio');g.fillRect(0,0,W,H);g.drawImage(cv,L,T);
+      g.fillStyle=PF.tenue();g.font='11px '+(getComputedStyle(document.documentElement).getPropertyValue('--testo')||'sans-serif');
+      g.textAlign='right';g.textBaseline='middle';var ch=cv.height/24;
+      for(var r=0;r<24;r+=2){g.fillText((24-r)+':00',L-6,T+r*ch+ch/2);}
+      g.textAlign='center';g.textBaseline='top';var cw=cv.width/days.length,passo=Math.max(1,Math.ceil(days.length/12));
+      days.forEach(function(d,i){if(i%passo===0||d.getDate()===1&&days.length>62){if(days.length>62&&d.getDate()!==1)return;g.fillText(d.toLocaleDateString('it-IT',{day:'2-digit',month:'short'}),L+i*cw+cw/2,T+cv.height+5);}});
+      var cm=getCM(),lw=Math.min(360,cv.width-160),lx=L+(cv.width-lw)/2,ly=T+cv.height+30;
+      for(var x=0;x<lw;x++){var k=heatCol(x/(lw-1));g.fillStyle='rgb('+k[0]+','+k[1]+','+k[2]+')';g.fillRect(lx+x,ly,1,12);}
+      g.fillStyle=PF.testo();g.textBaseline='middle';g.textAlign='right';g.fillText(fmt(cm.cMin)+' kWh',lx-8,ly+6);g.textAlign='left';g.fillText(fmt(cm.cMax)+' kWh',lx+lw+8,ly+6);
+      return c;
+    }
+  }
+};
 </script>
 <script src="assets/sito.js" defer></script>
 </body>

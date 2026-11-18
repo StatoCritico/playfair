@@ -68,18 +68,19 @@
   <p class="pf-occhiello">Strumento · Money</p>
   <h1 id="titolo-strumento">Playfair-M <span class="pf-sotto">— analisi economiche</span> <small>v0.75</small></h1>
   <p class="pf-sommario">Confronta investimenti energetici: VAN (NPV) cumulato anno per anno, TIR (IRR), MIRR, ROI, tempo di ritorno, indice di profittabilità, DSCR e LLCR, con tasso di sconto diretto o WACC, imprevisti di cassa e diagramma bilogaritmico CAPEX – flusso di cassa annuo.</p>
-  <p class="pf-file"><b>File accettato:</b> un CSV come <code>investimenti_energetici_v2.csv</code>, separatore <code>;</code> o <code>,</code>, numeri senza separatore delle migliaia (decimali con il punto). Colonne obbligatorie: <code>nome</code>, <code>capex</code>, <code>costi_annuali</code>, <code>ricavi_annuali</code>, <code>durata_anni</code>; facoltativa <code>tasso_sconto</code> (%). Gli investimenti si possono anche inserire a mano.</p>
+  <p class="pf-file"><b>File accettato:</b> un CSV come <code>investimenti_energetici_v2.csv</code>, separatore <code>;</code> o <code>,</code>, numeri senza separatore delle migliaia (decimali con il punto). Colonne obbligatorie: <code>nome</code>, <code>capex</code>, <code>costi_annuali</code>, <code>ricavi_annuali</code>, <code>durata_anni</code>; facoltativa <code>tasso_sconto</code> (%). Gli investimenti si possono anche inserire a mano. Vanno bene anche i file <b>Excel</b> (<code>.xlsx</code>, <code>.xls</code>) e <b>LibreOffice</b> (<code>.ods</code>) con le stesse colonne: si usa il primo foglio con dati (se ce n’è più d’uno, lo scegli tu) e viene convertito in CSV nel browser.</p>
   <details class="pf-come">
     <summary>Come si usa</summary>
     <ol>
       <li>Imposta il tasso di sconto: diretto oppure WACC (quote e costi di capitale proprio e debito, aliquota fiscale).</li>
-      <li>Trascina il CSV in un punto qualsiasi della pagina o sceglilo in «Usa un file dati .csv»; oppure compila «Nuovo investimento» e premi «Aggiungi».</li>
+      <li>Trascina il file (CSV, Excel o LibreOffice) in un punto qualsiasi della pagina o sceglilo in «Usa un file dati .csv»; oppure compila «Nuovo investimento» e premi «Aggiungi».</li>
       <li>Fai clic su un investimento per evidenziarlo; «Modifica» lo riporta nel modulo, «Elimina» lo toglie.</li>
       <li>In «Imprevisti» aggiungi entrate o uscite straordinarie in un anno dato.</li>
       <li>Nelle schede: VAN annuale (rotella = zoom verticale), Indicatori (clic sul nome per la definizione), Confronto e Diagramma Bilog (rotella = zoom, campo PBT per una retta di tempo di ritorno).</li>
       <li>«Salva su file» scarica nel tuo computer un CSV con gli investimenti correnti.</li>
     </ol>
   </details>
+  <div class="pf-intro-azioni"><button class="pf-bottone-piccolo" type="button" data-pf-excel-scarica data-tip="Scarica una cartella Excel con un foglio per grafico: tabella dei dati e grafico modificabile">Scarica in Excel</button></div>
 </section>
 
 <div class="pf-app fam-a m">
@@ -126,7 +127,7 @@
 <div class="panel">
   <div class="panel-title">Usa un file dati .csv</div>
   <div class="file-row">
-    <input type="file" id="csv-file" accept=".csv" style="font-size:13px;flex:1;min-width:180px" onchange="loadCSV()" aria-label="File CSV degli investimenti (es. investimenti_energetici_v2.csv)">
+    <input type="file" id="csv-file" data-pf-decimali="punto" accept=".csv,.xlsx,.xls,.ods,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,application/vnd.oasis.opendocument.spreadsheet" style="font-size:13px;flex:1;min-width:180px" onchange="loadCSV()" aria-label="File CSV degli investimenti (es. investimenti_energetici_v2.csv)">
     <button class="primary" onclick="saveCSV()">Salva su file</button>
     <button onclick="document.getElementById('modal-istr').classList.add('open')">Istruzioni</button>
   </div>
@@ -171,7 +172,7 @@
     <div style="text-align:right;margin-bottom:6px">
       <button onclick="npvZoomReset();renderNPVChart()">Ripristina</button>
     </div>
-    <div class="chart-wrap" style="height:320px"><canvas id="npvChart"></canvas></div>
+    <div class="chart-wrap" style="height:320px"><canvas id="npvChart" data-pf-titolo="VAN cumulato per anno"></canvas></div>
     <div id="npv-legend" style="display:flex;gap:16px;font-size:12px;color:var(--tenue);margin-top:8px;flex-wrap:wrap"></div>
   </div>
 
@@ -188,7 +189,7 @@
 
   <div id="tab-bilog" class="tab-content">
     <div id="bilog-wrap" style="width:600px;height:600px;position:relative;border:1px solid var(--linea);margin-bottom:10px">
-      <canvas id="bilogChart"></canvas>
+      <canvas id="bilogChart" data-pf-excel="immagine" data-pf-titolo="Diagramma bilog CAPEX – flusso di cassa"></canvas>
     </div>
     <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px">
       <label style="font-size:13px">PBT Anni:</label>
@@ -230,8 +231,8 @@ Progetto B;50000;5000;18000;7</pre>
 </main>
 
 <footer class="pf-piede">
-  <p>Playfair · un progetto di <a href="https://statocritico.it">Stato Critico</a> · <a href="guida-rapida.pdf">Guida rapida</a> · Immagini storiche: pubblico dominio (Wikimedia Commons)</p>
-  <p>I dati caricati restano nel browser: nulla viene inviato a server.</p>
+  <p>Playfair · un progetto di <a href="https://statocritico.it">Stato Critico</a> · <a href="guida-rapida.pdf">Guida rapida</a> · <a href="licenza.html">Licenza AGPL-3.0</a> · Immagini storiche: pubblico dominio (Wikimedia Commons)</p>
+  <p class="pf-piede-nota">I dati caricati restano nel browser: nulla viene inviato a server. <span class="pf-piede-attribuzione">Playfair © 2026 Paolo Bianco – Stato Critico – <a href="https://playfair.statocritico.it">https://playfair.statocritico.it</a></span></p>
 </footer>
 
 <script src="assets/vendor/chart.umd.js"></script>
@@ -579,8 +580,9 @@ function saveCSV(){
   if(!investments.length){alert('Nessun investimento da esportare.');return;}
   var rows=['nome;capex;costi_annuali;ricavi_annuali;durata_anni;tasso_sconto'];
   for(var i=0;i<investments.length;i++){var inv=investments[i];rows.push([inv.name,inv.capex,inv.costs,inv.revenue,inv.years,inv.rate].join(';'));}
-  var blob=new Blob(['\uFEFF'+rows.join('\r\n')],{type:'text/csv;charset=utf-8;'});
-  var url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='playfair_investimenti.csv';document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(url);
+  rows.push(Playfair.rigaFonteCsv());   // «# Fonte: Playfair …» in fondo: ricaricando il file la riga viene ignorata
+  var blob=new Blob(['\uFEFF'+rows.join('\r\n')+'\r\n'],{type:'text/csv;charset=utf-8;'});
+  Playfair.scarica(blob,'playfair_investimenti.csv');
 }
 function loadCSV(){
   var file=document.getElementById('csv-file').files[0];
@@ -633,6 +635,19 @@ PF.alCambioTema(function(){
   renderList(); renderKPI(); renderNPVChart(); renderCompareCharts(); renderImprevisti();
   if(document.getElementById('tab-bilog').classList.contains('active')) renderBilog();
 });
+</script>
+<script>
+/* ── «Scarica in Excel»: il diagramma bilog (tela libera, assi logaritmici) entra come immagine con la sua tabella ── */
+window.PF_EXCEL={
+  strumento:'Playfair-M',
+  prima:function(){ var c=document.getElementById('bilogChart'); if(investments.length&&c&&!c._bubbles) renderBilog(); },
+  tabelle:{
+    bilogChart:function(){
+      return{colonne:['Investimento','CAPEX (€)','Flusso di cassa annuo (€)','Tempo di ritorno semplice (anni)','TIR (%)','ROI totale (%)'],
+        righe:investments.map(function(i){var cf=i.revenue-i.costs;return[i.name,i.capex,cf,cf>0?i.capex/cf:null,i.metrics.irr!==null?i.metrics.irr*100:null,i.metrics.roi];})};
+    }
+  }
+};
 </script>
 <script src="assets/sito.js" defer></script>
 </body>

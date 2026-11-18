@@ -69,7 +69,7 @@
   <p class="pf-occhiello">Strumento · Thermal</p>
   <h1 id="titolo-strumento">Playfair-T <span class="pf-sotto">— termico e cogenerazione</span> <small>v1.3</small></h1>
   <p class="pf-sommario">Mette a confronto i consumi elettrici e termici orari dello stesso sito e simula un cogeneratore (piena potenza, inseguimento elettrico o termico): copertura dei fabbisogni, energia elettrica immessa, calore dissipato, metano consumato e confronto economico con e senza cogenerazione.</p>
-  <p class="pf-file"><b>File accettati (due):</b> la curva elettrica oraria come <code>1_curva_di_carico.csv</code> (data <code>gg/mm/aaaa</code>, ora <code>1–24</code>, kWh) e i consumi termici come <code>termico_sito_1.csv</code> (<code>data;ora;kWh</code> orari) oppure mensili (data o mese, kWh: ripartiti in modo uniforme sulle ore del mese; scegli «Mensili» prima di caricare). Separatore <code>;</code> o <code>,</code>, decimali con la virgola. Se i due file sono di anni diversi, vengono riportati sullo stesso anno (il più recente dei due scelti).</p>
+  <p class="pf-file"><b>File accettati (due):</b> la curva elettrica oraria come <code>1_curva_di_carico.csv</code> (data <code>gg/mm/aaaa</code>, ora <code>1–24</code>, kWh) e i consumi termici come <code>termico_sito_1.csv</code> (<code>data;ora;kWh</code> orari) oppure mensili (data o mese, kWh: ripartiti in modo uniforme sulle ore del mese; scegli «Mensili» prima di caricare). Separatore <code>;</code> o <code>,</code>, decimali con la virgola. Se i due file sono di anni diversi, vengono riportati sullo stesso anno (il più recente dei due scelti). Vanno bene anche i file <b>Excel</b> (<code>.xlsx</code>, <code>.xls</code>) e <b>LibreOffice</b> (<code>.ods</code>) con le stesse colonne: si usa il primo foglio con dati (se ce n’è più d’uno, lo scegli tu) e viene convertito in CSV nel browser.</p>
   <details class="pf-come">
     <summary>Come si usa</summary>
     <ol>
@@ -80,6 +80,7 @@
       <li>In «Valutazione economica» inserisci prezzi dell’energia e rendimento della caldaia: risparmio annuo e grafico si aggiornano subito.</li>
     </ol>
   </details>
+  <div class="pf-intro-azioni"><button class="pf-bottone-piccolo" type="button" data-pf-excel-scarica data-tip="Scarica una cartella Excel con un foglio per grafico: tabella dei dati e grafico modificabile">Scarica in Excel</button></div>
 </section>
 
 <div class="pf-app fam-b t">
@@ -98,7 +99,7 @@
     <div class="uplabel">Consumi elettrici</div>
     <p class="updrop">Trascina qui il file della curva elettrica oraria, es. <code>1_curva_di_carico.csv</code> (colonne data, ora 1–24, kWh).</p>
     <div class="uprow">
-      <input type="file" id="csvElec" accept=".csv" data-pf-pattern="curva" data-pf-testo="Scegli la curva elettrica o trascinala qui" aria-label="File CSV dei consumi elettrici orari (es. 1_curva_di_carico.csv)">
+      <input type="file" id="csvElec" accept=".csv,.xlsx,.xls,.ods,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,application/vnd.oasis.opendocument.spreadsheet" data-pf-pattern="curva" data-pf-testo="Scegli la curva elettrica o trascinala qui" aria-label="File CSV dei consumi elettrici orari (es. 1_curva_di_carico.csv)">
       <span class="uphint" id="statusElec">Nessun file caricato</span>
       <label style="margin-left:auto;font-size:12px;color:var(--color-text-secondary)">Anno</label>
       <select id="yearE" class="ifield" onchange="onYearChange()" style="width:90px"><option value="">—</option></select>
@@ -114,7 +115,7 @@
       <label class="radio-item" onclick="setThermType('monthly')"><span class="radio-circle"><span class="radio-dot" id="rdM"></span></span>Mensili</label>
     </div>
     <div class="uprow">
-      <input type="file" id="csvTherm" accept=".csv" data-pf-pattern="termico" data-pf-testo="Scegli il file termico o trascinalo qui" aria-label="File CSV dei consumi termici (es. termico_sito_1.csv)">
+      <input type="file" id="csvTherm" accept=".csv,.xlsx,.xls,.ods,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,application/vnd.oasis.opendocument.spreadsheet" data-pf-pattern="termico" data-pf-testo="Scegli il file termico o trascinalo qui" aria-label="File CSV dei consumi termici (es. termico_sito_1.csv)">
       <span class="uphint" id="statusTherm">Nessun file caricato</span>
       <label style="margin-left:auto;font-size:12px;color:var(--color-text-secondary)">Anno</label>
       <select id="yearT" class="ifield" onchange="onYearChange()" style="width:90px"><option value="">—</option></select>
@@ -143,7 +144,7 @@
   </div>
   <div class="ch" id="outerLine">
     <div class="nodata" id="ndLine">Nessun dato caricato</div>
-    <canvas id="chartLine" style="display:none;position:absolute;top:0;left:0;width:100%;height:100%;cursor:pointer"></canvas>
+    <canvas id="chartLine" data-pf-titolo="Curve di carico" data-pf-periodo="#periodLabel" style="display:none;position:absolute;top:0;left:0;width:100%;height:100%;cursor:pointer"></canvas>
   </div>
   <div class="srow">
     <label>Minimo</label><input type="number" id="yMin" class="ifield" step="any" oninput="applyLineScale()">
@@ -157,7 +158,7 @@
   <div class="ptitle">Curva cumulata consumi termici</div>
   <div class="ch" id="outerCum">
     <div class="nodata" id="ndCum">Nessun dato termico caricato</div>
-    <canvas id="chartCum" style="display:none;position:absolute;top:0;left:0;width:100%;height:100%"></canvas>
+    <canvas id="chartCum" data-pf-titolo="Curva cumulata termica" data-pf-periodo="#periodLabel" style="display:none;position:absolute;top:0;left:0;width:100%;height:100%"></canvas>
   </div>
   <div class="srow">
     <label>Minimo</label><input type="number" id="cumMin" class="ifield" step="any" oninput="applyCumScale()">
@@ -195,22 +196,22 @@
     <div style="font-size:12px;color:var(--color-text-secondary);margin-bottom:6px">Ripartizione ore per fascia di carico</div>
     <div class="chSmall" id="outerLoad">
       <div class="nodata" id="ndLoad">In attesa di dati</div>
-      <canvas id="chartLoad" style="display:none;position:absolute;top:0;left:0;width:100%;height:100%"></canvas>
+      <canvas id="chartLoad" data-pf-titolo="Ore per fascia di carico" style="display:none;position:absolute;top:0;left:0;width:100%;height:100%"></canvas>
     </div>
   </div>
   <div class="cogen-2col">
     <div class="ch" id="outerBar">
       <div class="nodata" id="ndBar">In attesa di dati</div>
-      <canvas id="chartBar" style="display:none;position:absolute;top:0;left:0;width:100%;height:100%"></canvas>
+      <canvas id="chartBar" data-pf-titolo="Cogenerazione – domanda e copertura" style="display:none;position:absolute;top:0;left:0;width:100%;height:100%"></canvas>
     </div>
     <div class="cogen-2col" style="grid-template-columns:1fr 1fr;gap:8px;margin-top:0">
       <div class="ch" id="outerPieE" style="height:260px">
         <div class="nodata" id="ndPieE">—</div>
-        <canvas id="chartPieE" style="display:none;position:absolute;top:0;left:0;width:100%;height:100%"></canvas>
+        <canvas id="chartPieE" data-pf-titolo="Copertura elettrica" style="display:none;position:absolute;top:0;left:0;width:100%;height:100%"></canvas>
       </div>
       <div class="ch" id="outerPieT" style="height:260px">
         <div class="nodata" id="ndPieT">—</div>
-        <canvas id="chartPieT" style="display:none;position:absolute;top:0;left:0;width:100%;height:100%"></canvas>
+        <canvas id="chartPieT" data-pf-titolo="Copertura termica" style="display:none;position:absolute;top:0;left:0;width:100%;height:100%"></canvas>
       </div>
     </div>
   </div>
@@ -242,7 +243,7 @@
   </div>
   <div style="margin-top:12px" class="ch" id="outerEcon">
     <div class="nodata" id="ndEcon">In attesa di dati</div>
-    <canvas id="chartEcon" style="display:none;position:absolute;top:0;left:0;width:100%;height:100%"></canvas>
+    <canvas id="chartEcon" data-pf-titolo="Valutazione economica – costi annui" style="display:none;position:absolute;top:0;left:0;width:100%;height:100%"></canvas>
   </div>
 </div>
 
@@ -251,8 +252,8 @@
 </main>
 
 <footer class="pf-piede">
-  <p>Playfair · un progetto di <a href="https://statocritico.it">Stato Critico</a> · <a href="guida-rapida.pdf">Guida rapida</a> · Immagini storiche: pubblico dominio (Wikimedia Commons)</p>
-  <p>I dati caricati restano nel browser: nulla viene inviato a server.</p>
+  <p>Playfair · un progetto di <a href="https://statocritico.it">Stato Critico</a> · <a href="guida-rapida.pdf">Guida rapida</a> · <a href="licenza.html">Licenza AGPL-3.0</a> · Immagini storiche: pubblico dominio (Wikimedia Commons)</p>
+  <p class="pf-piede-nota">I dati caricati restano nel browser: nulla viene inviato a server. <span class="pf-piede-attribuzione">Playfair © 2026 Paolo Bianco – Stato Critico – <a href="https://playfair.statocritico.it">https://playfair.statocritico.it</a></span></p>
 </footer>
 
 <script src="assets/vendor/chart.umd.js"></script>
@@ -874,6 +875,7 @@ window.addEventListener('resize',function(){if(cLine)cLine.resize();if(cCum)cCum
 /* ── integrazione nel sito: ridisegno al cambio di tema ── */
 PF.alCambioTema(function(){ if(rowsE_view.length||rowsT_view.length) renderAll(); });
 </script>
+<script>window.PF_EXCEL={strumento:'Playfair-T'};</script>
 <script src="assets/sito.js" defer></script>
 </body>
 </html>

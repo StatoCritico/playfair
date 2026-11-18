@@ -27,3 +27,7 @@
 
 # tema.css, sito.css, sito.js e le pagine HTML restano con la cache predefinita (ricontrollo a ogni visita),
 # così un nuovo tema o una correzione si vede subito dopo il push.
+
+# Testo della licenza AGPL-3.0 (file senza estensione): mostrato come testo nel browser.
+/LICENSE
+  Content-Type: text/plain; charset=utf-8
