@@ -42,8 +42,8 @@ Nella cornice si usano solo le variabili di `tema.css`; nell'area solo le variab
 
 ## Regole per un nuovo tema
 
-1. Un file, `assets/tema.css`. Niente `@import` o font da server esterni (CDN, Google Fonts): il sito promette nessun
-   tracciamento. Font propri in `woff2` in `assets/font/`, con percorsi relativi: `src: url("font/nome.woff2")`.
+1. Un file, `assets/tema.css`. Niente `@import` o font da server esterni (CDN, Google Fonts): il sito non carica risorse di terzi
+   (la CSP le bloccherebbe). Font propri in `woff2` in `assets/font/`, con percorsi relativi: `src: url("font/nome.woff2")`.
 2. Tema **scuro predefinito** in `:root, [data-theme="dark"]`; **chiaro** in `[data-theme="light"]` (attributo su
    `<html>`, impostato dallo script anti-lampo con la chiave `localStorage` `pf-tema`). Ogni variabile di colore va
    definita in **entrambi** i blocchi.

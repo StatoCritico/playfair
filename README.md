@@ -7,7 +7,7 @@ linee, a barre e a torta. Fa parte di [Stato Critico](https://statocritico.it) e
 Contiene strumenti che trasformano un file CSV, Excel (`.xlsx`, `.xls`) o LibreOffice (`.ods`) in grafici per esercitazioni
 (Playfair-S, -E, -T, -M, -G, -C), scaricabili anche come cartella Excel con grafici nativi, un editor di
 diagrammi di Sankey e due pagine sui personaggi. **I dati caricati restano nel browser**: nulla viene inviato a server,
-nessun cookie, nessun tracker, nessuna CDN.
+nessun cookie, nessuna CDN. Le visite sono contate con Cloudflare Web Analytics (statistiche anonime, senza cookie).
 
 ## Struttura
 

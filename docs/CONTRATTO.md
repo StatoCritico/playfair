@@ -104,7 +104,7 @@ largo un terzo dello spessore massimo dei flussi energetici (`FRAZ_ACQUA` in `sa
 tubi»; legenda «acqua: scala separata, ridotta».
 
 ## Regole
-- Nessun dato inviato a server; nessun tracker; nessuna CDN (tutto in assets/vendor).
+- Nessun dato degli utenti inviato a server; nessuna CDN (tutto in assets/vendor). Unica eccezione voluta: Cloudflare Web Analytics (beacon inserito da Cloudflare, anonimo, senza cookie), consentito nella CSP di _headers.
 - Accessibilità: contrasti come EuGEnio, focus visibile, `prefers-reduced-motion` rispettato (animazioni ferme o ridotte).
 - Ogni pagina: `<html lang="it">`, `<meta name="viewport">`, `<title>` "Playfair-X — … · Playfair", meta description, favicon `img/favicon.svg`.
 - Testare con Chrome headless (`/usr/bin/google-chrome`, Python playwright disponibile).
