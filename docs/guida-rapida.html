@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="it" data-theme="light">
+<head>
+<meta charset="utf-8">
+<title>Playfair — guida rapida</title>
+<!-- Sorgente di ../guida-rapida.pdf. Rigenera con: python3 docs/guida-rapida.py -->
+<link rel="stylesheet" href="../assets/tema.css">
+<style>
+  @page { size: A4; margin: 0; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    width: 210mm; height: 297mm; overflow: hidden;
+    padding: 8mm 10mm 6mm;
+    font-family: var(--testo); font-size: 9pt; line-height: 1.28;
+    color: var(--inchiostro); background: var(--foglio);
+    -webkit-print-color-adjust: exact; print-color-adjust: exact;
+    display: flex; flex-direction: column; gap: 2.6mm;
+  }
+  h1, h2, h3 { font-family: var(--titoli); margin: 0; line-height: 1.1; }
+  a { color: var(--primario-forte); text-decoration: none; }
+  code, kbd, .mono { font-family: var(--mono); font-size: 8.2pt; }
+  kbd { display: inline-block; padding: 0 .3em; border: 1px solid var(--bordo); border-bottom-width: 2px;
+        border-radius: 3px; background: var(--rialzo); line-height: 1.25; }
+  code { background: var(--rialzo); padding: 0 .2em; border-radius: 2px; }
+  p { margin: 0; }
+  ul, ol { margin: 0; padding-left: 1.15em; }
+  li { margin: 0 0 .6mm; }
+  li:last-child { margin-bottom: 0; }
+
+  /* testata */
+  .testa { display: flex; align-items: flex-end; justify-content: space-between; gap: 6mm;
+           border-bottom: 2.2pt solid var(--primario); padding-bottom: 2.4mm; }
+  .testa h1 { font-size: 22pt; font-weight: 700; letter-spacing: -.01em; }
+  .testa h1 span { color: var(--primario); }
+  .testa .sotto { margin-top: 1.2mm; color: var(--tenue); font-size: 9.6pt; }
+  .testa .url { font-family: var(--mono); font-size: 10.5pt; font-weight: 600; color: var(--bp-luce); text-align: right; white-space: nowrap; }
+  .testa .url small { display: block; font-family: var(--testo); font-weight: 400; font-size: 8.4pt; color: var(--tenue); }
+
+  h2 { font-size: 11.5pt; font-weight: 700; color: var(--primario-forte); text-transform: uppercase;
+       letter-spacing: .06em; margin-bottom: 1.6mm; }
+
+  .riga1 { display: grid; grid-template-columns: 1fr 64mm; gap: 5mm; align-items: start; }
+  figure { margin: 0; }
+  figure img { display: block; width: 100%; border: 1px solid var(--linea); border-radius: var(--r-s); }
+  figcaption { font-size: 7.6pt; color: var(--tenue); margin-top: .8mm; line-height: 1.25; }
+
+  /* tabella strumenti */
+  table { width: 100%; border-collapse: collapse; font-size: 8.9pt; table-layout: fixed; }
+  th, td { text-align: left; vertical-align: top; padding: 1mm 1.6mm; border-bottom: 1px solid var(--linea); }
+  thead th { background: var(--rialzo); font-family: var(--titoli); font-weight: 700; font-size: 9pt;
+             text-transform: uppercase; letter-spacing: .04em; color: var(--tenue); border-bottom: 1.2pt solid var(--bordo); }
+  td.nome { font-family: var(--titoli); font-weight: 700; font-size: 10.5pt; white-space: nowrap; color: var(--primario-forte); }
+  td.nome small { display: block; font-family: var(--testo); font-weight: 400; font-size: 7.8pt; color: var(--tenue); }
+  th.c1 { width: 23mm; } th.c3 { width: 66mm; }
+  td code { font-weight: 600; overflow-wrap: anywhere; }
+  tbody tr:nth-child(even) td { background: color-mix(in srgb, var(--rialzo) 45%, transparent); }
+
+  /* sankey */
+  .sankey { display: grid; grid-template-columns: 1fr 66mm; gap: 2mm 5mm; align-items: start;
+            border: 1.2pt solid var(--bp-linea); border-radius: var(--r-l); padding: 3mm 3.6mm;
+            background: var(--bp-fondo-2); }
+  .sankey h2 { color: var(--bp-linea); }
+  .sankey ol { padding-left: 0; list-style: none; counter-reset: p; }
+  .sankey ol li { counter-increment: p; position: relative; padding-left: 6.2mm; margin-bottom: .9mm; }
+  .sankey ol li::before { content: counter(p); position: absolute; left: 0; top: .2mm; width: 4.4mm; height: 4.4mm;
+       border-radius: 50%; background: var(--bp-linea); color: #fff; font: 700 7.8pt/4.4mm var(--titoli); text-align: center; }
+  .el { color: var(--flusso-el); font-weight: 700; } .th { color: var(--flusso-th); font-weight: 700; }
+  .ac { color: var(--flusso-acqua); font-weight: 700; } .co { color: var(--flusso-co2); font-weight: 700; }
+  .ok { color: var(--successo); font-weight: 700; } .ko { color: var(--errore); font-weight: 700; }
+  .calc { color: var(--segno); font-style: italic; }
+  .scorc { margin-top: 0; padding-top: 1.4mm; border-top: 1px dashed var(--bp-tenue); font-size: 8.6pt; line-height: 1.55; }
+  .scorc b { font-family: var(--titoli); color: var(--bp-linea); margin-right: 1mm; }
+
+  .piede { margin-top: auto; border-top: 1px solid var(--linea); padding-top: 1.8mm; font-size: 7.8pt; color: var(--tenue);
+           display: flex; justify-content: space-between; gap: 5mm; line-height: 1.35; }
+  .piede a { color: var(--tenue); text-decoration: underline; text-decoration-color: var(--bordo); }
+</style>
+</head>
+<body>
+
+<header class="testa">
+  <div>
+    <h1>Playfair <span>—</span> guida rapida</h1>
+    <p class="sotto">Strumenti di formazione sull'energia dedicati a William Playfair (1759–1823), inventore dei grafici a linee, a barre e a torta.
+      Un progetto di <strong>Stato Critico</strong>.</p>
+  </div>
+  <div class="url">playfair.statocritico.it<small>statocritico.it</small></div>
+</header>
+
+<section class="riga1">
+  <div>
+    <h2>Come funziona</h2>
+    <ul>
+      <li><strong>I dati restano nel tuo browser:</strong> nulla viene inviato a server, nessun tracciamento. Il sito funziona anche aprendo i file in locale.</li>
+      <li><strong>Carica i CSV</strong> con il pulsante «Scegli file» oppure <strong>trascinando il file ovunque sulla pagina</strong> (compare il velo «Rilascia il file CSV»).
+        Playfair-T accetta <strong>i due file insieme</strong> e li smista per nome (<code>curva…</code> / <code>termico…</code>).</li>
+      <li><strong>Tema chiaro/scuro</strong> con il pulsante <kbd>◐</kbd> in alto a destra; la scelta viene ricordata.</li>
+      <li><strong>Tooltip:</strong> passa il mouse (o il focus da tastiera) sulle voci del menu e sui pulsanti per una spiegazione breve.</li>
+      <li><strong>La home è la macchina a vapore di Sankey</strong> (tavola del 1898): ogni riquadro numerato — caldaia, condotta, motore, economizzatore… — porta a uno strumento. «Personaggi» racconta Playfair e Sankey.</li>
+      <li><strong>Formato dei CSV:</strong> separatore <code>;</code>, prima riga con i nomi delle colonne; i file d'esempio mostrano la struttura attesa.</li>
+    </ul>
+  </div>
+  <figure>
+    <img src="guida-img/home.jpg" alt="La home di Playfair: la macchina a vapore di Sankey con i riquadri degli strumenti">
+    <figcaption>La home (tema chiaro): clicca un riquadro della macchina per aprire lo strumento.</figcaption>
+  </figure>
+</section>
+
+<section>
+  <h2>Gli strumenti</h2>
+  <table>
+    <thead><tr><th class="c1">Strumento</th><th>A cosa serve</th><th class="c3">File e colonne attese</th></tr></thead>
+    <tbody>
+      <tr><td class="nome">Playfair-S<small>Site</small></td>
+        <td>Costi e consumi mensili di un sito (elettricità, gas, teleriscaldamento, acqua); energia primaria in TEP, emissioni di CO₂, Rolling 12 e MAT (totale mobile annuo).</td>
+        <td class="file"><code>N_consumi.csv</code> — colonne <code>anno;mese;consumo_*;costo_*</code> (una coppia consumo/costo per vettore).</td></tr>
+      <tr><td class="nome">Playfair-E<small>Electric</small></td>
+        <td>Curva di carico oraria con fasce F1/F2/F3, curva di durata e ore equivalenti, vista multi-ora, carpet plot, box plot.</td>
+        <td class="file"><code>N_curva_di_carico.csv</code> — <code>data;ora;kWh</code> con ora da 1 a 24.</td></tr>
+      <tr><td class="nome">Playfair-T<small>Thermal</small></td>
+        <td>Confronto consumi elettrici e termici orari, simulazione della cogenerazione in tre modalità, confronto costi con e senza CHP.</td>
+        <td class="file"><code>N_curva_di_carico.csv</code> + <code>termico_sito_N.csv</code> — <code>data;ora;kWh</code> oppure valori mensili.</td></tr>
+      <tr><td class="nome">Playfair-M<small>Money</small></td>
+        <td>Confronto di investimenti: VAN, TIR, MIRR, ROI, payback, PI, DSCR, LLCR; tasso di sconto o WACC, eventi di cassa, grafico log-log.</td>
+        <td class="file"><code>investimenti_energetici_v2.csv</code> — <code>nome;<wbr>capex;<wbr>costi_annuali;<wbr>ricavi_annuali;<wbr>durata_anni<wbr>[;tasso_sconto]</code>; numeri col <strong>punto</strong> decimale.</td></tr>
+      <tr><td class="nome">Playfair-C<small>Cusum</small></td>
+        <td>Monitoraggio secondo ISO 50006: regressione consumo/driver, residui e carta CUSUM.</td>
+        <td class="file"><code>consumo_cusum.csv</code> — 2 colonne: consumo e driver; la seconda riga contiene le unità.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section class="sankey">
+  <div>
+    <h2>Sankey in 6 passi</h2>
+    <ol>
+      <li><strong>Blocco</strong> <kbd>B</kbd>, poi clic nell'area per creare i blocchi; trascinali per spostarli.</li>
+      <li><strong>Clic sul blocco:</strong> nel pannello a destra scrivi il nome e le righe di dati con etichetta, valore e unità. Lascia <strong>vuoto</strong> il valore per farlo calcolare.</li>
+      <li><strong>Collegamento</strong> <kbd>L</kbd>: clic sulla riga di dati di partenza, poi su quella di arrivo. Il tubo prende il colore del vettore:
+        <span class="el">verde</span> kWh elettrici, <span class="th">arancione</span> Sm³/MWh termici, <span class="ac">azzurro</span> m³ d'acqua, <span class="co">marrone</span> t CO₂.</li>
+      <li><strong>Aggiorna</strong> <kbd>A</kbd>: tubi proporzionali ai valori; blocchi <span class="ok">verdi</span> o <span class="ko">rossi</span> secondo il bilancio
+        (ingressi = uscite + perdite, tolleranza 0,1%); le caselle vuote vengono compilate <span class="calc">in corsivo</span> — «Fissa» per tenerle.</li>
+      <li><strong>Rotella</strong> per lo zoom, trascina lo sfondo per spostarti, <kbd>0</kbd> adatta la vista, <kbd>Ctrl</kbd>+<kbd>Z</kbd> annulla.</li>
+      <li><strong>Esporta</strong> in JPG, PDF o SVG; <strong>salva il progetto</strong> in .json (trascinalo sulla pagina per riaprirlo). Il lavoro è salvato anche nel browser.</li>
+    </ol>
+  </div>
+  <figure>
+    <img src="guida-img/sankey.jpg" alt="L'editor Sankey con l'esempio Ospedale caricato e i bilanci verificati">
+    <figcaption>Esempio «Ospedale» (menu Progetto › Esempi) dopo Aggiorna: tutti i bilanci tornano, i valori calcolati sono in corsivo.</figcaption>
+  </figure>
+  <p class="scorc" style="grid-column: 1 / -1">
+    <b>Scorciatoie</b>
+    <kbd>B</kbd> <kbd>L</kbd> <kbd>V</kbd> blocco · collegamento · seleziona &nbsp;·&nbsp; <kbd>A</kbd> aggiorna &nbsp;·&nbsp; <kbd>Canc</kbd> elimina &nbsp;·&nbsp; <kbd>Esc</kbd> esci / deseleziona &nbsp;·&nbsp;
+    <kbd>←↑→↓</kbd> sposta (<kbd>Maiusc</kbd> ×5) &nbsp;·&nbsp; <kbd>Ctrl</kbd>+<kbd>Z</kbd>/<kbd>Y</kbd>/<kbd>D</kbd>/<kbd>A</kbd>/<kbd>S</kbd> annulla · ripeti · duplica · seleziona tutto · salva &nbsp;·&nbsp;
+    <kbd>+</kbd> <kbd>−</kbd> <kbd>0</kbd> zoom &nbsp;·&nbsp; <kbd>Spazio</kbd>+trascina sposta la vista &nbsp;·&nbsp; <kbd>Invio</kbd>/<kbd>F2</kbd> modifica il blocco
+  </p>
+</section>
+
+<footer class="piede">
+  <div>Immagini storiche (W. Playfair, <i>Commercial and Political Atlas</i> 1786 e <i>Statistical Breviary</i> 1801; M. H. P. R. Sankey, ritratto e tavola del 1898):
+    pubblico dominio, Wikimedia Commons. Approfondimenti:
+    <a href="https://en.wikipedia.org/wiki/William_Playfair">en.wikipedia.org/wiki/William_Playfair</a> ·
+    <a href="https://en.wikipedia.org/wiki/Matthew_Henry_Phineas_Riall_Sankey">en.wikipedia.org/wiki/Matthew_Henry_Phineas_Riall_Sankey</a></div>
+  <div style="white-space:nowrap; text-align:right">Playfair · Stato Critico<br>Novembre 2026</div>
+</footer>
+
+</body>
+</html>

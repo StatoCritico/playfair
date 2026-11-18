@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Playfair-C — CUSUM ISO 50006 · Playfair</title>
+<meta name="description" content="Playfair-C: regressione consumo–energy driver, scarti e carta CUSUM per il monitoraggio della prestazione energetica secondo ISO 50006.">
+<link rel="icon" href="img/favicon.svg" type="image/svg+xml">
+<script>try{var t=localStorage.getItem('pf-tema');if(t)document.documentElement.dataset.theme=t;}catch(e){}</script>
+<link rel="stylesheet" href="assets/tema.css">
+<link rel="stylesheet" href="assets/sito.css">
+<link rel="stylesheet" href="assets/strumenti.css">
+<style>
+.pf-app.c .ch{height:320px}
+.pf-app.c .sgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:8px;margin-top:10px}
+.pf-app.c .scard{background:var(--rialzo);border-radius:var(--raggio,6px);padding:9px 12px;position:relative}
+.pf-app.c .slabel{font-size:12px;color:var(--tenue);margin-bottom:3px;cursor:pointer;text-decoration:underline dotted;text-underline-offset:3px;display:inline-block}
+.pf-app.c .svalue{font:600 17px/1.25 var(--titoli);font-variant-numeric:tabular-nums}
+.pf-app.c .stip{display:none;position:absolute;z-index:20;top:100%;left:0;width:240px;background:var(--foglio);border:1px solid var(--linea);border-radius:6px;padding:8px;font-size:12px;color:var(--inchiostro);line-height:1.5;margin-top:4px;box-shadow:var(--ombra-2)}
+</style>
+</head>
+<body class="pf-pagina-strumento">
+<header class="pf-testata">
+  <a class="pf-marchio" href="index.html" aria-label="Playfair, home">Playfair<span class="pf-marchio-sub">.statocritico</span></a>
+  <button class="pf-menu-apri" aria-expanded="false" aria-controls="pf-menu">Menu</button>
+  <nav class="pf-menu" id="pf-menu" aria-label="Strumenti">
+    <a href="playfair-s.html" data-tip="Site — analisi del singolo sito: costi e consumi di elettricità, gas, calore e acqua">Playfair-S</a>
+    <a href="playfair-e.html" data-tip="Electric — curve di carico elettriche quartorarie: profili, mappe orarie, picchi e base">Playfair-E</a>
+    <a href="playfair-t.html" data-tip="Thermal — consumi termici ed elettrici, simulazione di cogenerazione e valutazione economica">Playfair-T</a>
+    <a href="playfair-m.html" data-tip="Money — confronto di investimenti energetici: VAN, TIR, ROI, WACC e flussi di cassa">Playfair-M</a>
+    <a href="playfair-c.html" aria-current="page" data-tip="Cusum — regressione, residui e carta CUSUM secondo ISO 50006">Playfair-C</a>
+    <a href="sankey.html" data-tip="Sankey — disegna diagrammi di flusso energetico a blocchi e verifica i bilanci">Sankey</a>
+    <a href="personaggi.html" data-tip="William Playfair e Matthew H. P. R. Sankey: chi erano">Personaggi</a>
+  </nav>
+  <button class="pf-tema" type="button" aria-label="Cambia tema chiaro/scuro">◐</button>
+</header>
+
+<main class="pf-strumento" id="contenuto">
+<section class="pf-intro" aria-labelledby="titolo-strumento">
+  <p class="pf-occhiello">Strumento · Cusum</p>
+  <h1 id="titolo-strumento">Playfair-C <span class="pf-sotto">— CUSUM secondo ISO 50006</span> <small>v0.75</small></h1>
+  <p class="pf-sommario">Monitoraggio della prestazione energetica secondo ISO 50006: regressione lineare tra consumo ed energy driver sul periodo di riferimento (baseline), scarti tra consumo reale e consumo atteso e carta CUSUM, la somma cumulata degli scarti che rivela risparmi o peggioramenti nel tempo.</p>
+  <p class="pf-file"><b>File accettato:</b> un CSV come <code>consumo_cusum.csv</code> a due colonne, separatore <code>;</code> o <code>,</code>: la 1ª è il consumo, la 2ª l’energy driver (pezzi prodotti, gradi giorno…). Riga 1: nomi (es. <code>consumo;pezzi</code>), riga 2: unità di misura (es. <code>kWh;n</code>), poi un intervallo (giorno, settimana, mese) per riga.</p>
+  <details class="pf-come">
+    <summary>Come si usa</summary>
+    <ol>
+      <li>Trascina il file CSV in un punto qualsiasi della pagina, oppure sceglilo nel riquadro «Dati energetici».</li>
+      <li>«Intervalli per stima» è il numero di intervalli iniziali usati come baseline (proposto: 20% dei dati); premi «Stima» per ricalcolare.</li>
+      <li>Fai clic su Formula, R², χ² e p-value per leggere cosa significano.</li>
+      <li>Trascina i grafici con il mouse per scorrere e usa la rotella per lo zoom; «Reimposta scala» torna alla vista iniziale.</li>
+      <li>Nella carta CUSUM imposta una Soglia per tracciare i limiti ±: una pendenza negativa e stabile indica un risparmio.</li>
+    </ol>
+  </details>
+  <div class="pf-intro-azioni"><button class="pf-bottone-piccolo" id="contactBtn" type="button" onclick="contactAuthor()">Contatta l’autore</button></div>
+</section>
+
+<div class="pf-app fam-b c">
+<div class="wrap">
+
+<div class="riquadro">
+  <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap">
+    <span class="etichetta" style="flex:1">Dati energetici</span>
+    <button class="obtn" onclick="setAllPanels(true)">Espandi tutti</button>
+    <button class="obtn" onclick="setAllPanels(false)">Comprimi tutti</button>
+  </div>
+  <div id="helpBox" class="aiuto" style="display:none">
+    Caricare un file .csv con due colonne: consumo energetico ed energy driver. Riga 1: intestazioni, riga 2: unità di misura, righe seguenti: valori.
+  </div>
+  <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+    <input type="file" id="csvFile" accept=".csv" aria-label="File CSV consumo ed energy driver (es. consumo_cusum.csv)">
+    <button class="obtn" onclick="toggleHelp()">Istruzioni</button>
+    <span style="font-size:12px;color:var(--color-text-tertiary)" id="fileStatus">Attesa file .csv</span>
+  </div>
+  <div id="dataInfo" style="display:none;margin-top:8px;font-size:12px;color:var(--color-text-secondary)"></div>
+</div>
+
+<!-- Andamenti -->
+<div class="panel" id="panelAndamenti">
+  <div class="ph"><span class="ptitle" id="titleAndamenti">Andamenti</span><button class="obtn" onclick="togglePanel('andamenti')">Comprimi</button></div>
+  <div id="bodyAndamenti">
+    <div class="ch" id="outerAndamenti">
+      <div class="nodata" id="ndAndamenti">Nessun dato caricato</div>
+      <canvas id="cAndamenti" style="display:none;position:absolute;top:0;left:0;width:100%;height:100%"></canvas>
+    </div>
+  </div>
+</div>
+
+<!-- Regressione -->
+<div class="panel" id="panelReg">
+  <div class="ph"><span class="ptitle">Regressione lineare</span><button class="obtn" onclick="togglePanel('reg')">Comprimi</button></div>
+  <div id="bodyReg">
+    <div class="srow" style="margin-top:0;margin-bottom:10px">
+      <label>Intervalli per stima</label>
+      <input type="number" id="regN" class="ifield" step="1" min="2">
+      <button class="obtn" onclick="doRegression()">Stima</button>
+      <button class="obtn" onclick="resetAllScales()">Reimposta scala</button>
+    </div>
+    <div class="ch" id="outerReg">
+      <div class="nodata" id="ndReg">Nessun dato caricato</div>
+      <canvas id="cReg" style="display:none;position:absolute;top:0;left:0;width:100%;height:100%"></canvas>
+    </div>
+    <div class="sgrid" id="regStats"></div>
+  </div>
+</div>
+
+<!-- Scarti -->
+<div class="panel" id="panelScarti">
+  <div class="ph"><span class="ptitle">Progressione Scarti</span><button class="obtn" onclick="togglePanel('scarti')">Comprimi</button></div>
+  <div id="bodyScarti">
+    <div class="ch" id="outerScarti" style="cursor:grab">
+      <div class="nodata" id="ndScarti">Nessun dato caricato</div>
+      <canvas id="cScarti" style="display:none;position:absolute;top:0;left:0;width:100%;height:100%"></canvas>
+    </div>
+  </div>
+</div>
+
+<!-- CuSum -->
+<div class="panel" id="panelCusum">
+  <div class="ph"><span class="ptitle">Confronto CuSum</span><button class="obtn" onclick="togglePanel('cusum')">Comprimi</button></div>
+  <div id="bodyCusum">
+    <div class="ch" id="outerCusum" style="cursor:grab">
+      <div class="nodata" id="ndCusum">Nessun dato caricato</div>
+      <canvas id="cCusum" style="display:none;position:absolute;top:0;left:0;width:100%;height:100%"></canvas>
+    </div>
+    <div class="srow">
+      <label>Soglia</label>
+      <input type="number" id="cusumSoglia" class="ifield" step="any" placeholder="—" oninput="redrawCusum()">
+    </div>
+  </div>
+</div>
+
+</div>
+</div>
+</main>
+
+<footer class="pf-piede">
+  <p>Playfair · un progetto di <a href="https://statocritico.it">Stato Critico</a> · <a href="guida-rapida.pdf">Guida rapida</a> · Immagini storiche: pubblico dominio (Wikimedia Commons)</p>
+  <p>I dati caricati restano nel browser: nulla viene inviato a server.</p>
+</footer>
+
+<script src="assets/vendor/chart.umd.js"></script>
+<script src="assets/vendor/papaparse.min.js"></script>
+<script src="assets/strumenti.js"></script>
+<script>
+// ── State ─────────────────────────────────────────────────────────────────
+var DATA=[], dName='Driver', dUnit='', cUnit='';
+var rA=0, rB=0, rN=0;
+var SCARTI=[], CUSUM=[];
+
+var chAnd=null, chReg=null, chSca=null, chCus=null;
+
+// Zoom windows for index charts (Andamenti, Scarti, CuSum)
+var wAnd={min:0,max:0};
+var wSca={min:0,max:0}; var wSca0={min:0,max:0};
+var wCus={min:0,max:0}; var wCus0={min:0,max:0};
+// Scatter zoom
+var wReg={x0:0,x1:0,y0:0,y1:0}, wReg0={x0:0,x1:0,y0:0,y1:0};
+
+var panels={andamenti:true,reg:true,scarti:true,cusum:true};
+
+// ── Helpers ───────────────────────────────────────────────────────────────
+/* tema del sito (data-theme su <html>) invece del tema di sistema; colori da tema.css */
+function dk(){return PF.scuroAttivo();}
+function tc(){return PF.tenue();}
+function gc(){return PF.griglia();}
+var PAL=PF.tavolozza({cons:['--serie-2','#378add'],drv:['--serie-3','#e09b1a'],reg:['--primario','#C0392B'],pos:['--successo','#3ba878'],neg:['--errore','#dc3232'],ink:['--inchiostro','#000000']});
+function fn(v,d){return v.toLocaleString('it-IT',{minimumFractionDigits:d,maximumFractionDigits:d});}
+
+function togglePanel(id){
+  panels[id]=!panels[id];
+  var k=id[0].toUpperCase()+id.slice(1);
+  var b=document.getElementById('body'+k);
+  if(b) b.style.display=panels[id]?'block':'none';
+  document.querySelectorAll('[onclick="togglePanel(\''+id+'\')"]').forEach(function(el){el.textContent=panels[id]?'Comprimi':'Espandi';});
+}
+function setAllPanels(open){
+  ['andamenti','reg','scarti','cusum'].forEach(function(id){
+    panels[id]=open;
+    var k=id[0].toUpperCase()+id.slice(1);
+    var b=document.getElementById('body'+k);
+    if(b) b.style.display=open?'block':'none';
+    document.querySelectorAll('[onclick="togglePanel(\''+id+'\')"]').forEach(function(el){el.textContent=open?'Comprimi':'Espandi';});
+  });
+}
+function toggleHelp(){var e=document.getElementById('helpBox');e.style.display=e.style.display==='none'?'block':'none';}
+function contactAuthor(){
+  var email='ing.paolo.bianco@gmail.com';
+  var t=document.createElement('textarea');t.value=email;t.style.cssText='position:fixed;top:0;left:0;opacity:0';
+  document.body.appendChild(t);t.focus();t.select();try{document.execCommand('copy');}catch(e){}document.body.removeChild(t);
+  var b=document.getElementById('contactBtn');var o=b.textContent;b.textContent='Email copiata!';setTimeout(function(){b.textContent=o;},2000);
+}
+document.addEventListener('click',function(e){if(!e.target.classList.contains('slabel'))document.querySelectorAll('.stip').forEach(function(el){el.style.display='none';});});
+function showTip(id){
+  ['formula','r2','chi2','pval'].forEach(function(t){
+    var el=document.getElementById('tip-'+t);
+    if(el) el.style.display=(t===id&&el.style.display!=='block')?'block':'none';
+  });
+}
+
+// ── CSV ───────────────────────────────────────────────────────────────────
+document.getElementById('csvFile').addEventListener('change',function(e){
+  var f=e.target.files[0]; if(!f) return;
+  document.getElementById('fileStatus').textContent='Parsing…';
+  Papa.parse(f,{header:false,skipEmptyLines:true,dynamicTyping:false,delimiter:'',complete:function(res){
+    var rows=res.data; if(rows.length<3){document.getElementById('fileStatus').textContent='File non valido.';return;}
+    dName=(rows[0][1]||'Driver').toString().trim();
+    cUnit=(rows[1][0]||'').toString().trim();
+    dUnit=(rows[1][1]||'').toString().trim();
+    DATA=[]; var errs=0;
+    for(var i=2;i<rows.length;i++){
+      var r=rows[i];
+      var y=parseFloat(String(r[0]||'').trim().replace(/\./g,'').replace(',','.'));
+      var x=parseFloat(String(r[1]||'').trim().replace(/\./g,'').replace(',','.'));
+      if(isNaN(x)||isNaN(y)){errs++;continue;}
+      DATA.push({x:x,y:y});
+    }
+    if(DATA.length<2){document.getElementById('fileStatus').textContent='Dati insufficienti.';return;}
+    document.getElementById('fileStatus').textContent=DATA.length+' intervalli'+(errs?' ('+errs+' ignorate)':'');
+    document.getElementById('dataInfo').style.display='block';
+    document.getElementById('dataInfo').textContent='Consumo ['+cUnit+'] vs Energy driver: '+dName+' ['+dUnit+']';
+    document.getElementById('titleAndamenti').textContent='Andamenti — Consumo ['+cUnit+'] e '+dName+' ['+dUnit+']';
+    var defN=Math.max(2,Math.round(DATA.length*0.2));
+    document.getElementById('regN').value=defN;
+    wAnd={min:0,max:DATA.length-1};
+    doRegression();
+  }});
+});
+
+// ── Regression ────────────────────────────────────────────────────────────
+function doRegression(){
+  if(DATA.length<2) return;
+  rN=Math.max(2,Math.min(DATA.length,parseInt(document.getElementById('regN').value,10)||Math.round(DATA.length*0.2)));
+  document.getElementById('regN').value=rN;
+  var sub=DATA.slice(0,rN), n=sub.length;
+  var sx=0,sy=0,sxy=0,sx2=0;
+  for(var i=0;i<n;i++){sx+=sub[i].x;sy+=sub[i].y;sxy+=sub[i].x*sub[i].y;sx2+=sub[i].x*sub[i].x;}
+  var mx=sx/n, my=sy/n, num=0, den=0;
+  for(var i=0;i<n;i++){num+=(sub[i].x-mx)*(sub[i].y-my);den+=(sub[i].x-mx)*(sub[i].x-mx);}
+  rA=den?num/den:0; rB=my-rA*mx;
+  SCARTI=DATA.map(function(d){return d.y-(rA*d.x+rB);});
+  CUSUM=[]; var cs=0; for(var i=0;i<SCARTI.length;i++){cs+=SCARTI[i];CUSUM.push(cs);}
+  // stats
+  var ss=0,sr=0; for(var i=0;i<n;i++){ss+=(sub[i].y-my)*(sub[i].y-my);sr+=SCARTI[i]*SCARTI[i];}
+  var r2=ss?1-sr/ss:0;
+  var chi2=0; for(var i=0;i<n;i++){var ex=rA*sub[i].x+rB;if(Math.abs(ex)>1e-10)chi2+=SCARTI[i]*SCARTI[i]/Math.abs(ex);}
+  var r=Math.sqrt(Math.max(0,r2)), df=n-2;
+  var t=df>0&&(1-r2)>1e-10?r*Math.sqrt(df)/Math.sqrt(1-r2):0;
+  var pval=df>0?2*(1-tCDF(Math.abs(t),df)):1;
+  var sg=rB>=0?'+':'-';
+  var h='<div class="scard"><span class="slabel" onclick="showTip(\'formula\')">Formula</span><div class="stip" id="tip-formula">Retta calcolata sui primi '+rN+' intervalli.</div><div class="svalue" style="font-size:13px">y='+fn(rA,4)+'·x '+sg+' '+fn(Math.abs(rB),2)+'</div></div>';
+  h+='<div class="scard"><span class="slabel" onclick="showTip(\'r2\')">R²</span><div class="stip" id="tip-r2">Coefficiente di determinazione. Vicino a 1 = ottima correlazione.</div><div class="svalue">'+fn(r2,4)+'</div></div>';
+  h+='<div class="scard"><span class="slabel" onclick="showTip(\'chi2\')">χ²</span><div class="stip" id="tip-chi2">Chi quadro: discrepanza osservato/atteso. Valori bassi = buon adattamento.</div><div class="svalue">'+fn(chi2,4)+'</div></div>';
+  h+='<div class="scard"><span class="slabel" onclick="showTip(\'pval\')">p-value</span><div class="stip" id="tip-pval">Probabilità che la correlazione sia casuale. p&lt;0.05 = significativo.</div><div class="svalue">'+fn(pval,4)+'</div></div>';
+  document.getElementById('regStats').innerHTML=h;
+  // init scatter window
+  var xs=DATA.map(function(d){return d.x;}), ys2=DATA.map(function(d){return d.y;});
+  var xpad=(Math.max.apply(null,xs)-Math.min.apply(null,xs))*0.05||1;
+  var ypad=(Math.max.apply(null,ys2)-Math.min.apply(null,ys2))*0.05||1;
+  wReg={x0:Math.min.apply(null,xs)-xpad,x1:Math.max.apply(null,xs)+xpad,y0:Math.min.apply(null,ys2)-ypad,y1:Math.max.apply(null,ys2)+ypad};
+  wReg0={x0:wReg.x0,x1:wReg.x1,y0:wReg.y0,y1:wReg.y1};
+  // init index windows
+  wSca={min:0,max:SCARTI.length-1}; wSca0={min:0,max:SCARTI.length-1};
+  wCus={min:0,max:rN-1};            wCus0={min:0,max:rN-1};
+  renderAll();
+}
+
+function resetAllScales(){
+  wReg={x0:wReg0.x0,x1:wReg0.x1,y0:wReg0.y0,y1:wReg0.y1};
+  wSca={min:wSca0.min,max:wSca0.max};
+  wCus={min:wCus0.min,max:wCus0.max};
+  if(chReg){chReg.options.scales.x.min=wReg.x0;chReg.options.scales.x.max=wReg.x1;chReg.options.scales.y.min=wReg.y0;chReg.options.scales.y.max=wReg.y1;chReg.update('none');}
+  if(chSca){chSca.options.scales.x.min=wSca.min;chSca.options.scales.x.max=wSca.max;chSca.update('none');}
+  if(chCus){chCus.options.scales.x.min=wCus.min;chCus.options.scales.x.max=wCus.max;chCus.update('none');}
+}
+
+// ── Render ────────────────────────────────────────────────────────────────
+function bgPlug(nBase, color){
+  return{id:'bg',beforeDraw:function(chart){
+    var ca=chart.chartArea, xs=chart.scales.x; if(!ca||!xs) return;
+    var x1=xs.getPixelForValue(nBase-0.5); x1=Math.min(x1,ca.right); if(x1<=ca.left) return;
+    chart.ctx.save(); chart.ctx.fillStyle=color;
+    chart.ctx.fillRect(ca.left,ca.top,x1-ca.left,ca.bottom-ca.top);
+    chart.ctx.restore();
+  }};
+}
+
+function renderAll(){drawAndamenti();drawReg();drawScarti();drawCusum();}
+
+function drawAndamenti(){
+  document.getElementById('ndAndamenti').style.display='none';
+  document.getElementById('cAndamenti').style.display='block';
+  if(chAnd){chAnd.destroy();chAnd=null;}
+  var cons=DATA.map(function(d,i){return{x:i,y:d.y};});
+  var driv=DATA.map(function(d,i){return{x:i,y:d.x};});
+  var ymin=Math.min.apply(null,DATA.map(function(d){return d.y;}))*0.9;
+  chAnd=new Chart(document.getElementById('cAndamenti'),{type:'bar',data:{datasets:[
+    {label:'Consumo ['+cUnit+']',data:cons,backgroundColor:PF.rgba(PAL.cons,0.45),borderColor:PAL.cons,borderWidth:1,borderRadius:2,yAxisID:'y'},
+    {label:dName+' ['+dUnit+']',data:driv,type:'line',borderColor:PAL.drv,borderWidth:2,pointRadius:3,pointBackgroundColor:PAL.drv,fill:false,tension:0.2,yAxisID:'y2'}
+  ]},options:{responsive:true,maintainAspectRatio:false,animation:{duration:200},
+    plugins:{legend:{display:true,position:'bottom',labels:{color:tc(),font:{size:11},padding:12}},tooltip:{callbacks:{title:function(it){return 'Int.'+(it[0].parsed.x+1);}}}},
+    scales:{
+      x:{type:'linear',min:wAnd.min,max:wAnd.max,ticks:{color:tc(),font:{size:10},maxTicksLimit:12,stepSize:1,callback:function(v){return Number.isInteger(v)?'Int.'+(v+1):''}},grid:{color:gc()}},
+      y:{min:ymin,ticks:{color:tc(),font:{size:11}},grid:{color:gc()},title:{display:true,text:'Consumo ['+cUnit+']',color:PAL.cons,font:{size:11}}},
+      y2:{position:'right',ticks:{color:tc(),font:{size:11}},grid:{display:false},title:{display:true,text:dName+' ['+dUnit+']',color:PAL.drv,font:{size:11}}}}}});
+}
+
+function drawReg(){
+  document.getElementById('ndReg').style.display='none';
+  document.getElementById('cReg').style.display='block';
+  if(chReg){chReg.destroy();chReg=null;}
+  var base=DATA.slice(0,rN).map(function(d){return{x:d.x,y:d.y};});
+  var rest=DATA.slice(rN).map(function(d){return{x:d.x,y:d.y};});
+  var xs2=DATA.map(function(d){return d.x;}), xmin=Math.min.apply(null,xs2), xmax=Math.max.apply(null,xs2);
+  var lx0=Math.min(0,xmin);
+  var lpts=[{x:lx0,y:rA*lx0+rB},{x:xmax,y:rA*xmax+rB}];
+  chReg=new Chart(document.getElementById('cReg'),{type:'scatter',data:{datasets:[
+    {label:'Baseline ('+rN+')',data:base,backgroundColor:PF.rgba(PAL.drv,0.7),borderColor:PAL.drv,borderWidth:1,pointRadius:5,pointHoverRadius:7},
+    {label:'Successivi',data:rest,backgroundColor:PF.rgba(PAL.cons,0.55),borderColor:PAL.cons,borderWidth:1,pointRadius:5,pointHoverRadius:7},
+    {label:'Regressione',data:lpts,type:'line',borderColor:PAL.reg,borderWidth:2,borderDash:[6,4],pointRadius:0,fill:false,tension:0,showLine:true}
+  ]},options:{responsive:true,maintainAspectRatio:false,animation:{duration:200},
+    plugins:{legend:{display:true,position:'bottom',labels:{color:tc(),font:{size:11},padding:12}},
+      tooltip:{callbacks:{label:function(ctx){if(ctx.datasetIndex===2)return 'y='+fn(ctx.parsed.y,2);return dName+': '+fn(ctx.parsed.x,2)+' | C: '+fn(ctx.parsed.y,2);}}}},
+    scales:{
+      x:{min:wReg.x0,max:wReg.x1,ticks:{color:tc(),font:{size:10}},grid:{color:gc()},title:{display:true,text:dName+(dUnit?' ['+dUnit+']':''),color:tc(),font:{size:11}}},
+      y:{min:wReg.y0,max:wReg.y1,ticks:{color:tc(),font:{size:11}},grid:{color:gc()},title:{display:true,text:'Consumo'+(cUnit?' ['+cUnit+']':''),color:tc(),font:{size:11}}}}}});
+}
+
+function drawScarti(){
+  document.getElementById('ndScarti').style.display='none';
+  document.getElementById('cScarti').style.display='block';
+  if(chSca){chSca.destroy();chSca=null;}
+  var pts=SCARTI.map(function(v,i){return{x:i,y:v};});
+  var zer=SCARTI.map(function(_,i){return{x:i,y:0};});
+  var cols=SCARTI.map(function(v){return v>=0?PF.rgba(PAL.pos,0.8):PF.rgba(PAL.neg,0.75);});
+  var bg=PF.rgba(PAL.cons,dk()?0.10:0.12);
+  chSca=new Chart(document.getElementById('cScarti'),{type:'bar',plugins:[bgPlug(rN,bg)],data:{datasets:[
+    {label:'Scarto',data:pts,backgroundColor:cols,borderWidth:0,borderRadius:2},
+    {label:'Zero',data:zer,type:'line',borderColor:PF.rgba(PAL.ink,0.3),borderWidth:1,pointRadius:0,fill:false}
+  ]},options:{responsive:true,maintainAspectRatio:false,animation:{duration:0},
+    plugins:{legend:{display:false},tooltip:{callbacks:{title:function(it){return 'Int.'+(it[0].parsed.x+1);},label:function(ctx){if(ctx.datasetIndex===1)return null;return 'Scarto: '+fn(ctx.parsed.y,2)+' '+cUnit;}}}},
+    scales:{
+      x:{type:'linear',min:wSca.min,max:wSca.max,ticks:{color:tc(),font:{size:10},maxTicksLimit:12,stepSize:1,callback:function(v){return Number.isInteger(v)?'Int.'+(v+1):''}},grid:{color:gc()}},
+      y:{ticks:{color:tc(),font:{size:11}},grid:{color:gc()},title:{display:true,text:'Scarto'+(cUnit?' ['+cUnit+']':''),color:tc(),font:{size:11}}}}}});
+}
+
+function drawCusum(){
+  document.getElementById('ndCusum').style.display='none';
+  document.getElementById('cCusum').style.display='block';
+  if(chCus){chCus.destroy();chCus=null;}
+  var pts=CUSUM.map(function(v,i){return{x:i,y:v};});
+  var sog=parseFloat(document.getElementById('cusumSoglia').value);
+  var bg=PF.rgba(PAL.cons,dk()?0.10:0.12);
+  var ds=[{label:'CuSum',data:pts,borderColor:PAL.cons,backgroundColor:PF.rgba(PAL.cons,dk()?0.12:0.08),borderWidth:1.5,pointRadius:3,pointHoverRadius:5,fill:true,tension:0.2}];
+  if(!isNaN(sog)){
+    ds.push({label:'S+',data:CUSUM.map(function(_,i){return{x:i,y:sog};}),borderColor:PAL.ink,borderWidth:1.5,borderDash:[6,4],pointRadius:0,fill:false});
+    ds.push({label:'S-',data:CUSUM.map(function(_,i){return{x:i,y:-sog};}),borderColor:PAL.ink,borderWidth:1.5,borderDash:[6,4],pointRadius:0,fill:false});
+  }
+  chCus=new Chart(document.getElementById('cCusum'),{type:'line',plugins:[bgPlug(rN,bg)],data:{datasets:ds},
+    options:{responsive:true,maintainAspectRatio:false,animation:{duration:0},
+      plugins:{legend:{display:false},tooltip:{callbacks:{title:function(it){return 'Int.'+(it[0].parsed.x+1);},label:function(ctx){if(ctx.dataset.label!=='CuSum')return null;return 'CuSum: '+fn(ctx.parsed.y,2)+' '+cUnit;}}}},
+      scales:{
+        x:{type:'linear',min:wCus.min,max:wCus.max,ticks:{color:tc(),font:{size:10},maxTicksLimit:12,stepSize:1,callback:function(v){return Number.isInteger(v)?'Int.'+(v+1):''}},grid:{color:gc()}},
+        y:{ticks:{color:tc(),font:{size:11}},grid:{color:gc()},title:{display:true,text:'CuSum'+(cUnit?' ['+cUnit+']':''),color:tc(),font:{size:11}}}}}});
+}
+
+function redrawCusum(){if(CUSUM.length)drawCusum();}
+
+// ── Pan & Zoom ────────────────────────────────────────────────────────────
+// Index chart: pan by dragging, zoom by wheel
+function setupIdx(outerEl, getC, w, totalFn){
+  var drag=false, sx=0, sw={};
+  outerEl.addEventListener('mousedown',function(e){
+    if(!getC())return; drag=true; sx=e.clientX; sw={min:w.min,max:w.max}; e.preventDefault();
+  });
+  window.addEventListener('mousemove',function(e){
+    if(!drag)return;
+    var ch=getC(); if(!ch)return;
+    var ca=ch.chartArea; if(!ca)return;
+    var span=sw.max-sw.min+1;
+    var pw=ca.right-ca.left; if(pw<=0)return;
+    var steps=Math.round((sx-e.clientX)/pw*span);
+    var tot=totalFn();
+    var a=sw.min+steps, b=sw.max+steps;
+    if(a<0){a=0;b=span-1;} if(b>=tot){b=tot-1;a=Math.max(0,tot-span);}
+    w.min=a; w.max=b;
+    ch.options.scales.x.min=a; ch.options.scales.x.max=b;
+    ch.update('none');
+  });
+  window.addEventListener('mouseup',function(){drag=false;});
+  outerEl.addEventListener('wheel',function(e){
+    var ch=getC(); if(!ch)return; e.preventDefault();
+    var ca=ch.chartArea; if(!ca)return;
+    var rect=outerEl.getBoundingClientRect();
+    var frac=Math.max(0,Math.min(1,(e.clientX-rect.left-ca.left)/(ca.right-ca.left)));
+    var span=w.max-w.min+1;
+    var ns=e.deltaY>0?Math.round(span*1.25):Math.max(2,Math.round(span*0.8));
+    var tot=totalFn(); ns=Math.min(ns,tot);
+    var ctr=Math.round(w.min+frac*(span-1));
+    var a=Math.round(ctr-frac*(ns-1)), b=a+ns-1;
+    if(a<0){a=0;b=ns-1;} if(b>=tot){b=tot-1;a=Math.max(0,tot-ns);}
+    w.min=a; w.max=b;
+    ch.options.scales.x.min=a; ch.options.scales.x.max=b;
+    ch.update('none');
+  },{passive:false});
+}
+
+// Scatter: pan + zoom both axes
+function setupScatter(outerEl){
+  var drag=false, sx=0, sy=0, sw={};
+  outerEl.addEventListener('mousedown',function(e){
+    if(!chReg)return; drag=true; sx=e.clientX; sy=e.clientY; sw={x0:wReg.x0,x1:wReg.x1,y0:wReg.y0,y1:wReg.y1}; e.preventDefault();
+  });
+  window.addEventListener('mousemove',function(e){
+    if(!drag||!chReg)return;
+    var ca=chReg.chartArea; if(!ca)return;
+    var pw=ca.right-ca.left, ph=ca.bottom-ca.top; if(pw<=0||ph<=0)return;
+    var spX=sw.x1-sw.x0, spY=sw.y1-sw.y0;
+    var dx=e.clientX-sx, dy=e.clientY-sy;
+    wReg.x0=sw.x0-dx/pw*spX; wReg.x1=sw.x1-dx/pw*spX;
+    wReg.y0=sw.y0+dy/ph*spY; wReg.y1=sw.y1+dy/ph*spY;
+    chReg.options.scales.x.min=wReg.x0; chReg.options.scales.x.max=wReg.x1;
+    chReg.options.scales.y.min=wReg.y0; chReg.options.scales.y.max=wReg.y1;
+    chReg.update('none');
+  });
+  window.addEventListener('mouseup',function(){drag=false;});
+  outerEl.addEventListener('wheel',function(e){
+    if(!chReg)return; e.preventDefault();
+    var ca=chReg.chartArea; if(!ca)return;
+    var rect=outerEl.getBoundingClientRect();
+    var fx=Math.max(0,Math.min(1,(e.clientX-rect.left-ca.left)/(ca.right-ca.left)));
+    var fy=Math.max(0,Math.min(1,(e.clientY-rect.top-ca.top)/(ca.bottom-ca.top)));
+    var f=e.deltaY>0?1.25:0.8;
+    var spX=wReg.x1-wReg.x0, spY=wReg.y1-wReg.y0;
+    var cx=wReg.x0+fx*spX, cy=wReg.y0+(1-fy)*spY;
+    wReg.x0=cx-fx*spX*f; wReg.x1=cx+(1-fx)*spX*f;
+    wReg.y0=cy-(1-fy)*spY*f; wReg.y1=cy+fy*spY*f;
+    chReg.options.scales.x.min=wReg.x0; chReg.options.scales.x.max=wReg.x1;
+    chReg.options.scales.y.min=wReg.y0; chReg.options.scales.y.max=wReg.y1;
+    chReg.update('none');
+  },{passive:false});
+}
+
+setupIdx(document.getElementById('outerAndamenti'), function(){return chAnd;}, wAnd, function(){return DATA.length;});
+setupIdx(document.getElementById('outerScarti'),    function(){return chSca;}, wSca, function(){return SCARTI.length;});
+setupIdx(document.getElementById('outerCusum'),     function(){return chCus;}, wCus, function(){return CUSUM.length;});
+setupScatter(document.getElementById('outerReg'));
+
+window.addEventListener('resize',function(){
+  if(chAnd)chAnd.resize(); if(chReg)chReg.resize(); if(chSca)chSca.resize(); if(chCus)chCus.resize();
+});
+
+// ── Statistics ────────────────────────────────────────────────────────────
+function tCDF(t,df){var x=df/(df+t*t);return 1-0.5*bInc(x,df/2,0.5);}
+function bInc(x,a,b){if(x<=0)return 0;if(x>=1)return 1;var lb=lg(a)+lg(b)-lg(a+b);return Math.exp(Math.log(x)*a+Math.log(1-x)*b-lb)/a*bCF(x,a,b);}
+function bCF(x,a,b){var qab=a+b,qap=a+1,qam=a-1,c=1,d=1-qab*x/qap;if(Math.abs(d)<1e-30)d=1e-30;d=1/d;var h=d;for(var m=1;m<=200;m++){var m2=2*m,aa=m*(b-m)*x/((qam+m2)*(a+m2));d=1+aa*d;if(Math.abs(d)<1e-30)d=1e-30;c=1+aa/c;if(Math.abs(c)<1e-30)c=1e-30;d=1/d;h*=d*c;aa=-(a+m)*(qab+m)*x/((a+m2)*(qap+m2));d=1+aa*d;if(Math.abs(d)<1e-30)d=1e-30;c=1+aa/c;if(Math.abs(c)<1e-30)c=1e-30;d=1/d;var del=d*c;h*=del;if(Math.abs(del-1)<1e-8)break;}return h;}
+function lg(x){var c=[76.18009172947146,-86.50532032941677,24.01409824083091,-1.231739572450155,1.208650973866179e-3,-5.395239384953e-6],y=x,t=x+5.5;t=(x+0.5)*Math.log(t)-t;var s=1.000000000190015;for(var j=0;j<6;j++)s+=c[j]/++y;return t+Math.log(2.5066282746310005*s/x);}
+
+/* ── integrazione nel sito: ridisegno al cambio di tema ── */
+PF.alCambioTema(function(){ if(DATA.length) renderAll(); });
+</script>
+<script src="assets/sito.js" defer></script>
+</body>
+</html>

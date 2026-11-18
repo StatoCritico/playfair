@@ -1,0 +1,229 @@
+/* =====================================================================================================
+   Playfair · sito.css — testata, menu, tooltip, piè di pagina, zone di trascinamento, componenti comuni.
+   Nessun colore o carattere scritto qui: tutto passa dalle variabili di tema.css.
+   ===================================================================================================== */
+
+/* ------------------------------------------------------------------------------------------- basi */
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; scroll-padding-top: calc(var(--alto-testata) + var(--s3)); }
+body { margin: 0; min-height: 100vh; display: flex; flex-direction: column; background: var(--carta); color: var(--inchiostro);
+  font: 400 var(--c-m)/1.55 var(--testo); }
+body > main { flex: 1 0 auto; }
+img, svg { max-width: 100%; }
+a { color: var(--primario); text-underline-offset: .18em; text-decoration-thickness: 1px; }
+a:hover { color: var(--primario-forte); text-decoration-thickness: 2px; }
+:focus-visible { outline: 3px solid var(--primario); outline-offset: 2px; border-radius: var(--r-s); }
+h1, h2, h3, h4 { font-family: var(--titoli); color: var(--inchiostro); text-wrap: balance; line-height: 1.15; }
+h1 { font-weight: 700; font-size: var(--c-h1); letter-spacing: -.012em; }
+h2 { font-weight: 700; font-size: var(--c-2xl); }
+h3 { font-weight: 600; font-size: var(--c-xl); }
+p { text-wrap: pretty; }
+code, kbd, samp, pre { font-family: var(--mono); font-size: .92em; }
+.num, td.num { font-variant-numeric: tabular-nums; text-align: right; }
+.solo-lettori { position: absolute !important; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.pf-salta { position: absolute; left: var(--s3); top: -4rem; z-index: 100; padding: var(--s2) var(--s4); background: var(--primario);
+  color: var(--su-primario); border-radius: var(--r); font-weight: 700; text-decoration: none; }
+.pf-salta:focus { top: var(--s3); }
+.pf-contenitore { width: 100%; max-width: var(--larghezza); margin-inline: auto; padding-inline: var(--margine); }
+.pf-testo { max-width: 68ch; }
+
+/* ------------------------------------------------------------------------------------------- testata */
+.pf-testata {
+  position: sticky; top: 0; z-index: 50; display: flex; align-items: center; gap: var(--s4);
+  min-height: 3.75rem; padding: var(--s2) var(--margine);
+  background: color-mix(in srgb, var(--carta) 88%, transparent); border-bottom: 1px solid var(--linea);
+  -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
+}
+.pf-marchio {
+  flex: none; display: inline-flex; align-items: baseline; gap: .05em; text-decoration: none; color: var(--inchiostro);
+  font: 700 1.45rem/1 var(--titoli); letter-spacing: -.01em; border-radius: var(--r-s); padding: .2rem 0;
+}
+.pf-marchio::before {             /* monogramma: la P con il suo flusso */
+  content: ""; align-self: center; width: 1.05em; height: 1.05em; margin-right: .38em; flex: none; border-radius: var(--r-s);
+  background:
+    linear-gradient(var(--primario), var(--primario)) 22% 50% / 18% 76% no-repeat,
+    radial-gradient(circle at 46% 36%, transparent 22%, var(--primario) 23%, var(--primario) 39%, transparent 40%) 0 0 / 100% 100% no-repeat,
+    linear-gradient(90deg, transparent 52%, var(--flusso-el) 52%) 0 80% / 100% 10% no-repeat;
+}
+.pf-marchio:hover { color: var(--inchiostro); }
+.pf-marchio-sub { font: 500 .78rem/1 var(--mono); color: var(--tenue); letter-spacing: .02em; }
+.pf-marchio:hover .pf-marchio-sub { color: var(--primario); }
+
+.pf-menu { display: flex; align-items: center; gap: .15rem; margin-left: auto; }
+.pf-menu a {
+  position: relative; display: inline-flex; align-items: center; min-height: 2.5rem; padding: 0 .7rem; border-radius: var(--r);
+  color: var(--tenue); text-decoration: none; font: 600 1.02rem/1 var(--titoli); white-space: nowrap; letter-spacing: .005em;
+  transition: color var(--durata), background-color var(--durata);
+}
+.pf-menu a::after {
+  content: ""; position: absolute; left: .7rem; right: .7rem; bottom: .3rem; height: 2px; border-radius: 2px;
+  background: var(--primario); transform: scaleX(0); transform-origin: left; transition: transform var(--durata) ease;
+}
+.pf-menu a:hover { color: var(--inchiostro); background: var(--rialzo); }
+.pf-menu a[aria-current="page"] { color: var(--inchiostro); }
+.pf-menu a[aria-current="page"]::after, .pf-menu a:hover::after { transform: scaleX(1); }
+.pf-menu a:hover::after { opacity: .45; }
+.pf-menu a[aria-current="page"]:hover::after { opacity: 1; }
+
+.pf-tema, .pf-menu-apri {
+  flex: none; display: inline-grid; place-items: center; min-width: 2.5rem; height: 2.5rem; padding: 0;
+  border: 1px solid var(--bordo); border-radius: var(--r-tondo); background: transparent; color: var(--inchiostro);
+  font: 600 1.25rem/1 var(--testo); cursor: pointer; transition: background-color var(--durata), border-color var(--durata), transform .35s ease;
+}
+.pf-tema:hover, .pf-menu-apri:hover { background: var(--rialzo); border-color: var(--inchiostro); }
+.pf-tema:hover { transform: rotate(180deg); }
+.pf-tema { font-size: 0; }   /* il carattere ◐ resta per i lettori senza CSS; l'icona la disegna ::before */
+.pf-tema::before { content: ""; width: 1.05rem; height: 1.05rem; border-radius: 50%; border: 2px solid currentColor;
+  background: linear-gradient(90deg, currentColor 50%, transparent 50%); }
+[data-theme="light"] .pf-tema { transform: scaleX(-1); }
+[data-theme="light"] .pf-tema:hover { transform: scaleX(-1) rotate(180deg); }
+.pf-tema:focus-visible, .pf-menu-apri:focus-visible { outline: 3px solid var(--inchiostro); outline-offset: 2px; border-radius: var(--r-tondo); }
+.pf-menu-apri { display: none; padding: 0 1rem; font-size: 1rem; gap: .45rem; grid-auto-flow: column; }
+.pf-menu-apri::before { content: ""; width: 1rem; height: .7rem; border-block: 2px solid currentColor;
+  background: linear-gradient(currentColor, currentColor) center / 100% 2px no-repeat; }
+.pf-menu-apri[aria-expanded="true"] { background: var(--inchiostro); color: var(--carta); border-color: var(--inchiostro); }
+
+@media (max-width: 960px) {
+  .pf-menu-apri { display: inline-grid; margin-left: auto; }
+  .pf-menu {
+    position: absolute; left: 0; right: 0; top: 100%; display: none; flex-direction: column; align-items: stretch; gap: 0;
+    margin: 0; padding: var(--s2) var(--margine) var(--s5); max-height: calc(100vh - var(--alto-testata)); overflow-y: auto;
+    background: var(--foglio); border-bottom: 1px solid var(--linea); box-shadow: var(--ombra-2);
+  }
+  .pf-menu.aperto { display: flex; }
+  .pf-menu a { min-height: 3rem; padding: 0 var(--s2); border-radius: 0; border-bottom: 1px solid var(--linea); color: var(--inchiostro); font-size: 1.12rem; }
+  .pf-menu a::after { display: none; }
+  .pf-menu a[aria-current="page"] { color: var(--primario); box-shadow: inset 3px 0 0 var(--primario); padding-left: var(--s4); }
+  .pf-menu a[aria-current="page"]::before { content: "sei qui"; order: 2; margin-left: auto; font: 400 var(--c-xs) var(--testo); color: var(--tenue); }
+  .pf-menu a[data-tip]::after { display: none; }
+}
+@media (max-width: 460px) {
+  .pf-testata { gap: var(--s2); }
+  .pf-marchio-sub { display: none; }
+}
+
+/* ------------------------------------------------------------------------------------------- tooltip
+   [data-tip]: sito.js crea un'unica bolla .pf-tip, la posiziona senza uscire dalla finestra e la collega con
+   aria-describedby. Senza JavaScript vale il ripiego tutto CSS qui sotto (html senza classe .pf-js). */
+.pf-tip {
+  position: fixed; left: 0; top: 0; z-index: 200; max-width: min(280px, calc(100vw - 16px)); padding: .5rem .7rem;
+  background: var(--inchiostro); color: var(--carta); border-radius: var(--r); box-shadow: var(--ombra-2);
+  font: 500 var(--c-s)/1.4 var(--testo); pointer-events: none; opacity: 0; transform: translateY(3px);
+  transition: opacity .14s ease, transform .14s ease; text-wrap: pretty;
+}
+.pf-tip.visibile { opacity: 1; transform: none; }
+.pf-tip::before {                  /* freccina: --freccia-x la calcola sito.js */
+  content: ""; position: absolute; left: var(--freccia-x, 50%); width: 10px; height: 10px; margin-left: -5px;
+  background: inherit; transform: rotate(45deg); top: -4px; border-radius: 2px 0 0 0;
+}
+.pf-tip.sopra::before { top: auto; bottom: -4px; border-radius: 0 0 2px 0; }
+.pf-tip.sopra { transform: translateY(-3px); }
+.pf-tip.sopra.visibile { transform: none; }
+
+html:not(.pf-js) [data-tip] { position: relative; }
+html:not(.pf-js) [data-tip]:is(:hover, :focus-visible)::before {
+  content: attr(data-tip); position: absolute; left: 50%; top: calc(100% + 8px); z-index: 200; width: max-content; max-width: 280px;
+  transform: translateX(-50%); padding: .5rem .7rem; background: var(--inchiostro); color: var(--carta); border-radius: var(--r);
+  font: 500 var(--c-s)/1.4 var(--testo); white-space: normal; box-shadow: var(--ombra-2); animation: pf-tip-entra .15s var(--ritardo-tip) both;
+}
+@keyframes pf-tip-entra { from { opacity: 0; } to { opacity: 1; } }
+
+/* ------------------------------------------------------------------------------------------- piè di pagina */
+.pf-piede {
+  margin-top: var(--s8); padding: var(--s5) var(--margine) var(--s6); border-top: 1px solid var(--linea);
+  color: var(--tenue); font-size: var(--c-s); background: var(--carta);
+}
+.pf-piede p { margin: .25rem auto; max-width: var(--larghezza); }
+.pf-piede a { color: var(--inchiostro); }
+.pf-piede a:hover { color: var(--primario); }
+.pf-piede .pf-piede-nota { font-size: var(--c-xs); }
+
+/* ------------------------------------------------------------------------------------------- pulsanti */
+.pf-btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: .5rem; min-height: var(--tocco); padding: .6rem 1.15rem;
+  border: 1px solid var(--primario); border-radius: var(--raggio); background: var(--primario); color: var(--su-primario);
+  font: 700 var(--c-m)/1.1 var(--testo); text-decoration: none; cursor: pointer; transition: background-color var(--durata), border-color var(--durata);
+}
+.pf-btn:hover { background: var(--primario-forte); border-color: var(--primario-forte); color: var(--su-primario); text-decoration: none; }
+.pf-btn:active { transform: translateY(1px); }
+.pf-btn[disabled], .pf-btn[aria-disabled="true"] { background: var(--rialzo); border: 1px dashed var(--bordo); color: var(--tenue); cursor: not-allowed; transform: none; }
+.pf-btn.secondario { background: transparent; color: var(--inchiostro); border-color: var(--bordo); font-weight: 600; }
+.pf-btn.secondario:hover { background: var(--rialzo); border-color: var(--inchiostro); }
+.pf-btn.piccolo { min-height: 2.25rem; padding: .35rem .8rem; font-size: var(--c-s); }
+
+/* ------------------------------------------------------------------------------------------- pannelli, campi, tabelle */
+.pf-pannello { background: var(--foglio); border: 1px solid var(--linea); border-radius: var(--r-l); padding: var(--s5); box-shadow: var(--ombra-1); }
+.pf-pannello > h2, .pf-pannello > h3 { margin-top: 0; }
+.pf-etichetta { font: 600 var(--c-xs)/1.2 var(--titoli); letter-spacing: .08em; text-transform: uppercase; color: var(--tenue); }
+.pf-campo { display: grid; gap: .3rem; }
+.pf-campo label, label.pf-campo { font-weight: 600; font-size: var(--c-s); }
+.pf-campo :is(input:not([type="checkbox"], [type="radio"], [type="file"]), select, textarea),
+input.pf-input, select.pf-input, textarea.pf-input {
+  min-height: var(--tocco); padding: .5rem .7rem; border: 1px solid var(--bordo); border-radius: var(--raggio);
+  background: var(--carta); color: var(--inchiostro); font: inherit;
+}
+.pf-avviso { padding: var(--s3) var(--s4); border-radius: var(--raggio); border-left: 4px solid var(--attenzione); background: var(--attenzione-fondo); }
+.pf-avviso.errore { border-color: var(--errore); background: var(--errore-fondo); }
+.pf-avviso.successo { border-color: var(--successo); background: var(--successo-fondo); }
+.pf-tabella-scorre { overflow-x: auto; border: 1px solid var(--linea); border-radius: var(--r-l); }
+.pf-tabella { width: 100%; border-collapse: collapse; font-size: var(--c-s); }
+.pf-tabella th, .pf-tabella td { padding: .5rem .75rem; border-bottom: 1px solid var(--linea); text-align: left; }
+.pf-tabella thead th { background: var(--rialzo); font-weight: 700; position: sticky; top: 0; }
+.pf-tabella tbody tr:hover { background: var(--rialzo); }
+.pf-tabella td.num, .pf-tabella th.num { text-align: right; font-variant-numeric: tabular-nums; }
+
+/* ------------------------------------------------------------------------------------------- trascinamento dei file
+   .pf-drop: zona in stile EuGEnio (#zona-file). .pieno = file sopra o caricato. Creata da sito.js per ogni input file. */
+.pf-drop {
+  position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: .3rem;
+  border: 2px dashed var(--bordo); border-radius: var(--r-l); padding: var(--s5) var(--s4); text-align: center; cursor: pointer;
+  background: var(--carta); color: var(--inchiostro); font-weight: 400; transition: border-color var(--durata), background-color var(--durata);
+}
+.pf-drop > input[type="file"] { position: absolute; opacity: 0; width: 1px; height: 1px; pointer-events: none; }
+.pf-drop:hover, .pf-drop.sopra { border-color: var(--primario); background: var(--tinta); }
+.pf-drop.pieno { border-style: solid; border-color: var(--primario); }
+.pf-drop:has(:focus-visible) { outline: 3px solid var(--primario); outline-offset: 2px; }
+.pf-drop-titolo { font: 600 var(--c-l)/1.2 var(--titoli); }
+.pf-drop-titolo::before { content: "↧ "; color: var(--primario); }
+.pf-drop-nome { color: var(--tenue); font-size: var(--c-s); overflow-wrap: anywhere; }
+.pf-drop.pieno .pf-drop-nome { color: var(--inchiostro); font-weight: 600; }
+.pf-drop.pieno .pf-drop-nome::before { content: "✓ "; color: var(--successo); }
+/* zona "leggera": l'input è nascosto e la pagina ha già il suo pulsante; si evidenzia solo durante il trascinamento */
+.pf-drop-leggera { position: relative; border-radius: var(--r-l); transition: box-shadow var(--durata), background-color var(--durata); }
+.pf-drop-leggera.sopra { box-shadow: 0 0 0 2px var(--primario); background: var(--tinta); }
+.pf-drop-leggera .pf-drop-nome { display: block; margin-top: .25rem; }
+
+/* velo a tutta pagina durante il trascinamento (pointer-events: none: sotto si vede quale zona riceve) */
+.pf-velo {
+  position: fixed; inset: 0; z-index: 150; display: grid; place-items: center; pointer-events: none;
+  background: color-mix(in srgb, var(--carta) 72%, transparent); opacity: 0; visibility: hidden; transition: opacity .15s, visibility .15s;
+}
+.pf-velo.visibile { opacity: 1; visibility: visible; }
+.pf-velo-riquadro {
+  margin: var(--s5); padding: var(--s6) var(--s7); max-width: 34rem; text-align: center; border: 2px dashed var(--primario);
+  border-radius: calc(var(--r-l) * 1.6); background: var(--foglio); box-shadow: var(--ombra-2);
+}
+.pf-velo-riquadro b { display: block; font: 700 var(--c-2xl)/1.15 var(--titoli); }
+.pf-velo-riquadro b::before { content: "↧"; display: block; font-size: 2.5rem; color: var(--primario); line-height: 1.1; }
+.pf-velo-riquadro span { display: block; margin-top: var(--s2); color: var(--tenue); font-size: var(--c-s); }
+.pf-annuncio { position: fixed; left: 50%; bottom: var(--s5); z-index: 160; transform: translate(-50%, 1rem); max-width: calc(100vw - 2rem);
+  padding: .6rem 1rem; border-radius: var(--raggio); background: var(--inchiostro); color: var(--carta); font-size: var(--c-s);
+  box-shadow: var(--ombra-2); opacity: 0; transition: opacity .2s, transform .2s; pointer-events: none; }
+.pf-annuncio.visibile { opacity: 1; transform: translate(-50%, 0); }
+
+/* ------------------------------------------------------------------------------------------- pagine di testo */
+.pf-intestazione { padding-block: var(--s7) var(--s5); }
+.pf-intestazione h1 { margin: 0 0 var(--s3); }
+.pf-intestazione p { margin: 0; color: var(--tenue); font-size: var(--c-l); max-width: 62ch; }
+.pf-sopratitolo { font: 500 var(--c-xs)/1.2 var(--mono); letter-spacing: .14em; text-transform: uppercase; color: var(--primario); margin: 0 0 var(--s3); }
+
+/* ------------------------------------------------------------------------------------------- movimento ridotto */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; scroll-behavior: auto !important; }
+}
+
+/* ------------------------------------------------------------------------------------------- stampa */
+@media print {
+  .pf-testata, .pf-piede, .pf-velo, .pf-tip, .pf-annuncio { display: none !important; }
+  body { background: #fff; color: #000; }
+}

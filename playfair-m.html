@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Playfair-M — Analisi economiche degli investimenti · Playfair</title>
+<meta name="description" content="Playfair-M: confronto di investimenti energetici con VAN, TIR, MIRR, ROI, tempo di ritorno, WACC, imprevisti e diagramma bilogaritmico.">
+<link rel="icon" href="img/favicon.svg" type="image/svg+xml">
+<script>try{var t=localStorage.getItem('pf-tema');if(t)document.documentElement.dataset.theme=t;}catch(e){}</script>
+<link rel="stylesheet" href="assets/tema.css">
+<link rel="stylesheet" href="assets/sito.css">
+<link rel="stylesheet" href="assets/strumenti.css">
+<style>
+.pf-app.m .panel{padding:14px}
+.pf-app.m .panel-title{margin-bottom:10px;border-bottom:1px solid var(--linea);padding-bottom:6px}
+.pf-app.m .row{display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end;margin-bottom:8px}
+.pf-app.m .field{min-width:110px}
+.pf-app.m .inv-list{display:flex;flex-direction:column;gap:5px}
+.pf-app.m .inv-item{display:flex;align-items:center;gap:8px;padding:6px 10px;border:1px solid var(--linea);border-radius:4px;background:var(--foglio);font-size:13px;cursor:pointer}
+.pf-app.m .inv-item:hover{background:var(--rialzo)}
+.pf-app.m .inv-item.selected{background:var(--tinta);border-color:var(--primario);box-shadow:inset 0 0 0 1px var(--primario)}
+.pf-app.m .inv-dot{width:11px;height:11px;flex-shrink:0;border-radius:2px}
+.pf-app.m .inv-name{font-weight:600;flex:1}
+.pf-app.m .inv-meta{color:var(--tenue);font-size:12px;font-variant-numeric:tabular-nums}
+.pf-app.m .kpi-table-wrap{overflow-x:auto;margin-top:4px}
+.pf-app.m table.kpi-table{border-collapse:collapse;min-width:100%;font-size:13px;font-variant-numeric:tabular-nums}
+.pf-app.m table.kpi-table th,.pf-app.m table.kpi-table td{border-bottom:1px solid var(--linea);padding:6px 10px;white-space:nowrap;text-align:right}
+.pf-app.m table.kpi-table thead th{background:var(--rialzo);font:600 12px/1.3 var(--titoli);color:var(--inchiostro)}
+.pf-app.m table.kpi-table th.row-hdr{text-align:left;min-width:130px;cursor:pointer;font-weight:600;text-decoration:underline dotted;text-underline-offset:3px;background:var(--foglio)}
+.pf-app.m table.kpi-table tbody tr:hover > *{background:var(--rialzo)}
+.pf-app.m .good{color:var(--successo);font-weight:600}
+.pf-app.m .bad{color:var(--errore);font-weight:600}
+.pf-app.m .tabs{display:flex;gap:2px;border-bottom:1px solid var(--linea);margin-bottom:12px;flex-wrap:wrap}
+.pf-app.m .tab{padding:7px 14px;cursor:pointer;font:600 14px/1.2 var(--titoli);color:var(--tenue);border-bottom:3px solid transparent;margin-bottom:-1px}
+.pf-app.m .tab:hover{color:var(--inchiostro);border-bottom-color:var(--linea)}
+.pf-app.m .tab.active{color:var(--inchiostro);border-bottom-color:var(--primario)}
+.pf-app.m .tab-content{display:none}
+.pf-app.m .tab-content.active{display:block}
+.pf-app.m .rate-mode-row{display:flex;gap:6px;margin-bottom:10px}
+.pf-app.m .rate-mode-btn{padding:4px 12px;font-size:13px}
+.pf-app.m .rate-mode-btn.active{background:var(--primario);color:var(--su-primario);border-color:var(--primario)}
+.pf-app.m .imp-list{display:flex;flex-direction:column;gap:4px;margin-top:8px}
+.pf-app.m .imp-item{display:flex;align-items:center;gap:8px;padding:4px 10px;border:1px solid var(--linea);border-radius:4px;background:var(--rialzo);font-size:13px}
+.pf-app.m .imp-item span{flex:1}
+.pf-app.m #bilog-wrap{max-width:100%;border-radius:4px;background:var(--foglio)}
+</style>
+</head>
+<body class="pf-pagina-strumento">
+<header class="pf-testata">
+  <a class="pf-marchio" href="index.html" aria-label="Playfair, home">Playfair<span class="pf-marchio-sub">.statocritico</span></a>
+  <button class="pf-menu-apri" aria-expanded="false" aria-controls="pf-menu">Menu</button>
+  <nav class="pf-menu" id="pf-menu" aria-label="Strumenti">
+    <a href="playfair-s.html" data-tip="Site — analisi del singolo sito: costi e consumi di elettricità, gas, calore e acqua">Playfair-S</a>
+    <a href="playfair-e.html" data-tip="Electric — curve di carico elettriche quartorarie: profili, mappe orarie, picchi e base">Playfair-E</a>
+    <a href="playfair-t.html" data-tip="Thermal — consumi termici ed elettrici, simulazione di cogenerazione e valutazione economica">Playfair-T</a>
+    <a href="playfair-m.html" aria-current="page" data-tip="Money — confronto di investimenti energetici: VAN, TIR, ROI, WACC e flussi di cassa">Playfair-M</a>
+    <a href="playfair-c.html" data-tip="Cusum — regressione, residui e carta CUSUM secondo ISO 50006">Playfair-C</a>
+    <a href="sankey.html" data-tip="Sankey — disegna diagrammi di flusso energetico a blocchi e verifica i bilanci">Sankey</a>
+    <a href="personaggi.html" data-tip="William Playfair e Matthew H. P. R. Sankey: chi erano">Personaggi</a>
+  </nav>
+  <button class="pf-tema" type="button" aria-label="Cambia tema chiaro/scuro">◐</button>
+</header>
+
+<main class="pf-strumento" id="contenuto">
+<section class="pf-intro" aria-labelledby="titolo-strumento">
+  <p class="pf-occhiello">Strumento · Money</p>
+  <h1 id="titolo-strumento">Playfair-M <span class="pf-sotto">— analisi economiche</span> <small>v0.75</small></h1>
+  <p class="pf-sommario">Confronta investimenti energetici: VAN (NPV) cumulato anno per anno, TIR (IRR), MIRR, ROI, tempo di ritorno, indice di profittabilità, DSCR e LLCR, con tasso di sconto diretto o WACC, imprevisti di cassa e diagramma bilogaritmico CAPEX – flusso di cassa annuo.</p>
+  <p class="pf-file"><b>File accettato:</b> un CSV come <code>investimenti_energetici_v2.csv</code>, separatore <code>;</code> o <code>,</code>, numeri senza separatore delle migliaia (decimali con il punto). Colonne obbligatorie: <code>nome</code>, <code>capex</code>, <code>costi_annuali</code>, <code>ricavi_annuali</code>, <code>durata_anni</code>; facoltativa <code>tasso_sconto</code> (%). Gli investimenti si possono anche inserire a mano.</p>
+  <details class="pf-come">
+    <summary>Come si usa</summary>
+    <ol>
+      <li>Imposta il tasso di sconto: diretto oppure WACC (quote e costi di capitale proprio e debito, aliquota fiscale).</li>
+      <li>Trascina il CSV in un punto qualsiasi della pagina o sceglilo in «Usa un file dati .csv»; oppure compila «Nuovo investimento» e premi «Aggiungi».</li>
+      <li>Fai clic su un investimento per evidenziarlo; «Modifica» lo riporta nel modulo, «Elimina» lo toglie.</li>
+      <li>In «Imprevisti» aggiungi entrate o uscite straordinarie in un anno dato.</li>
+      <li>Nelle schede: VAN annuale (rotella = zoom verticale), Indicatori (clic sul nome per la definizione), Confronto e Diagramma Bilog (rotella = zoom, campo PBT per una retta di tempo di ritorno).</li>
+      <li>«Salva su file» scarica nel tuo computer un CSV con gli investimenti correnti.</li>
+    </ol>
+  </details>
+</section>
+
+<div class="pf-app fam-a m">
+<!-- TASSO -->
+<div class="panel">
+  <div class="panel-title">Tasso di sconto</div>
+  <div class="rate-mode-row">
+    <button class="rate-mode-btn active" id="btn-direct" onclick="setRateMode('direct')">Diretto</button>
+    <button class="rate-mode-btn" id="btn-wacc" onclick="setRateMode('wacc')">WACC (media pesata)</button>
+  </div>
+  <div id="mode-direct">
+    <div class="field" style="max-width:180px"><label>Tasso di sconto (%)</label>
+      <input type="number" id="global-rate" value="8" step="0.1" min="0" max="100" oninput="recalcAll()"></div>
+  </div>
+  <div id="mode-wacc" style="display:none">
+    <div class="row">
+      <div class="field" style="max-width:120px"><label>Equity (%)</label><input type="number" id="wacc-eq-pct" value="40" step="1" oninput="calcWACC()"></div>
+      <div class="field" style="max-width:120px"><label>Costo equity (%)</label><input type="number" id="wacc-eq-cost" value="12" step="0.1" oninput="calcWACC()"></div>
+      <div class="field" style="max-width:120px"><label>Debt (%)</label><input type="number" id="wacc-debt-pct" value="60" step="1" oninput="calcWACC()"></div>
+      <div class="field" style="max-width:120px"><label>Costo debt (%)</label><input type="number" id="wacc-debt-cost" value="5" step="0.1" oninput="calcWACC()"></div>
+      <div class="field" style="max-width:120px"><label>Tax rate (%)</label><input type="number" id="wacc-tax" value="24" step="0.1" oninput="calcWACC()"></div>
+    </div>
+    <div id="wacc-result" style="font-size:13px;font-weight:500;margin-top:4px"></div>
+  </div>
+</div>
+
+<!-- NUOVO INVESTIMENTO -->
+<div class="panel">
+  <div class="panel-title">Nuovo investimento</div>
+  <div class="row">
+    <div class="field"><label>Nome</label><input type="text" id="inv-name" value="Investimento 1"></div>
+    <div class="field"><label>Investimento iniziale (€)</label><input type="number" id="inv-capex" placeholder="100000" min="0"></div>
+    <div class="field"><label>Costi annuali (€)</label><input type="number" id="inv-costs" placeholder="10000" min="0"></div>
+    <div class="field"><label>Ricavi annuali (€)</label><input type="number" id="inv-revenue" placeholder="30000" min="0"></div>
+    <div class="field"><label>Durata (anni)</label><input type="number" id="inv-years" placeholder="10" min="1" max="50"></div>
+  </div>
+  <div style="display:flex;gap:8px;flex-wrap:wrap">
+    <button class="primary" onclick="addManual()">+ Aggiungi</button>
+    <button onclick="modifyManual()">Modifica</button>
+  </div>
+</div>
+
+<!-- CSV -->
+<div class="panel">
+  <div class="panel-title">Usa un file dati .csv</div>
+  <div class="file-row">
+    <input type="file" id="csv-file" accept=".csv" style="font-size:13px;flex:1;min-width:180px" onchange="loadCSV()" aria-label="File CSV degli investimenti (es. investimenti_energetici_v2.csv)">
+    <button class="primary" onclick="saveCSV()">Salva su file</button>
+    <button onclick="document.getElementById('modal-istr').classList.add('open')">Istruzioni</button>
+  </div>
+  <div id="csv-msg" style="margin-top:6px;font-size:12px;color:var(--tenue)"></div>
+</div>
+
+<!-- LISTA INVESTIMENTI -->
+<div class="panel">
+  <div class="panel-title" style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0;border-bottom:none;padding-bottom:0">
+    <span style="text-transform:uppercase;letter-spacing:.06em;font-size:11px;font-weight:500">Investimenti caricati <span style="font-weight:400;color:var(--tenue)">(clicca per selezionare)</span></span>
+    <button id="inv-toggle-btn" onclick="toggleInvPanel()" style="padding:2px 9px;font-size:12px">▲ Comprimi</button>
+  </div>
+  <div id="inv-panel-body" style="margin-top:10px;border-top:1px solid var(--linea);padding-top:8px">
+    <div id="inv-list" class="inv-list"><div class="empty-state">Nessun investimento caricato</div></div>
+    <div style="margin-top:8px;text-align:right"><button class="danger" onclick="removeAll()">Elimina tutti</button></div>
+  </div>
+</div>
+
+<!-- IMPREVISTI -->
+<div class="panel">
+  <div class="panel-title">Imprevisti</div>
+  <div class="row">
+    <div class="field" style="min-width:160px"><label>Investimento</label><select id="imp-inv"><option value="">-- seleziona --</option></select></div>
+    <div class="field" style="max-width:150px"><label>Valore (€, +/−)</label><input type="number" id="imp-value" placeholder="-5000"></div>
+    <div class="field" style="max-width:100px"><label>Anno</label><input type="number" id="imp-year" placeholder="3" min="1" max="50"></div>
+  </div>
+  <button class="primary" onclick="addImprevisto()">+ Aggiungi imprevisto</button>
+  <div id="imp-list" class="imp-list"></div>
+</div>
+
+<!-- ANALISI -->
+<div class="panel">
+  <div class="panel-title">Analisi e confronto</div>
+  <div class="tabs">
+    <div class="tab active" onclick="switchTab(this,'tab-npv')">VAN annuale</div>
+    <div class="tab" onclick="switchTab(this,'tab-kpi')">Indicatori</div>
+    <div class="tab" onclick="switchTab(this,'tab-compare')">Confronto</div>
+    <div class="tab" onclick="switchTab(this,'tab-bilog')">Diagramma Bilog</div>
+  </div>
+
+  <div id="tab-npv" class="tab-content active">
+    <div style="text-align:right;margin-bottom:6px">
+      <button onclick="npvZoomReset();renderNPVChart()">Ripristina</button>
+    </div>
+    <div class="chart-wrap" style="height:320px"><canvas id="npvChart"></canvas></div>
+    <div id="npv-legend" style="display:flex;gap:16px;font-size:12px;color:var(--tenue);margin-top:8px;flex-wrap:wrap"></div>
+  </div>
+
+  <div id="tab-kpi" class="tab-content">
+    <div id="kpi-area"><div class="empty-state">Aggiungi investimenti per vedere gli indicatori</div></div>
+  </div>
+
+  <div id="tab-compare" class="tab-content">
+    <div class="chart-wrap"><canvas id="npvBarChart"></canvas></div>
+    <div class="chart-wrap" style="margin-top:14px"><canvas id="roiChart"></canvas></div>
+    <div class="chart-wrap" style="margin-top:14px"><canvas id="roiAnnChart"></canvas></div>
+    <div class="chart-wrap" style="margin-top:14px"><canvas id="irrChart"></canvas></div>
+  </div>
+
+  <div id="tab-bilog" class="tab-content">
+    <div id="bilog-wrap" style="width:600px;height:600px;position:relative;border:1px solid var(--linea);margin-bottom:10px">
+      <canvas id="bilogChart"></canvas>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px">
+      <label style="font-size:13px">PBT Anni:</label>
+      <input type="number" id="bilog-pbt" placeholder="es. 5" min="1" style="width:90px">
+      <button onclick="renderBilog()">Traccia</button>
+      <button onclick="bilogReset()">Ripristina</button>
+    </div>
+    <div id="bilog-legend" style="display:flex;gap:16px;font-size:12px;color:var(--tenue);flex-wrap:wrap"></div>
+  </div>
+</div>
+
+<!-- MODAL KPI -->
+<div class="modal-bg" id="modal-kpi" onclick="if(event.target===this)this.classList.remove('open')">
+  <div class="modal">
+    <h3 id="kpi-modal-title"></h3>
+    <div id="kpi-modal-body" style="margin-top:8px"></div>
+    <div style="margin-top:14px;text-align:right"><button onclick="document.getElementById('modal-kpi').classList.remove('open')">Chiudi</button></div>
+  </div>
+</div>
+
+<!-- MODAL ISTRUZIONI -->
+<div class="modal-bg" id="modal-istr" onclick="if(event.target===this)this.classList.remove('open')">
+  <div class="modal">
+    <h3>Come preparare il file CSV</h3>
+    <p style="margin-top:6px">Formato <strong>CSV</strong> (separatore: virgola o punto e virgola). Valori numerici con punto decimale.</p>
+    <p style="margin-top:8px"><strong>Colonne richieste:</strong></p>
+    <ul>
+      <li><code>nome</code></li><li><code>capex</code></li>
+      <li><code>costi_annuali</code></li><li><code>ricavi_annuali</code></li><li><code>durata_anni</code></li>
+    </ul>
+    <p style="margin-top:8px"><strong>Esempio:</strong></p>
+    <pre>nome;capex;costi_annuali;ricavi_annuali;durata_anni
+Progetto A;100000;10000;30000;10
+Progetto B;50000;5000;18000;7</pre>
+    <div style="margin-top:12px;text-align:right"><button onclick="document.getElementById('modal-istr').classList.remove('open')">Chiudi</button></div>
+  </div>
+</div>
+</div>
+</main>
+
+<footer class="pf-piede">
+  <p>Playfair · un progetto di <a href="https://statocritico.it">Stato Critico</a> · <a href="guida-rapida.pdf">Guida rapida</a> · Immagini storiche: pubblico dominio (Wikimedia Commons)</p>
+  <p>I dati caricati restano nel browser: nulla viene inviato a server.</p>
+</footer>
+
+<script src="assets/vendor/chart.umd.js"></script>
+<script src="assets/strumenti.js"></script>
+<script>
+/* ── GLOBALS ── */
+/* colori degli investimenti letti da tema.css (serie 1-6 + vettori), sempre aggiornati al tema in uso */
+Object.defineProperty(window,'COLORS',{configurable:true,get:function(){return [PF.c('--serie-1','#1a6fdb'),PF.c('--serie-2','#e07b00'),PF.c('--serie-3','#1A8A4A'),PF.c('--serie-4','#C0392B'),PF.c('--serie-5','#7b2fbe'),PF.c('--serie-6','#0e7f8a'),PF.c('--flusso-el','#d4691a'),PF.c('--flusso-th','#2c5fa8'),PF.c('--flusso-acqua','#a84b2c'),PF.c('--flusso-co2','#2ca87f')];}});
+var investments = [], charts = {}, rateMode = 'direct', invCount = 1, selectedIdx = null, imprevisti = [];
+var invPanelOpen = true;
+var npvYmin = null, npvYmax = null;
+var zeroLineRegistered = false;
+
+/* bilog state – single source of truth */
+var BLZ = { x0:10, x1:1e7, y0:1, y1:1e6 };
+function bilogReset(){ BLZ.x0=10; BLZ.x1=1e7; BLZ.y0=1; BLZ.y1=1e6; renderBilog(); }
+
+/* ── KPI INFO ── */
+var KPI_INFO = {
+  capex: {title:'CAPEX',body:'Il costo iniziale al tempo t=0.'},
+  cf:    {title:'CF annuale',body:'<code>CF = Ricavi − Costi</code>. Flusso netto annuo.'},
+  durata:{title:'Durata',body:'Numero di anni dell\'investimento.'},
+  pbt:   {title:'PBT – Payback Time',body:'<code>PBT = CAPEX / CF</code>. Anni per recuperare il capitale.'},
+  npv:   {title:'NPV – Net Present Value',body:'<code>NPV = −CAPEX + Σ CF_t/(1+r)^t</code>. NPV&gt;0 → crea valore.'},
+  irr:   {title:'IRR – Internal Rate of Return',body:'Tasso che annulla l\'NPV. Calcolato per iterazione.'},
+  mirr:  {title:'MIRR – Modified IRR',body:'<code>MIRR=(FV+/|PV−|)^(1/n)−1</code>. Reinvestimento al tasso r.'},
+  roi:   {title:'ROI totale',body:'<code>ROI=(ΣCF−CAPEX)/CAPEX×100</code>.'},
+  roiann:{title:'ROI annuale',body:'<code>ROI_ann=ROI/n</code>.'},
+  pi:    {title:'PI – Profitability Index',body:'<code>PI=PV(flussi)/CAPEX</code>. PI&gt;1 → conveniente.'},
+  dscr:  {title:'DSCR',body:'<code>DSCR=CF/(CAPEX/n)</code>. &gt;1 → copertura sufficiente.'},
+  llcr:  {title:'LLCR',body:'<code>LLCR_t=PV(CF residui)/Debito residuo</code>.'}
+};
+function showKPIInfo(k){ var i=KPI_INFO[k]; if(!i)return; document.getElementById('kpi-modal-title').textContent=i.title; document.getElementById('kpi-modal-body').innerHTML='<p style="font-size:13px;line-height:1.7">'+i.body+'</p>'; document.getElementById('modal-kpi').classList.add('open'); }
+
+/* ── RATE ── */
+function getRate(){
+  if(rateMode==='direct') return parseFloat(document.getElementById('global-rate').value)||8;
+  var eqP=parseFloat(document.getElementById('wacc-eq-pct').value)||0, eqC=parseFloat(document.getElementById('wacc-eq-cost').value)||0;
+  var dP=parseFloat(document.getElementById('wacc-debt-pct').value)||0, dC=parseFloat(document.getElementById('wacc-debt-cost').value)||0;
+  var tax=parseFloat(document.getElementById('wacc-tax').value)||0, tot=eqP+dP;
+  return tot===0?8:(eqP/tot*eqC+dP/tot*dC*(1-tax/100));
+}
+function setRateMode(m){ rateMode=m; document.getElementById('mode-direct').style.display=m==='direct'?'':'none'; document.getElementById('mode-wacc').style.display=m==='wacc'?'':'none'; document.getElementById('btn-direct').classList.toggle('active',m==='direct'); document.getElementById('btn-wacc').classList.toggle('active',m==='wacc'); if(m==='wacc')calcWACC(); else recalcAll(); }
+function calcWACC(){ document.getElementById('wacc-result').textContent='WACC: '+getRate().toFixed(2).replace('.',',')+'%'; recalcAll(); }
+
+/* ── FORMAT ── */
+function fmtIT(n){ return Math.round(n).toLocaleString('it-IT'); }
+function fmtCur(n){ return (n<0?'−':'')+fmtIT(Math.abs(n))+' €'; }
+function fmtPct(n){ return n.toFixed(1).replace('.',',')+'%'; }
+function fmtX(n){ return n.toFixed(2).replace('.',',')+'x'; }
+
+/* ── METRICS ── */
+function calcIRR(flows){
+  var g=0.1;
+  for(var i=0;i<300;i++){
+    var npv=0,dn=0;
+    for(var t=0;t<flows.length;t++){ var d=Math.pow(1+g,t); npv+=flows[t]/d; if(t>0)dn-=t*flows[t]/Math.pow(1+g,t+1); }
+    if(Math.abs(dn)<1e-12)break;
+    var nx=g-npv/dn; if(Math.abs(nx-g)<1e-8)return nx; g=isFinite(nx)?nx:0.1;
+  }
+  return null;
+}
+function buildFlows(inv){
+  var cfA=inv.revenue-inv.costs, idx=investments.indexOf(inv), flows=[-inv.capex];
+  for(var t=1;t<=inv.years;t++){ var cf=cfA; for(var j=0;j<imprevisti.length;j++) if(imprevisti[j].invIdx===idx&&imprevisti[j].year===t)cf+=imprevisti[j].value; flows.push(cf); }
+  return flows;
+}
+function calcMetrics(inv){
+  var r=inv.rate/100, flows=buildFlows(inv), cfA=inv.revenue-inv.costs;
+  var npv=0; for(var t=0;t<flows.length;t++) npv+=flows[t]/Math.pow(1+r,t);
+  var irr=calcIRR(flows);
+  var tot=0; for(var t=1;t<flows.length;t++) tot+=flows[t];
+  var roi=(tot-inv.capex)/inv.capex*100, roiAnn=roi/inv.years;
+  var cum=0,pbt=null; for(var t=1;t<flows.length;t++){ cum+=flows[t]; if(cum>=inv.capex&&pbt===null)pbt=t-(cum-inv.capex)/flows[t]; }
+  var dscr=cfA>0?cfA/(inv.capex/inv.years):null;
+  var pvCF=0; for(var t=1;t<flows.length;t++) pvCF+=flows[t]/Math.pow(1+r,t);
+  var pi=inv.capex>0?pvCF/inv.capex:null;
+  var fvP=0,pvN=0; for(var t=0;t<flows.length;t++){ if(t>0&&flows[t]>0)fvP+=flows[t]*Math.pow(1+r,inv.years-t); if(flows[t]<0)pvN+=flows[t]/Math.pow(1+r,t); }
+  var mirr=pvN<0?Math.pow(-fvP/pvN,1/inv.years)-1:null;
+  var cumNPV=[-inv.capex], llcr=[null], cd=-inv.capex;
+  for(var t=1;t<=inv.years;t++){
+    cd+=flows[t]/Math.pow(1+r,t); cumNPV.push(cd);
+    var pvR=0; for(var s=t+1;s<=inv.years;s++) pvR+=flows[s]/Math.pow(1+r,s-t);
+    var dr=inv.capex*(1-t/inv.years); llcr.push(dr>0?pvR/dr:null);
+  }
+  return {npv:npv,irr:irr,roi:roi,roiAnn:roiAnn,pbt:pbt,dscr:dscr,pi:pi,mirr:mirr,cumNPV:cumNPV,llcr:llcr};
+}
+function recalcAll(){ for(var i=0;i<investments.length;i++){investments[i].rate=getRate();investments[i].metrics=calcMetrics(investments[i]);} renderList();renderKPI();renderNPVChart();renderCompareCharts(); }
+
+/* ── INVESTMENTS ── */
+function addManual(){
+  var name=document.getElementById('inv-name').value.trim()||('Investimento '+invCount);
+  var capex=parseFloat(document.getElementById('inv-capex').value), costs=parseFloat(document.getElementById('inv-costs').value);
+  var revenue=parseFloat(document.getElementById('inv-revenue').value), years=parseInt(document.getElementById('inv-years').value);
+  if(isNaN(capex)||isNaN(costs)||isNaN(revenue)||isNaN(years)||years<1){alert('Compila tutti i campi numerici.');return;}
+  var idx=investments.length;
+  investments.push({name:name,capex:capex,costs:costs,revenue:revenue,years:years,rate:getRate(),color:COLORS[idx%COLORS.length],metrics:null});
+  investments[idx].metrics=calcMetrics(investments[idx]);
+  invCount++; document.getElementById('inv-name').value='Investimento '+invCount;
+  ['inv-capex','inv-costs','inv-revenue','inv-years'].forEach(function(id){document.getElementById(id).value='';});
+  updateImpSelect(); selectInvestment(idx); renderCompareCharts();
+}
+function modifyManual(){
+  var name=document.getElementById('inv-name').value.trim(); if(!name){alert('Inserisci il nome.');return;}
+  var idx=-1; for(var i=0;i<investments.length;i++) if(investments[i].name===name){idx=i;break;}
+  if(idx===-1){alert('Nessun investimento con nome "'+name+'". Usa Aggiungi.');return;}
+  var capex=parseFloat(document.getElementById('inv-capex').value), costs=parseFloat(document.getElementById('inv-costs').value);
+  var revenue=parseFloat(document.getElementById('inv-revenue').value), years=parseInt(document.getElementById('inv-years').value);
+  if(isNaN(capex)||isNaN(costs)||isNaN(revenue)||isNaN(years)||years<1){alert('Compila tutti i campi numerici.');return;}
+  investments[idx].capex=capex; investments[idx].costs=costs; investments[idx].revenue=revenue; investments[idx].years=years; investments[idx].rate=getRate();
+  investments[idx].metrics=calcMetrics(investments[idx]);
+  for(var j=0;j<imprevisti.length;j++) if(imprevisti[j].invIdx===idx)imprevisti[j].invName=name;
+  renderImprevisti(); recalcAll();
+}
+function loadToForm(e,i){ e.stopPropagation(); var inv=investments[i]; document.getElementById('inv-name').value=inv.name; document.getElementById('inv-capex').value=inv.capex; document.getElementById('inv-costs').value=inv.costs; document.getElementById('inv-revenue').value=inv.revenue; document.getElementById('inv-years').value=inv.years; }
+function removeInvestment(e,i){
+  e.stopPropagation();
+  imprevisti=imprevisti.filter(function(imp){return imp.invIdx!==i;}).map(function(imp){return {invIdx:imp.invIdx>i?imp.invIdx-1:imp.invIdx,invName:imp.invName,value:imp.value,year:imp.year};});
+  investments.splice(i,1); investments.forEach(function(inv,j){inv.color=COLORS[j%COLORS.length];}); invCount=investments.length+1;
+  var ns=investments.length===0?null:Math.min(i,investments.length-1); updateImpSelect(); renderImprevisti(); selectInvestment(ns); renderCompareCharts();
+}
+function removeAll(){ investments=[]; imprevisti=[]; invCount=1; selectedIdx=null; document.getElementById('inv-name').value='Investimento 1'; updateImpSelect(); renderImprevisti(); renderList(); renderKPI(); renderNPVChart(); renderCompareCharts(); }
+function selectInvestment(idx){ selectedIdx=(idx!==null&&investments[idx])?idx:null; renderList();renderKPI();renderNPVChart(); }
+function toggleInvPanel(){ invPanelOpen=!invPanelOpen; document.getElementById('inv-panel-body').style.display=invPanelOpen?'':'none'; document.getElementById('inv-toggle-btn').textContent=invPanelOpen?'▲ Comprimi':'▼ Espandi'; }
+function renderList(){
+  var el=document.getElementById('inv-list');
+  if(!investments.length){el.innerHTML='<div class="empty-state">Nessun investimento caricato</div>';return;}
+  var h='';
+  for(var i=0;i<investments.length;i++){
+    var inv=investments[i], sel=selectedIdx===i?' selected':'';
+    h+='<div class="inv-item'+sel+'" onclick="selectInvestment('+i+')">'+'<div class="inv-dot" style="background:'+inv.color+'"></div>'+'<span class="inv-name">'+inv.name+'</span>'+'<span class="inv-meta">'+fmtCur(inv.capex)+' &nbsp;|&nbsp; '+inv.years+' anni &nbsp;|&nbsp; CF '+fmtCur(inv.revenue-inv.costs)+'/a</span>'+'<button class="secondary" onclick="loadToForm(event,'+i+')">Modifica</button>'+'<button class="danger" onclick="removeInvestment(event,'+i+')">Elimina</button>'+'</div>';
+  }
+  el.innerHTML=h;
+}
+
+/* ── IMPREVISTI ── */
+function updateImpSelect(){ var sel=document.getElementById('imp-inv'); if(!sel)return; var cur=sel.value; var h='<option value="">-- seleziona --</option>'; for(var i=0;i<investments.length;i++) h+='<option value="'+i+'">'+investments[i].name+'</option>'; sel.innerHTML=h; if(investments[parseInt(cur)])sel.value=cur; }
+function addImprevisto(){ var invIdx=parseInt(document.getElementById('imp-inv').value), value=parseFloat(document.getElementById('imp-value').value), year=parseInt(document.getElementById('imp-year').value); if(isNaN(invIdx)||!investments[invIdx]){alert('Seleziona un investimento.');return;} if(isNaN(value)||isNaN(year)||year<1){alert('Compila valore e anno.');return;} imprevisti.push({invIdx:invIdx,invName:investments[invIdx].name,value:value,year:year}); document.getElementById('imp-value').value=''; document.getElementById('imp-year').value=''; renderImprevisti(); recalcAll(); }
+function removeImprevisto(i){ imprevisti.splice(i,1); renderImprevisti(); recalcAll(); }
+function renderImprevisti(){ var el=document.getElementById('imp-list'); if(!imprevisti.length){el.innerHTML='';return;} var h=''; for(var i=0;i<imprevisti.length;i++){var imp=imprevisti[i],col=imp.value>=0?'var(--successo)':'var(--errore)',sign=imp.value>=0?'+':''; h+='<div class="imp-item"><span><strong>'+imp.invName+'</strong> &nbsp;–&nbsp; Anno '+imp.year+' &nbsp;–&nbsp; <span style="color:'+col+'">'+sign+fmtCur(imp.value)+'</span></span><button class="danger" onclick="removeImprevisto('+i+')">✕</button></div>';} el.innerHTML=h; }
+
+/* ── KPI TABLE ── */
+function renderKPI(){
+  var el=document.getElementById('kpi-area');
+  if(!investments.length){el.innerHTML='<div class="empty-state">Aggiungi investimenti per vedere gli indicatori</div>';return;}
+  var rows=[
+    {key:'capex', label:'CAPEX',        fmt:function(i){return fmtCur(i.capex);},                                      cls:function(){return '';}},
+    {key:'cf',    label:'CF annuale',   fmt:function(i){return fmtCur(i.revenue-i.costs);},                            cls:function(i){return(i.revenue-i.costs)>=0?'good':'bad';}},
+    {key:'durata',label:'Durata (anni)',fmt:function(i){return i.years;},                                               cls:function(){return '';}},
+    {key:'pbt',   label:'PBT (anni)',   fmt:function(i){return i.metrics.pbt!==null?i.metrics.pbt.toFixed(1).replace('.',','):'N/D';}, cls:function(){return '';}},
+    {key:'npv',   label:'NPV',          fmt:function(i){return fmtCur(i.metrics.npv);},                                cls:function(i){return i.metrics.npv>=0?'good':'bad';}},
+    {key:'irr',   label:'IRR',          fmt:function(i){return i.metrics.irr!==null?fmtPct(i.metrics.irr*100):'N/D';},cls:function(i){return i.metrics.irr&&i.metrics.irr>=0?'good':'bad';}},
+    {key:'mirr',  label:'MIRR',         fmt:function(i){return i.metrics.mirr!==null?fmtPct(i.metrics.mirr*100):'N/D';},cls:function(){return '';}},
+    {key:'roi',   label:'ROI',          fmt:function(i){return fmtPct(i.metrics.roi);},                                cls:function(i){return i.metrics.roi>=0?'good':'bad';}},
+    {key:'roiann',label:'ROI annuale',  fmt:function(i){return fmtPct(i.metrics.roiAnn);},                             cls:function(i){return i.metrics.roiAnn>=0?'good':'bad';}},
+    {key:'pi',    label:'PI',           fmt:function(i){return i.metrics.pi!==null?fmtX(i.metrics.pi):'N/D';},        cls:function(i){return i.metrics.pi&&i.metrics.pi>=1?'good':'bad';}},
+    {key:'dscr',  label:'DSCR',         fmt:function(i){return i.metrics.dscr!==null?i.metrics.dscr.toFixed(2).replace('.',','):'N/D';},cls:function(i){return i.metrics.dscr&&i.metrics.dscr>=1?'good':'bad';}}
+  ];
+  var h='<div class="kpi-table-wrap"><table class="kpi-table"><thead><tr><th style="text-align:left">Indicatore</th>';
+  for(var i=0;i<investments.length;i++) h+='<th><span style="display:inline-block;width:8px;height:8px;background:'+investments[i].color+';margin-right:4px"></span>'+investments[i].name+'</th>';
+  h+='</tr></thead><tbody>';
+  for(var r=0;r<rows.length;r++){
+    var row=rows[r]; h+='<tr><th class="row-hdr" onclick="showKPIInfo(\''+row.key+'\')" title="Info">'+row.label+'</th>';
+    for(var i=0;i<investments.length;i++) h+='<td class="'+row.cls(investments[i])+'">'+row.fmt(investments[i])+'</td>';
+    h+='</tr>';
+  }
+  h+='</tbody></table></div>'; el.innerHTML=h;
+}
+
+/* ── NPV LINE CHART ── */
+function npvZoomReset(){ npvYmin=null; npvYmax=null; }
+function renderNPVChart(){
+  if(charts.npv){charts.npv.destroy();charts.npv=null;}
+  var leg=document.getElementById('npv-legend'); leg.innerHTML='';
+  if(!investments.length)return;
+  var maxY=0; for(var i=0;i<investments.length;i++){ var my=Math.max(...investments[i].metrics.cumNPV); if(my>maxY)maxY=my; }
+  var minY=0; for(var i=0;i<investments.length;i++){ var mn=Math.min(...investments[i].metrics.cumNPV); if(mn<minY)minY=mn; }
+  var maxC=Math.max(...investments.map(function(i){return i.capex;}));
+  var yMax=npvYmax!==null?npvYmax:Math.max(maxY*1.2,0);
+  var yMin=npvYmin!==null?npvYmin:Math.min(minY*1.2,-maxC*1.2,0);
+  var maxYrs=Math.max(...investments.map(function(i){return i.years;}));
+  var labels=[]; for(var t=0;t<=maxYrs;t++) labels.push(t===0?'Inizio':'Anno '+t);
+  var datasets=[];
+  for(var i=0;i<investments.length;i++){
+    var inv=investments[i], data=[];
+    for(var t=0;t<=maxYrs;t++) data.push(t<inv.metrics.cumNPV.length?Math.round(inv.metrics.cumNPV[t]):null);
+    var isSel=selectedIdx===i;
+    datasets.push({label:inv.name,data:data,borderColor:inv.color,backgroundColor:'transparent',borderWidth:isSel?3:1.5,pointRadius:4,pointHoverRadius:6,pointBackgroundColor:inv.color,tension:0.3,spanGaps:false,_llcr:inv.metrics.llcr,_years:inv.years});
+  }
+  if(!zeroLineRegistered){
+    Chart.register({id:'zeroLine',afterDraw:function(chart){if(chart.canvas.id!=='npvChart')return;var ctx=chart.ctx,x=chart.scales.x,y=chart.scales.y,z=y.getPixelForValue(0);ctx.save();ctx.beginPath();ctx.moveTo(x.left,z);ctx.lineTo(x.right,z);ctx.strokeStyle=PF.rgba(PF.testo(),.45);ctx.lineWidth=1;ctx.setLineDash([4,3]);ctx.stroke();ctx.restore();}});
+    zeroLineRegistered=true;
+  }
+  charts.npv=new Chart(document.getElementById('npvChart'),{type:'line',data:{labels:labels,datasets:datasets},options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},plugins:{legend:{display:false},tooltip:{callbacks:{label:function(ctx){var ds=ctx.dataset,t=ctx.dataIndex,v=ctx.parsed.y;if(v===null)return null;var s=ds.label+': '+fmtCur(v);if(ds._llcr&&t>0&&t<=ds._years&&ds._llcr[t]!==null)s+='  |  LLCR: '+ds._llcr[t].toFixed(2).replace('.',',')+'x';return s;}}}},scales:{x:{grid:{color:PF.griglia(),lineWidth:0.8},ticks:{font:{size:11},maxRotation:45,autoSkip:false}},y:{min:yMin,max:yMax,grid:{color:PF.griglia()},ticks:{callback:function(v){return fmtCur(v);}}}}}});
+  var cvs=document.getElementById('npvChart');
+  cvs.onwheel=null;
+  cvs.addEventListener('wheel',function(e){e.preventDefault();var chart=charts.npv;if(!chart)return;var sy=chart.scales.y,cMin=sy.min,cMax=sy.max,rng=cMax-cMin,fac=e.deltaY<0?0.85:1.18,mid=(cMin+cMax)/2,nr=rng*fac;npvYmin=mid-nr/2;npvYmax=mid+nr/2;chart.options.scales.y.min=npvYmin;chart.options.scales.y.max=npvYmax;chart.update('none');},{passive:false});
+  var lh=''; for(var i=0;i<investments.length;i++){var isSel=selectedIdx===i;lh+='<span style="display:flex;align-items:center;gap:4px"><span style="display:inline-block;width:20px;height:'+(isSel?3:2)+'px;background:'+investments[i].color+';border-radius:1px"></span><span style="font-weight:'+(isSel?600:400)+'">'+investments[i].name+'</span></span>';} leg.innerHTML=lh;
+}
+
+/* ── COMPARE CHARTS ── */
+function destroyChart(k){if(charts[k]){charts[k].destroy();charts[k]=null;}}
+function renderCompareCharts(){
+  ['npvbar','roi','roiann','irr'].forEach(destroyChart);
+  if(!investments.length)return;
+  var labels=investments.map(function(i){return i.name;}), bg=investments.map(function(i){return i.color;});
+  var barH=Math.max(32,investments.length*36);
+  function mkOpts(title,xfmt,ttfmt){return {indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},title:{display:true,text:title,font:{size:13,weight:'500'},color:PF.testo(),padding:{bottom:6}},tooltip:{callbacks:{label:function(c){return ttfmt(c.raw);}}}},scales:{x:{ticks:{callback:xfmt},grid:{color:PF.griglia()}},y:{grid:{display:false},ticks:{font:{size:11}}}}};}
+  function setH(id){var el=document.getElementById(id);if(el)el.parentElement.style.height=(barH+60)+'px';}
+  ['npvBarChart','roiChart','roiAnnChart','irrChart'].forEach(setH);
+  charts.npvbar=new Chart(document.getElementById('npvBarChart'),{type:'bar',data:{labels:labels,datasets:[{data:investments.map(function(i){return Math.round(i.metrics.npv);}),backgroundColor:bg,borderColor:bg,borderWidth:1}]},options:mkOpts('NPV (€)',function(v){return fmtCur(v);},function(v){return fmtCur(v);})});
+  charts.roi=new Chart(document.getElementById('roiChart'),{type:'bar',data:{labels:labels,datasets:[{data:investments.map(function(i){return parseFloat(i.metrics.roi.toFixed(1));}),backgroundColor:bg,borderColor:bg,borderWidth:1}]},options:mkOpts('ROI totale (%)',function(v){return v.toFixed(0)+' %';},function(v){return v.toFixed(1).replace('.',',')+' %';})});
+  charts.roiann=new Chart(document.getElementById('roiAnnChart'),{type:'bar',data:{labels:labels,datasets:[{data:investments.map(function(i){return parseFloat(i.metrics.roiAnn.toFixed(1));}),backgroundColor:bg,borderColor:bg,borderWidth:1}]},options:mkOpts('ROI annuale (%)',function(v){return v.toFixed(0)+' %';},function(v){return v.toFixed(1).replace('.',',')+' %';})});
+  charts.irr=new Chart(document.getElementById('irrChart'),{type:'bar',data:{labels:labels,datasets:[{data:investments.map(function(i){return i.metrics.irr!==null?parseFloat((i.metrics.irr*100).toFixed(1)):null;}),backgroundColor:bg,borderColor:bg,borderWidth:1}]},options:mkOpts('IRR (%)',function(v){return v!==null?v.toFixed(1).replace('.',',')+' %':'';},function(v){return v!==null?v.toFixed(1).replace('.',',')+' %':'N/D';})});
+}
+
+/* ── BILOG ── */
+function renderBilog(){
+  var wrap=document.getElementById('bilog-wrap');
+  var cvs=document.getElementById('bilogChart');
+  var leg=document.getElementById('bilog-legend');
+  leg.innerHTML='';
+
+  var SZ=600;
+  wrap.style.width=SZ+'px'; wrap.style.height=SZ+'px';
+  cvs.width=SZ; cvs.height=SZ;
+  cvs.style.position='absolute'; cvs.style.top='0'; cvs.style.left='0';
+
+  var PAD={t:16,r:16,b:50,l:66};
+  var PW=SZ-PAD.l-PAD.r, PH=SZ-PAD.t-PAD.b;
+
+  function drawAll(){
+    var x0=BLZ.x0,x1=BLZ.x1,y0=BLZ.y0,y1=BLZ.y1;
+    var lx0=Math.log10(x0),lx1=Math.log10(x1),ly0=Math.log10(y0),ly1=Math.log10(y1);
+    function cx(v){return PAD.l+(Math.log10(v)-lx0)/(lx1-lx0)*PW;}
+    function cy(v){return PAD.t+PH-(Math.log10(v)-ly0)/(ly1-ly0)*PH;}
+    var ctx=cvs.getContext('2d');
+    ctx.clearRect(0,0,SZ,SZ);
+    ctx.save(); ctx.beginPath(); ctx.rect(PAD.l,PAD.t,PW,PH); ctx.clip();
+    /* grid */
+    function gridAxis(mn,mx,isX){
+      var lo=Math.floor(Math.log10(mn)),hi=Math.ceil(Math.log10(mx));
+      for(var e=lo;e<=hi;e++) for(var m=1;m<=9;m++){
+        var v=m*Math.pow(10,e); if(v<mn||v>mx)continue;
+        ctx.beginPath(); ctx.strokeStyle=m===1?PF.rgba(PF.testo(),.28):PF.rgba(PF.testo(),.09); ctx.lineWidth=m===1?0.8:0.5;
+        if(isX){var p=cx(v);ctx.moveTo(p,PAD.t);ctx.lineTo(p,PAD.t+PH);}
+        else   {var p=cy(v);ctx.moveTo(PAD.l,p);ctx.lineTo(PAD.l+PW,p);}
+        ctx.stroke();
+      }
+    }
+    gridAxis(x0,x1,true); gridAxis(y0,y1,false);
+    /* ref lines */
+    function refLine(k,color,dash){
+      ctx.save(); ctx.strokeStyle=color; ctx.lineWidth=1; ctx.setLineDash(dash||[]);
+      ctx.beginPath(); var first=true;
+      for(var s=0;s<=400;s++){
+        var xv=Math.pow(10,lx0+s/400*(lx1-lx0)), yv=xv/k;
+        if(yv<y0*0.01||yv>y1*100){first=true;continue;}
+        var ppx=cx(xv),ppy=cy(Math.max(y0*0.5,Math.min(y1*2,yv)));
+        if(first){ctx.moveTo(ppx,ppy);first=false;}else ctx.lineTo(ppx,ppy);
+      }
+      ctx.stroke(); ctx.restore();
+    }
+    refLine(1,PF.testo(),[]); refLine(10,PF.testo(),[5,4]);
+    var pbtK=parseFloat(document.getElementById('bilog-pbt').value);
+    if(!isNaN(pbtK)&&pbtK>0) refLine(pbtK,PF.c('--primario'),[6,3]);
+    /* bubbles */
+    var valid=[];
+    for(var i=0;i<investments.length;i++){var inv=investments[i],cf=inv.revenue-inv.costs;if(inv.capex>0&&cf>0)valid.push({inv:inv,cf:cf});}
+    var maxIRR=0; for(var i=0;i<valid.length;i++){var irr=valid[i].inv.metrics.irr;if(irr&&irr>maxIRR)maxIRR=irr;}
+    cvs._bubbles=[];
+    for(var i=0;i<valid.length;i++){
+      var d=valid[i], irr=d.inv.metrics.irr;
+      var r=(irr&&maxIRR>0)?4+(irr/maxIRR)*9:4;
+      if(d.inv.capex<x0||d.inv.capex>x1||d.cf<y0||d.cf>y1)continue;
+      var bx=cx(d.inv.capex),by=cy(d.cf);
+      ctx.beginPath();ctx.arc(bx,by,r,0,Math.PI*2);
+      ctx.fillStyle=d.inv.color+'cc';ctx.fill();
+      ctx.strokeStyle=d.inv.color;ctx.lineWidth=1.5;ctx.stroke();
+      cvs._bubbles.push({inv:d.inv,bx:bx,by:by,r:r});
+    }
+    ctx.restore();
+    /* border */
+    ctx.strokeStyle=PF.testo();ctx.lineWidth=1;ctx.setLineDash([]);
+    ctx.strokeRect(PAD.l,PAD.t,PW,PH);
+    /* ticks */
+    function fmtT(v){return v>=1e6?(v/1e6)+'M':v>=1e3?(v/1e3)+'K':''+v;}
+    ctx.fillStyle=PF.tenue();ctx.font='10px Segoe UI,sans-serif';ctx.textAlign='center';
+    for(var e=Math.ceil(lx0);e<=Math.floor(lx1);e++){var v=Math.pow(10,e);ctx.fillText(fmtT(v),cx(v),PAD.t+PH+14);}
+    ctx.fillStyle=PF.testo();ctx.font='11px Segoe UI,sans-serif';ctx.fillText('CAPEX (€)',PAD.l+PW/2,SZ-4);
+    ctx.textAlign='right';ctx.fillStyle=PF.tenue();ctx.font='10px Segoe UI,sans-serif';
+    for(var e=Math.ceil(ly0);e<=Math.floor(ly1);e++){var v=Math.pow(10,e);ctx.fillText(fmtT(v),PAD.l-5,cy(v)+4);}
+    ctx.save();ctx.fillStyle=PF.testo();ctx.font='11px Segoe UI,sans-serif';ctx.textAlign='center';
+    ctx.translate(12,PAD.t+PH/2);ctx.rotate(-Math.PI/2);ctx.fillText('CF annuale (€)',0,0);ctx.restore();
+    /* legend */
+    var lh='';
+    for(var i=0;i<valid.length;i++) lh+='<span style="display:flex;align-items:center;gap:4px"><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:'+valid[i].inv.color+'"></span>'+valid[i].inv.name+'</span>';
+    lh+='<span style="display:flex;align-items:center;gap:4px"><span style="display:inline-block;width:18px;border-top:1px solid var(--inchiostro)"></span>PBT 1a</span>';
+    lh+='<span style="display:flex;align-items:center;gap:4px"><span style="display:inline-block;width:18px;border-top:1px dashed var(--inchiostro)"></span>PBT 10a</span>';
+    if(!isNaN(pbtK)&&pbtK>0) lh+='<span style="display:flex;align-items:center;gap:4px"><span style="display:inline-block;width:18px;border-top:1px solid var(--primario)"></span>PBT '+pbtK+'a</span>';
+    leg.innerHTML=lh;
+  }
+
+  drawAll();
+
+  if(!cvs._eb){
+    cvs._eb=true;
+    var tip=document.createElement('div');
+    tip.style.cssText='position:fixed;background:var(--foglio);color:var(--inchiostro);border:1px solid var(--linea);border-radius:4px;box-shadow:var(--ombra-2);padding:5px 9px;font-size:12px;pointer-events:none;display:none;z-index:9999;line-height:1.6';
+    document.body.appendChild(tip);
+    cvs.addEventListener('mousemove',function(e){
+      var rect=cvs.getBoundingClientRect(),sx=cvs.width/rect.width,sy=cvs.height/rect.height;
+      var mx=(e.clientX-rect.left)*sx,my=(e.clientY-rect.top)*sy,hit=null;
+      if(cvs._bubbles)for(var i=0;i<cvs._bubbles.length;i++){var b=cvs._bubbles[i];if((mx-b.bx)*(mx-b.bx)+(my-b.by)*(my-b.by)<=(b.r+4)*(b.r+4)){hit=b;break;}}
+      if(hit){var irr=hit.inv.metrics.irr;tip.innerHTML='<strong>'+hit.inv.name+'</strong><br>ROI: '+fmtPct(hit.inv.metrics.roi)+'<br>IRR: '+(irr!==null?fmtPct(irr*100):'N/D');tip.style.display='block';tip.style.left=(e.clientX+14)+'px';tip.style.top=(e.clientY-10)+'px';}
+      else tip.style.display='none';
+    });
+    cvs.addEventListener('mouseleave',function(){tip.style.display='none';});
+    cvs.addEventListener('wheel',function(e){
+      e.preventDefault();
+      var fac=e.deltaY<0?0.72:1.38;
+      var rect=cvs.getBoundingClientRect(),sx=cvs.width/rect.width,sy=cvs.height/rect.height;
+      var mx=(e.clientX-rect.left)*sx,my=(e.clientY-rect.top)*sy;
+      var PAD2={t:16,r:16,b:50,l:66};
+      var pw=SZ-PAD2.l-PAD2.r,ph=SZ-PAD2.t-PAD2.b;
+      var mxF=Math.max(0,Math.min(1,(mx-PAD2.l)/pw));
+      var myF=Math.max(0,Math.min(1,(my-PAD2.t)/ph));
+      var lx0=Math.log10(BLZ.x0),lx1=Math.log10(BLZ.x1);
+      var ly0=Math.log10(BLZ.y0),ly1=Math.log10(BLZ.y1);
+      var lxM=lx0+mxF*(lx1-lx0),lyM=ly1-myF*(ly1-ly0);
+      var dxL=(lx1-lx0)*fac,dyL=(ly1-ly0)*fac;
+      var nlx0=lxM-mxF*dxL,nlx1=lxM+(1-mxF)*dxL;
+      var nly0=lyM-(1-myF)*dyL,nly1=lyM+myF*dyL;
+      if(Math.pow(10,nlx0)<1){var sh=-nlx0;nlx0+=sh;nlx1+=sh;}
+      if(Math.pow(10,nly0)<0.1){var sh=Math.log10(0.1)-nly0;nly0+=sh;nly1+=sh;}
+      BLZ.x0=Math.pow(10,nlx0);BLZ.x1=Math.pow(10,nlx1);
+      BLZ.y0=Math.pow(10,nly0);BLZ.y1=Math.pow(10,nly1);
+      drawAll();
+    },{passive:false});
+  }
+}
+
+/* ── CSV ── */
+function saveCSV(){
+  if(!investments.length){alert('Nessun investimento da esportare.');return;}
+  var rows=['nome;capex;costi_annuali;ricavi_annuali;durata_anni;tasso_sconto'];
+  for(var i=0;i<investments.length;i++){var inv=investments[i];rows.push([inv.name,inv.capex,inv.costs,inv.revenue,inv.years,inv.rate].join(';'));}
+  var blob=new Blob(['\uFEFF'+rows.join('\r\n')],{type:'text/csv;charset=utf-8;'});
+  var url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='playfair_investimenti.csv';document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(url);
+}
+function loadCSV(){
+  var file=document.getElementById('csv-file').files[0];
+  var msg=document.getElementById('csv-msg');
+  if(!file){msg.style.color='var(--errore)';msg.textContent='Seleziona un file CSV prima.';return;}
+  var reader=new FileReader();
+  reader.onload=function(e){
+    try{
+      var lines=e.target.result.split(/\r?\n/).filter(function(l){return l.trim();});
+      if(lines.length<2){msg.textContent='File vuoto.';msg.style.color='var(--errore)';return;}
+      var sep=lines[0].indexOf(';')>-1?';':',';
+      var headers=lines[0].split(sep).map(function(h){return h.trim().toLowerCase();});
+      var req=['nome','capex','costi_annuali','ricavi_annuali','durata_anni'];
+      var missing=req.filter(function(r){return headers.indexOf(r)===-1;});
+      if(missing.length){msg.style.color='var(--errore)';msg.textContent='Colonne mancanti: '+missing.join(', ');return;}
+      investments=[];imprevisti=[];invCount=1;selectedIdx=null;
+      var added=0,lastIdx=null;
+      for(var i=1;i<lines.length;i++){
+        var vals=lines[i].split(sep).map(function(v){return v.trim();});if(vals.length<req.length)continue;
+        function get(k){return vals[headers.indexOf(k)];}
+        var rateRaw=headers.indexOf('tasso_sconto')>-1?parseFloat(get('tasso_sconto')):NaN;
+        var row={name:get('nome'),capex:parseFloat(get('capex')),costs:parseFloat(get('costi_annuali')),revenue:parseFloat(get('ricavi_annuali')),years:parseInt(get('durata_anni')),rate:isNaN(rateRaw)?getRate():rateRaw};
+        if(!row.name||isNaN(row.capex)||isNaN(row.costs)||isNaN(row.revenue)||isNaN(row.years))continue;
+        lastIdx=investments.length; row.color=COLORS[lastIdx%COLORS.length]; row.metrics=null;
+        investments.push(row); investments[lastIdx].metrics=calcMetrics(investments[lastIdx]); added++;
+      }
+      msg.style.color=added>0?'var(--successo)':'var(--errore)';
+      msg.textContent=added>0?'Caricati '+added+' investimenti.':'Nessuna riga valida.';
+      if(added>0){updateImpSelect();selectInvestment(lastIdx);renderCompareCharts();}
+    }catch(ex){msg.style.color='var(--errore)';msg.textContent='Errore: '+ex.message;}
+  };
+  reader.readAsText(file);
+}
+
+/* ── TABS ── */
+function switchTab(el,tabId){
+  document.querySelectorAll('.tab').forEach(function(t){t.classList.remove('active');});
+  document.querySelectorAll('.tab-content').forEach(function(t){t.classList.remove('active');});
+  el.classList.add('active');document.getElementById(tabId).classList.add('active');
+  if(tabId==='tab-npv')renderNPVChart();
+  if(tabId==='tab-compare')renderCompareCharts();
+  if(tabId==='tab-kpi')renderKPI();
+  if(tabId==='tab-bilog')renderBilog();
+}
+
+/* ── integrazione nel sito: ridisegno al cambio di tema ── */
+PF.alCambioTema(function(){
+  // solo ridisegno: i colori seguono il tema, i calcoli (e i tassi letti dal CSV) restano invariati
+  investments.forEach(function(inv,j){inv.color=COLORS[j%COLORS.length];});
+  renderList(); renderKPI(); renderNPVChart(); renderCompareCharts(); renderImprevisti();
+  if(document.getElementById('tab-bilog').classList.contains('active')) renderBilog();
+});
+</script>
+<script src="assets/sito.js" defer></script>
+</body>
+</html>

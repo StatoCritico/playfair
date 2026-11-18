@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Playfair-E — Consumi elettrici · Playfair</title>
+<meta name="description" content="Playfair-E: analisi della curva di carico elettrica oraria con fasce F1/F2/F3, curva cumulata, ore equivalenti, carpet plot e box plot.">
+<link rel="icon" href="img/favicon.svg" type="image/svg+xml">
+<script>try{var t=localStorage.getItem('pf-tema');if(t)document.documentElement.dataset.theme=t;}catch(e){}</script>
+<link rel="stylesheet" href="assets/tema.css">
+<link rel="stylesheet" href="assets/sito.css">
+<link rel="stylesheet" href="assets/strumenti.css">
+<style>
+.pf-app.e .ch2{position:relative;width:100%;height:340px}
+.pf-app.e .carpet-inner{display:flex;gap:6px}
+.pf-app.e .carpet-yl{display:flex;flex-direction:column;font-size:9px;color:var(--tenue);text-align:right;flex-shrink:0;width:30px}
+.pf-app.e .carpet-cw{flex:1;min-width:0}
+.pf-app.e .carpet-cw canvas{display:block;width:100%;image-rendering:pixelated;cursor:pointer}
+.pf-app.e .carpet-leg{display:flex;align-items:center;gap:8px;margin-top:8px;padding-left:36px}
+.pf-app.e .carpet-leg canvas{height:12px;flex:1;border-radius:2px}
+.pf-app.e .carpet-leg span{font-size:12px;color:var(--tenue);white-space:nowrap}
+.pf-app.e .frow{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+.pf-app.e .fnodata{height:180px;grid-column:1/-1}
+.pf-app.e .slbl{font-size:13px;color:var(--tenue);white-space:nowrap}
+.pf-app.e .sval{font-size:14px;font-weight:600;white-space:nowrap;font-variant-numeric:tabular-nums}
+.pf-app.e .ref-grid{display:grid;grid-template-columns:100px 90px 80px 70px 110px 70px;align-items:center;gap:6px;margin-top:8px}
+.pf-app.e .ref-grid label{font-size:13px;color:var(--tenue);white-space:nowrap}
+.pf-app.e .hour-grid{display:grid;grid-template-columns:repeat(12,1fr);gap:4px;margin-top:10px}
+.pf-app.e .hbtn{height:24px;font-size:12px;border:1px solid var(--bordo);border-radius:4px;background:transparent;color:var(--inchiostro);cursor:pointer;padding:0}
+.pf-app.e .hbtn.on{background:var(--primario);border-color:var(--primario);color:var(--su-primario)}
+@media(max-width:700px){.pf-app.e .ref-grid{grid-template-columns:1fr 1fr}.pf-app.e .hour-grid{grid-template-columns:repeat(6,1fr)}}
+</style>
+</head>
+<body class="pf-pagina-strumento">
+<header class="pf-testata">
+  <a class="pf-marchio" href="index.html" aria-label="Playfair, home">Playfair<span class="pf-marchio-sub">.statocritico</span></a>
+  <button class="pf-menu-apri" aria-expanded="false" aria-controls="pf-menu">Menu</button>
+  <nav class="pf-menu" id="pf-menu" aria-label="Strumenti">
+    <a href="playfair-s.html" data-tip="Site — analisi del singolo sito: costi e consumi di elettricità, gas, calore e acqua">Playfair-S</a>
+    <a href="playfair-e.html" aria-current="page" data-tip="Electric — curve di carico elettriche quartorarie: profili, mappe orarie, picchi e base">Playfair-E</a>
+    <a href="playfair-t.html" data-tip="Thermal — consumi termici ed elettrici, simulazione di cogenerazione e valutazione economica">Playfair-T</a>
+    <a href="playfair-m.html" data-tip="Money — confronto di investimenti energetici: VAN, TIR, ROI, WACC e flussi di cassa">Playfair-M</a>
+    <a href="playfair-c.html" data-tip="Cusum — regressione, residui e carta CUSUM secondo ISO 50006">Playfair-C</a>
+    <a href="sankey.html" data-tip="Sankey — disegna diagrammi di flusso energetico a blocchi e verifica i bilanci">Sankey</a>
+    <a href="personaggi.html" data-tip="William Playfair e Matthew H. P. R. Sankey: chi erano">Personaggi</a>
+  </nav>
+  <button class="pf-tema" type="button" aria-label="Cambia tema chiaro/scuro">◐</button>
+</header>
+
+<main class="pf-strumento" id="contenuto">
+<section class="pf-intro" aria-labelledby="titolo-strumento">
+  <p class="pf-occhiello">Strumento · Electric</p>
+  <h1 id="titolo-strumento">Playfair-E <span class="pf-sotto">— consumi elettrici</span> <small>v0.99</small></h1>
+  <p class="pf-sommario">Analisi della curva di carico elettrica oraria: totale, media e picco del periodo, ripartizione nelle fasce F1/F2/F3, curva cumulata (curva di durata) con ore piene ed equivalenti, analisi multioraria, carpet plot e box plot per ora del giorno.</p>
+  <p class="pf-file"><b>File accettato:</b> un CSV orario come <code>1_curva_di_carico.csv</code>, separatore <code>;</code> o <code>,</code>, tre colonne: data (<code>gg/mm/aaaa</code>, anche con l’ora), ora da <code>1</code> a <code>24</code>, consumo in kWh (decimali con la virgola). Le colonne si riconoscono dai nomi <code>data</code>/<code>ora</code>/<code>kWh</code>; altrimenti si usano le prime tre (es. <code>DATA_MISURA;ORA;sito 1</code>).</p>
+  <details class="pf-come">
+    <summary>Come si usa</summary>
+    <ol>
+      <li>Trascina il file CSV in un punto qualsiasi della pagina, oppure sceglilo nel riquadro «Consumi elettrici».</li>
+      <li>Scegli Settimana, Mese o Anno; spostati con le frecce o con la rotella del mouse sopra i grafici.</li>
+      <li>Fai clic sulla curva di carico, sulla multioraria o sul carpet plot per ingrandire: anno → mese → settimana.</li>
+      <li>Imposta Minimo, Massimo e Riferimento per fissare la scala e tracciare una potenza di riferimento.</li>
+      <li>Nella curva cumulata, Riferimento 1 e 2 (es. due taglie di impianto) danno ore piene e ore equivalenti di funzionamento.</li>
+      <li>Nell’analisi multioraria accendi o spegni le singole ore con i pulsanti 1:00 … 24:00.</li>
+    </ol>
+  </details>
+  <div class="pf-intro-azioni"><button class="pf-bottone-piccolo" id="contactBtn" type="button" onclick="contactAuthor()">Contatta l’autore</button></div>
+</section>
+
+<div class="pf-app fam-b e">
+<div class="wrap">
+
+<div class="riquadro">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+    <span class="etichetta">Consumi elettrici</span>
+    <button class="obtn" onclick="toggleHelp()">Istruzioni</button>
+  </div>
+  <div id="helpBox" class="aiuto" style="display:none">Caricare un file .csv con data, ora (1-24) e consumo elettrico; i grafici si aggiornano automaticamente selezionando il periodo con le frecce, muovendo la rotella del mouse sopra i grafici oppure cliccando per ingrandire il periodo selezionato.</div>
+  <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+    <input type="file" id="csvFile" accept=".csv" aria-label="File CSV della curva di carico (es. 1_curva_di_carico.csv)">
+    <span style="font-size:12px;color:var(--color-text-tertiary)" id="fileStatus">Attesa file .csv — colonne: data, ora (1–24), kWh</span>
+  </div>
+</div>
+
+<div class="panel" id="panelPeriodo">
+  <div style="display:flex;align-items:center;gap:1.5rem;flex-wrap:wrap;margin-bottom:.875rem">
+    <span style="font-size:13px;font-weight:500;color:var(--color-text-secondary);white-space:nowrap">Periodo:</span>
+    <div style="display:flex;gap:1.25rem">
+      <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px">
+        <span id="radioWeek" onclick="setScale('week')" style="display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:50%;border:1.5px solid var(--bordo);background:var(--color-background-primary);cursor:pointer;flex-shrink:0"><span id="dotWeek" style="width:8px;height:8px;border-radius:50%;background:transparent;display:block"></span></span>
+        <span onclick="setScale('week')" style="cursor:pointer">Settimana</span>
+      </label>
+      <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px">
+        <span id="radioMonth" onclick="setScale('month')" style="display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:50%;border:1.5px solid var(--bordo);background:var(--color-background-primary);cursor:pointer;flex-shrink:0"><span id="dotMonth" style="width:8px;height:8px;border-radius:50%;background:transparent;display:block"></span></span>
+        <span onclick="setScale('month')" style="cursor:pointer">Mese</span>
+      </label>
+      <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px">
+        <span id="radioYear" onclick="setScale('year')" style="display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:50%;border:1.5px solid var(--primario);background:var(--color-background-primary);cursor:pointer;flex-shrink:0"><span id="dotYear" style="width:8px;height:8px;border-radius:50%;background:var(--primario);display:block"></span></span>
+        <span onclick="setScale('year')" style="cursor:pointer">Anno</span>
+      </label>
+    </div>
+    <div style="display:flex;align-items:center;border:1px solid var(--linea);border-radius:3px;overflow:hidden;margin-left:auto">
+      <button onclick="navigate(-1)" style="width:28px;height:26px;border:none;border-right:1px solid var(--linea);background:var(--color-background-secondary);cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0">
+        <svg width="10" height="10" viewBox="0 0 10 10"><polyline points="7,1 3,5 7,9" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+      <span id="periodLabel" style="font-size:12px;color:var(--color-text-primary);padding:0 10px;min-width:140px;text-align:center;background:var(--color-background-primary)">—</span>
+      <button onclick="navigate(1)" style="width:28px;height:26px;border:none;border-left:1px solid var(--linea);background:var(--color-background-secondary);cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0">
+        <svg width="10" height="10" viewBox="0 0 10 10"><polyline points="3,1 7,5 3,9" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+    </div>
+  </div>
+  <div class="stats">
+    <div class="stat"><div class="stat-label">Totale periodo</div><div class="stat-value" id="statTotal">—</div></div>
+    <div class="stat"><div class="stat-label">Media oraria</div><div class="stat-value" id="statAvg">—</div></div>
+    <div class="stat"><div class="stat-label">Picco massimo</div><div class="stat-value" id="statPeak">—</div></div>
+    <div class="stat"><div class="stat-label">Ore registrate</div><div class="stat-value" id="statCount">—</div></div>
+  </div>
+</div>
+
+<div class="panel">
+  <div class="ph">
+    <span class="ptitle">Fasce orarie</span>
+    <button class="obtn" onclick="togglePanel('fasce')">Comprimi</button>
+  </div>
+  <div class="frow">
+    <div class="fnodata" id="fasceNoData">Nessun dato caricato</div>
+    <div id="fasceBar" style="display:none;position:relative;height:180px"><canvas id="chartBar"></canvas></div>
+    <div id="fasceDough" style="display:none;position:relative;height:180px"><canvas id="chartDough"></canvas></div>
+  </div>
+</div>
+
+<div class="panel" id="panelLine">
+  <div class="ph">
+    <span class="ptitle">Curva di carico</span>
+    <button class="obtn" onclick="togglePanel('line')">Comprimi</button>
+  </div>
+  <div id="bodyLine">
+    <div class="ch" id="outerLine">
+      <div class="nodata" id="nodataLine">Nessun dato caricato</div>
+      <canvas id="chartLine" style="display:none;position:absolute;top:0;left:0;width:100%;height:100%;cursor:pointer"></canvas>
+    </div>
+    <div class="srow">
+      <label>Minimo</label><input type="number" id="yMin" class="ifield" step="any" oninput="applyLineScale()">
+      <label>Massimo</label><input type="number" id="yMax" class="ifield" step="any" oninput="applyLineScale()">
+      <button class="obtn" onclick="resetScale()">Reimposta scala</button>
+      <label>Riferimento</label><input type="number" id="refVal" class="ifield" step="any" placeholder="—" oninput="applyRef()">
+    </div>
+  </div>
+</div>
+
+<div class="panel" id="panelCum">
+  <div class="ph">
+    <span class="ptitle">Curva cumulata</span>
+    <button class="obtn" onclick="togglePanel('cum')">Comprimi</button>
+  </div>
+  <div id="bodyCum">
+    <div class="ch" id="outerCum" style="position:relative">
+      <div class="nodata" id="nodataCum">Nessun dato caricato</div>
+      <canvas id="chartCum" style="display:none;position:absolute;top:0;left:0;width:100%;height:100%"></canvas>
+      <canvas id="cumOverlay" style="display:none;position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none"></canvas>
+    </div>
+    <div class="srow">
+      <label>Minimo</label><input type="number" id="cumMin" class="ifield" step="any" oninput="applyCumScale()">
+      <button class="obtn" onclick="resetCumScale()">Reimposta scala</button>
+    </div>
+    <div class="ref-grid" style="margin-top:10px">
+      <label>Riferimento 1</label>
+      <input type="number" id="refVal2" class="ifield" step="any" placeholder="—" oninput="applyRef2()">
+      <span class="slbl">Ore piene:</span><span class="sval" id="oreEq">—</span>
+      <span class="slbl">Ore equivalenti:</span><span class="sval" id="oreEquiv">—</span>
+    </div>
+    <div class="ref-grid">
+      <label>Riferimento 2</label>
+      <input type="number" id="refVal3" class="ifield" step="any" placeholder="—" oninput="applyRef3()">
+      <span class="slbl">Ore piene:</span><span class="sval" id="oreEq2">—</span>
+      <span class="slbl">Ore equivalenti:</span><span class="sval" id="oreEquiv2">—</span>
+    </div>
+  </div>
+</div>
+
+<div class="panel" id="panelMulti">
+  <div class="ph">
+    <span class="ptitle">Analisi multioraria</span>
+    <button class="obtn" onclick="togglePanel('multi')">Comprimi</button>
+  </div>
+  <div id="bodyMulti">
+    <div class="ch" id="outerMulti">
+      <div class="nodata" id="nodataMulti">Nessun dato caricato</div>
+      <canvas id="chartMulti" style="display:none;position:absolute;top:0;left:0;width:100%;height:100%"></canvas>
+    </div>
+    <div class="srow" style="margin-top:10px">
+      <button class="obtn" onclick="setAllHours(true)">Accendi tutto</button>
+      <button class="obtn" onclick="setAllHours(false)">Spegni tutto</button>
+    </div>
+    <div class="hour-grid" id="hourGrid"></div>
+  </div>
+</div>
+
+<div class="panel" id="panelCarpet">
+  <div class="ph">
+    <span class="ptitle">Carpet plot</span>
+    <button class="obtn" onclick="togglePanel('carpet')">Comprimi</button>
+  </div>
+  <div id="bodyCarpet">
+    <div id="carpetNoData" style="display:flex;align-items:center;justify-content:center;height:160px;font-size:13px;color:var(--color-text-tertiary);border:1px dashed var(--bordo);border-radius:4px">Nessun dato caricato</div>
+    <div id="carpetViz" style="display:none">
+      <div class="carpet-inner">
+        <div class="carpet-yl" id="yLabels"></div>
+        <div class="carpet-cw"><canvas id="carpetCanvas"></canvas></div>
+      </div>
+      <div class="carpet-leg">
+        <span id="legMin">0 kWh</span><canvas id="legBar"></canvas><span id="legMax">—</span>
+      </div>
+      <div class="srow">
+        <label>Minimo</label><input type="number" id="cMin" class="ifield" step="any" oninput="applyCarpetScale()">
+        <label>Massimo</label><input type="number" id="cMax" class="ifield" step="any" oninput="applyCarpetScale()">
+        <button class="obtn" onclick="resetScale()">Reimposta scala</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="panel" id="panelBox">
+  <div class="ph">
+    <span class="ptitle">Box plot per fascia oraria</span>
+    <button class="obtn" onclick="togglePanel('box')">Comprimi</button>
+  </div>
+  <div id="bodyBox">
+    <div class="ch2" id="outerBox">
+      <div class="nodata" id="nodataBox">Nessun dato caricato</div>
+      <canvas id="chartBox" style="display:none;position:absolute;top:0;left:0;width:100%;height:100%"></canvas>
+    </div>
+  </div>
+</div>
+
+</div>
+</div>
+</main>
+
+<footer class="pf-piede">
+  <p>Playfair · un progetto di <a href="https://statocritico.it">Stato Critico</a> · <a href="guida-rapida.pdf">Guida rapida</a> · Immagini storiche: pubblico dominio (Wikimedia Commons)</p>
+  <p>I dati caricati restano nel browser: nulla viene inviato a server.</p>
+</footer>
+
+<script src="assets/vendor/chart.umd.js"></script>
+<script src="assets/vendor/chartjs-plugin-annotation.min.js"></script>
+<script src="assets/vendor/papaparse.min.js"></script>
+<script src="assets/strumenti.js"></script>
+<script>
+var rows=[], scale='year', offset=0, autoScale=true;
+var lastPeak=0, lastMin=0, lastMap={}, lastB=null, lastSorted=[], lastCumAutoMin=0;
+var cLine=null, cCum=null, cBar=null, cDough=null, cBox=null, cMulti=null;
+var FC=PF.tavolozza({F1:['--serie-2','#378ADD'],F2:['--serie-3','#E09B1A'],F3:['--serie-5','#3BA878']});
+var PAL=PF.tavolozza({el:['--flusso-el','#378ADD'],rif:['--serie-2','#378ADD'],media:['--serie-1','#E09B1A'],ref2:['--segno','#7c3aed'],ink:['--inchiostro','#000000'],foglio:['--foglio','#ffffff']});
+var hourActive=[];
+for(var i=0;i<24;i++) hourActive.push(true);
+
+// palette 24 colori distinti
+var HPAL=['#e6194b','#3cb44b','#ffe119','#4363d8','#f58231','#911eb4','#42d4f4','#f032e6',
+          '#bfef45','#fabed4','#469990','#dcbeff','#9A6324','#fffac8','#800000','#aaffc3',
+          '#808000','#ffd8b1','#6f7dff','#a9a9a9','#8c8c8c','#c08552','#e6beff','#17becf'];
+
+function fmt(v){return Math.round(v).toLocaleString('it-IT');}
+/* tema del sito (data-theme su <html>) invece del tema di sistema; colori da tema.css */
+function isDark(){return PF.scuroAttivo();}
+function tickCol(){return PF.tenue();}
+function gridCol(){return PF.griglia();}
+
+function fascia(date,h){var dow=date.getDay();if(dow>=1&&dow<=5){if(h>=8&&h<=18)return 'F1';if(h===7||(h>=19&&h<=22))return 'F2';return 'F3';}if(dow===6)return(h>=7&&h<=22)?'F2':'F3';return 'F3';}
+function parseDate(s){if(!s)return null;s=String(s).trim();var m=s.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})/);if(m)return new Date(+m[3],+m[2]-1,+m[1]);m=s.match(/^(\d{4})[\/\-](\d{2})[\/\-](\d{2})/);if(m)return new Date(+m[1],+m[2]-1,+m[3]);var d=new Date(s);return isNaN(d)?null:new Date(d.getFullYear(),d.getMonth(),d.getDate());}
+function dk(d){return d.getFullYear()*10000+(d.getMonth()+1)*100+d.getDate();}
+
+// collapse panels
+var panelState={fasce:true,line:true,cum:true,multi:true,carpet:true,box:true};
+function togglePanel(id){
+  panelState[id]=!panelState[id];
+  var body=document.getElementById('body'+id.charAt(0).toUpperCase()+id.slice(1));
+  if(!body&&id==='fasce'){
+    // fasce has special structure
+    var bar=document.getElementById('fasceBar'),dough=document.getElementById('fasceDough'),nodata=document.getElementById('fasceNoData');
+    var show=panelState[id];
+    if(bar.style.display!=='none'||nodata.style.display!=='none'){bar.style.display=show?'block':'none';dough.style.display=show?'block':'none';}
+    nodata.style.display=(show&&bar.style.display==='none')?'flex':'none';
+    document.querySelector('#panelLine .ph .obtn, [onclick="togglePanel(\'fasce\')"]');
+  } else if(body){
+    body.style.display=panelState[id]?'block':'none';
+  }
+  // update button text
+  var btns=document.querySelectorAll('[onclick="togglePanel(\''+id+'\')"]');
+  for(var i=0;i<btns.length;i++) btns[i].textContent=panelState[id]?'Comprimi':'Espandi';
+  if(id==='cum'&&panelState[id]) setTimeout(drawCumOverlay,50);
+  if(id==='carpet'&&panelState[id]&&lastB&&lastMap) setTimeout(function(){var cm=getCM();renderCarpet(lastB,lastMap,cm.cMin,cm.cMax);},50);
+  if(id==='multi'&&panelState[id]&&cMulti) cMulti.resize();
+}
+
+// hour grid
+function buildHourGrid(){
+  var g=document.getElementById('hourGrid'); g.innerHTML='';
+  for(var h=1;h<=24;h++){
+    (function(hh){
+      var b=document.createElement('button');
+      b.className='hbtn on'; b.textContent=hh+':00'; b.id='hbtn'+hh;
+      b.onclick=function(){hourActive[hh-1]=!hourActive[hh-1];b.className='hbtn'+(hourActive[hh-1]?' on':'');updateMultiVisibility();};
+      g.appendChild(b);
+    })(h);
+  }
+}
+function setAllHours(on){for(var i=0;i<24;i++){hourActive[i]=on;var b=document.getElementById('hbtn'+(i+1));if(b)b.className='hbtn'+(on?' on':'');}updateMultiVisibility();}
+function updateMultiVisibility(){if(!cMulti)return;for(var i=0;i<24;i++){var ds=cMulti.data.datasets[i];if(ds){ds.hidden=!hourActive[i];}}cMulti.update('none');}
+buildHourGrid();
+
+document.getElementById('csvFile').addEventListener('change',function(e){
+  var f=e.target.files[0];if(!f)return;
+  document.getElementById('fileStatus').textContent='Parsing in corso…';
+  Papa.parse(f,{header:true,skipEmptyLines:true,dynamicTyping:false,delimiter:'',complete:function(res){
+    var raw=res.data;if(!raw.length)return;
+    var keys=Object.keys(raw[0]);
+    var dK=keys.find(function(k){return /^data$/i.test(k.trim())||/^date$/i.test(k.trim());})||keys[0];
+    var hK=keys.find(function(k){return /^ora$/i.test(k.trim())||/^hour$/i.test(k.trim());})||keys[1];
+    var vK=keys.find(function(k){return /kwh/i.test(k.trim())||/energy/i.test(k.trim());})||keys[2];
+    var parsed=[],errs=0;
+    for(var i=0;i<raw.length;i++){var r=raw[i];var d=parseDate(r[dK]);var h=parseInt(String(r[hK]).trim(),10);var v=parseFloat(String(r[vK]).trim().replace(/\./g,'').replace(',','.'));if(!d||isNaN(h)||isNaN(v)||h<1||h>24){errs++;continue;}parsed.push({d:d,dk:dk(d),h:h,v:v,f:fascia(d,h)});}
+    if(!parsed.length){document.getElementById('fileStatus').textContent='Nessun record valido.';return;}
+    rows=parsed;document.getElementById('fileStatus').textContent=rows.length+' record caricati'+(errs?' ('+errs+' ignorate)':'');
+    offset=0;autoScale=true;renderAll();
+  }});
+});
+
+function latestD(){return rows.reduce(function(m,r){return r.d>m?r.d:m;},rows[0].d);}
+function bounds(){var lat=latestD();if(scale==='week'){var b=new Date(lat),dow=b.getDay()===0?6:b.getDay()-1;b.setDate(b.getDate()-dow+offset*7);var e=new Date(b);e.setDate(e.getDate()+6);return{s:b,e:e};}if(scale==='month'){var y=lat.getFullYear(),mo=lat.getMonth()+offset;return{s:new Date(y,mo,1),e:new Date(y,mo+1,0)};}var y=lat.getFullYear()+offset;return{s:new Date(y,0,1),e:new Date(y,11,31)};}
+function fmtPeriod(b){if(scale==='year')return b.s.getFullYear().toString();if(scale==='month')return b.s.toLocaleDateString('it-IT',{month:'long',year:'numeric'});var o={day:'2-digit',month:'short'};return b.s.toLocaleDateString('it-IT',o)+' – '+b.e.toLocaleDateString('it-IT',{day:'2-digit',month:'short',year:'numeric'});}
+function dayList(b){var days=[],cur=new Date(b.s),end=dk(b.e);while(dk(cur)<=end){days.push(new Date(cur));cur.setDate(cur.getDate()+1);}return days;}
+function buildMap(b){var s0=dk(b.s),e0=dk(b.e),map={};for(var i=0;i<rows.length;i++){var r=rows[i];if(r.dk>=s0&&r.dk<=e0)map[r.dk+'_'+r.h]=r.v;}return map;}
+function buildSeries(b,map){var days=dayList(b),labels=[],data=[];for(var i=0;i<days.length;i++){var d=days[i],dkv=dk(d),dd=d.toLocaleDateString('it-IT',{day:'2-digit',month:'short'});for(var h=1;h<=24;h++){labels.push(dd+' '+h+':00');var v=map[dkv+'_'+h];data.push(v!==undefined?v:null);}}return{labels:labels,data:data};}
+
+function pct(s,p){var idx=(p/100)*(s.length-1),lo=Math.floor(idx),hi=Math.ceil(idx);return s[lo]+(s[hi]-s[lo])*(idx-lo);}
+function boxStats(arr){if(!arr.length)return null;var s=arr.slice().sort(function(a,b){return a-b;}),sum=0;for(var i=0;i<s.length;i++)sum+=s[i];return{min:s[0],q1:pct(s,25),med:pct(s,50),q3:pct(s,75),max:s[s.length-1],mean:sum/s.length};}
+function heatCol(t){var stops=[[0,[0,0,0]],[0.25,[0,0,120]],[0.5,[0,110,0]],[0.75,[210,210,0]],[1,[220,20,20]]];var i=0;while(i<stops.length-2&&t>stops[i+1][0])i++;var t0=stops[i][0],c0=stops[i][1],t1=stops[i+1][0],c1=stops[i+1][1],f=(t-t0)/(t1-t0);return[Math.round(c0[0]+f*(c1[0]-c0[0])),Math.round(c0[1]+f*(c1[1]-c0[1])),Math.round(c0[2]+f*(c1[2]-c0[2]))];}
+
+function getRef1(){var v=parseFloat(document.getElementById('refVal').value);return isNaN(v)?null:v;}
+function getRef2(){var v=parseFloat(document.getElementById('refVal2').value);return isNaN(v)?null:v;}
+function getRef3(){var v=parseFloat(document.getElementById('refVal3').value);return isNaN(v)?null:v;}
+
+function calcStats1(sorted,ref){if(ref===null||ref<=0)return{orePiene:null,oreEquiv:null};var op=0;for(var i=0;i<sorted.length;i++){if(sorted[i]>=ref)op++;else break;}var area=0;for(var i=0;i<sorted.length;i++)area+=Math.min(sorted[i],ref);return{orePiene:op,oreEquiv:area/ref};}
+
+function buildAnnotation(ref){if(ref===null)return{};return{annotations:{refLine:{type:'line',yMin:ref,yMax:ref,borderColor:PAL.ink,borderWidth:1.5}}};}
+function buildDs1(ref){if(ref===null)return{label:'_r1',data:[],borderColor:'transparent',borderWidth:0,pointRadius:0,fill:false};var d=[];for(var i=0;i<lastSorted.length;i++)d.push(ref);return{label:'_r1',data:d,borderColor:PAL.ink,borderWidth:1.5,pointRadius:0,fill:false,tension:0,spanGaps:false};}
+function buildDs2(ref,ref3){if(ref===null||ref3===null)return{label:'_r2',data:[],borderColor:'transparent',borderWidth:0,pointRadius:0,fill:false};var tot=ref+ref3,d=[];for(var i=0;i<lastSorted.length;i++)d.push(tot);return{label:'_r2',data:d,borderColor:PAL.ref2,borderWidth:1.5,pointRadius:0,fill:false,tension:0,spanGaps:false};}
+
+function refreshLabels(){
+  var ref=getRef2(),ref3=getRef3();
+  var s1=calcStats1(lastSorted,ref);
+  document.getElementById('oreEq').textContent=s1.orePiene!==null?s1.orePiene.toLocaleString('it-IT'):'—';
+  document.getElementById('oreEquiv').textContent=s1.oreEquiv!==null?Math.round(s1.oreEquiv).toLocaleString('it-IT'):'—';
+  if(ref!==null&&ref3!==null){var tot=ref+ref3,op2=0;for(var i=0;i<lastSorted.length;i++){if(lastSorted[i]>=tot)op2++;else break;}var area2=0;for(var i=0;i<lastSorted.length;i++){var c=Math.min(ref3,lastSorted[i]-ref);if(c>0)area2+=c;}document.getElementById('oreEq2').textContent=op2.toLocaleString('it-IT');document.getElementById('oreEquiv2').textContent=Math.round(area2/ref3).toLocaleString('it-IT');}
+  else{document.getElementById('oreEq2').textContent='—';document.getElementById('oreEquiv2').textContent='—';}
+}
+
+function refreshCumLines(){if(!cCum)return;var ref=getRef2(),ref3=getRef3();cCum.data.datasets[1]=buildDs1(ref);cCum.data.datasets[2]=buildDs2(ref,ref3);cCum.update('none');setTimeout(drawCumOverlay,0);}
+
+function applyRef(){var v=document.getElementById('refVal').value;document.getElementById('refVal2').value=v;if(cLine){cLine.options.plugins.annotation=buildAnnotation(getRef1());cLine.update('none');}if(cMulti){cMulti.options.plugins.annotation=buildAnnotation(getRef1());cMulti.update('none');}refreshLabels();refreshCumLines();}
+function applyRef2(){var v=document.getElementById('refVal2').value;document.getElementById('refVal').value=v;if(cLine){cLine.options.plugins.annotation=buildAnnotation(getRef1());cLine.update('none');}if(cMulti){cMulti.options.plugins.annotation=buildAnnotation(getRef1());cMulti.update('none');}refreshLabels();refreshCumLines();}
+function applyRef3(){refreshLabels();refreshCumLines();}
+
+function drawCumOverlay(){
+  var overlay=document.getElementById('cumOverlay');
+  if(!cCum||lastSorted.length===0){overlay.style.display='none';return;}
+  overlay.style.display='block';
+  var container=document.getElementById('outerCum');overlay.width=container.offsetWidth;overlay.height=container.offsetHeight;
+  var ctx2=overlay.getContext('2d');ctx2.clearRect(0,0,overlay.width,overlay.height);
+  var xs=cCum.scales.x,ys=cCum.scales.y,ca=cCum.chartArea;if(!xs||!ys||!ca)return;
+  var yBottom=ca.bottom,n=lastSorted.length,ref=getRef2(),yRef=ref!==null?ys.getPixelForValue(ref):null;
+  ctx2.save();ctx2.beginPath();ctx2.rect(ca.left,ca.top,ca.right-ca.left,ca.bottom-ca.top);ctx2.clip();
+  for(var i=0;i<n;i++){var x0=xs.getPixelForValue(i),x1=xs.getPixelForValue(i+1),w=x1-x0,val=lastSorted[i],yCurve=ys.getPixelForValue(val);
+    ctx2.fillStyle=PF.rgba(PAL.el,0.18);ctx2.fillRect(x0,yCurve,w,yBottom-yCurve);
+    if(ref!==null){if(val>=ref){ctx2.fillStyle=PF.rgba(PAL.rif,0.45);ctx2.fillRect(x0,yRef,w,yBottom-yRef);ctx2.fillStyle=PF.rgba(PAL.rif,0.15);ctx2.fillRect(x0,yCurve,w,yRef-yCurve);}else{ctx2.fillStyle=PF.rgba(PAL.rif,0.45);ctx2.fillRect(x0,yCurve,w,yBottom-yCurve);ctx2.fillStyle=PF.rgba(PAL.rif,0.15);ctx2.fillRect(x0,yRef,w,yCurve-yRef);}}}
+  ctx2.restore();
+}
+
+function renderFasce(b){
+  var s0=dk(b.s),e0=dk(b.e),f={F1:0,F2:0,F3:0};
+  for(var i=0;i<rows.length;i++){var r=rows[i];if(r.dk>=s0&&r.dk<=e0)f[r.f]+=r.v;}
+  var total=f.F1+f.F2+f.F3;
+  if(total===0||!panelState.fasce){document.getElementById('fasceNoData').style.display='flex';document.getElementById('fasceBar').style.display='none';document.getElementById('fasceDough').style.display='none';return;}
+  document.getElementById('fasceNoData').style.display='none';document.getElementById('fasceBar').style.display='block';document.getElementById('fasceDough').style.display='block';
+  if(cBar){cBar.destroy();cBar=null;}
+  cBar=new Chart(document.getElementById('chartBar'),{type:'bar',data:{labels:['F1','F2','F3'],datasets:[{data:[f.F1,f.F2,f.F3],backgroundColor:[FC.F1,FC.F2,FC.F3],borderWidth:0,borderRadius:3}]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:function(ctx){return ' '+fmt(ctx.parsed.x)+' kWh';}}}},scales:{x:{ticks:{color:tickCol(),font:{size:10},callback:function(v){return fmt(v);}},grid:{color:gridCol()}},y:{ticks:{color:tickCol(),font:{size:12,weight:'500'}},grid:{display:false}}}}});
+  if(cDough){cDough.destroy();cDough=null;}
+  cDough=new Chart(document.getElementById('chartDough'),{type:'doughnut',data:{labels:['F1','F2','F3'],datasets:[{data:[f.F1,f.F2,f.F3],backgroundColor:[FC.F1,FC.F2,FC.F3],borderWidth:2,borderColor:PAL.foglio}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:true,position:'bottom',labels:{color:tickCol(),font:{size:11},padding:12,generateLabels:function(ch){var ds=ch.data.datasets[0];return ch.data.labels.map(function(lb,i){return{text:lb+'  '+PF.num(ds.data[i]/total*100,1)+'%',fillStyle:ds.backgroundColor[i],strokeStyle:ds.backgroundColor[i],lineWidth:0,index:i};});}}},tooltip:{callbacks:{label:function(ctx){return ' '+fmt(ctx.parsed)+' kWh ('+PF.num(ctx.parsed/total*100,1)+'%)';}}}}}});
+}
+
+function renderLine(labels,data,yMin,yMax){
+  document.getElementById('nodataLine').style.display='none';document.getElementById('chartLine').style.display='block';
+  if(cLine){cLine.destroy();cLine=null;}
+  cLine=new Chart(document.getElementById('chartLine'),{type:'line',data:{labels:labels,datasets:[{label:'kWh',data:data,borderColor:PAL.el,backgroundColor:PF.rgba(PAL.el,isDark()?0.12:0.08),borderWidth:1.5,pointRadius:labels.length>100?0:2,pointHoverRadius:4,fill:true,tension:0.2,spanGaps:false}]},options:{responsive:true,maintainAspectRatio:false,animation:{duration:250},plugins:{legend:{display:false},annotation:buildAnnotation(getRef1()),tooltip:{callbacks:{label:function(ctx){return ctx.parsed.y!=null?fmt(ctx.parsed.y)+' kWh':'n.d.';}}}},scales:{x:{ticks:{color:tickCol(),font:{size:10},maxTicksLimit:14,autoSkip:true,maxRotation:40,callback:function(v){var l=this.getLabelForValue(v);return l.endsWith('1:00')?l.replace(' 1:00',''):'';}},grid:{color:gridCol()}},y:{min:isNaN(yMin)?0:yMin,max:isNaN(yMax)?undefined:yMax,ticks:{color:tickCol(),font:{size:11},callback:function(v){return fmt(v);}},grid:{color:gridCol()},title:{display:true,text:'kWh',color:tickCol(),font:{size:11}}}}}});
+}
+
+function renderMulti(b, map, yMin, yMax){
+  document.getElementById('nodataMulti').style.display='none';document.getElementById('chartMulti').style.display='block';
+  if(cMulti){cMulti.destroy();cMulti=null;}
+  var days=dayList(b);
+  // x-axis: days
+  var xLabels=days.map(function(d){return d.toLocaleDateString('it-IT',{day:'2-digit',month:'short'});});
+  var datasets=[];
+  for(var h=1;h<=24;h++){
+    var data=[];
+    for(var i=0;i<days.length;i++){var dkv=dk(days[i]);var v=map[dkv+'_'+h];data.push(v!==undefined?v:null);}
+    datasets.push({label:h+':00',data:data,borderColor:HPAL[h-1],backgroundColor:'transparent',borderWidth:1.2,pointRadius:0,pointHoverRadius:3,fill:false,tension:0.2,spanGaps:false,hidden:!hourActive[h-1]});
+  }
+  cMulti=new Chart(document.getElementById('chartMulti'),{type:'line',data:{labels:xLabels,datasets:datasets},options:{responsive:true,maintainAspectRatio:false,animation:{duration:200},plugins:{legend:{display:false},annotation:buildAnnotation(getRef1()),tooltip:{callbacks:{label:function(ctx){return ctx.dataset.label+': '+(ctx.parsed.y!=null?fmt(ctx.parsed.y)+' kWh':'n.d.');}}}},scales:{x:{ticks:{color:tickCol(),font:{size:10},maxTicksLimit:14,autoSkip:true,maxRotation:40},grid:{color:gridCol()}},y:{min:isNaN(yMin)?0:yMin,max:isNaN(yMax)?undefined:yMax,ticks:{color:tickCol(),font:{size:11},callback:function(v){return fmt(v);}},grid:{color:gridCol()},title:{display:true,text:'kWh',color:tickCol(),font:{size:11}}}}}});
+}
+
+function renderCum(valid,yMax,cumMinVal){
+  lastSorted=valid.slice().sort(function(a,b){return b-a;});
+  var ref=getRef2(),ref3=getRef3();refreshLabels();
+  document.getElementById('nodataCum').style.display='none';document.getElementById('chartCum').style.display='block';
+  if(cCum){cCum.destroy();cCum=null;}
+  cCum=new Chart(document.getElementById('chartCum'),{type:'line',data:{labels:lastSorted.map(function(_,i){return i+1;}),datasets:[{label:'kWh',data:lastSorted,borderColor:PAL.el,backgroundColor:'transparent',borderWidth:1.5,pointRadius:0,pointHoverRadius:3,fill:false,tension:0,spanGaps:false},buildDs1(ref),buildDs2(ref,ref3)]},options:{responsive:true,maintainAspectRatio:false,animation:{duration:200},plugins:{legend:{display:false},tooltip:{callbacks:{label:function(ctx){if(ctx.dataset.label==='_r1'||ctx.dataset.label==='_r2')return null;return fmt(ctx.parsed.y)+' kWh';}}}},scales:{x:{ticks:{color:tickCol(),font:{size:10},maxTicksLimit:10},grid:{color:gridCol()},title:{display:true,text:'Ore (ordine decrescente)',color:tickCol(),font:{size:11}}},y:{min:cumMinVal,max:isNaN(yMax)?undefined:yMax,ticks:{color:tickCol(),font:{size:11},callback:function(v){return fmt(v);}},grid:{color:gridCol()},title:{display:true,text:'kWh',color:tickCol(),font:{size:11}}}}}});
+}
+
+function renderBox(b,yMin,yMax){
+  var s0=dk(b.s),e0=dk(b.e),byH={};for(var h=1;h<=24;h++)byH[h]=[];
+  for(var i=0;i<rows.length;i++){var r=rows[i];if(r.dk>=s0&&r.dk<=e0)byH[r.h].push(r.v);}
+  var labels=[],bMins=[],bQ1s=[],bMeds=[],bQ3s=[],bMaxs=[],bMeans=[];
+  for(var h=1;h<=24;h++){labels.push(h+':00');var st=boxStats(byH[h]);if(st){bMins.push(st.min);bQ1s.push(st.q1);bMeds.push(st.med);bQ3s.push(st.q3);bMaxs.push(st.max);bMeans.push(st.mean);}else{bMins.push(null);bQ1s.push(null);bMeds.push(null);bQ3s.push(null);bMaxs.push(null);bMeans.push(null);}}
+  document.getElementById('nodataBox').style.display='none';document.getElementById('chartBox').style.display='block';
+  if(cBox){cBox.destroy();cBox=null;}
+  var dark=isDark(),boxFill=PF.rgba(PAL.el,dark?0.45:0.35),wColor=PAL.el;
+  var boxPlugin={id:'boxdraw',beforeDatasetsDraw:function(chart){var ctx2=chart.ctx,xs=chart.scales.x,ys=chart.scales.y;if(!xs||!ys)return;ctx2.save();for(var i=0;i<24;i++){if(bMins[i]===null)continue;var cx=xs.getPixelForValue(i),bw=xs.getPixelForValue(1)-xs.getPixelForValue(0),hw=bw*0.28,ww=bw*0.12,pQ1=ys.getPixelForValue(bQ1s[i]),pMed=ys.getPixelForValue(bMeds[i]),pQ3=ys.getPixelForValue(bQ3s[i]),pMin=ys.getPixelForValue(bMins[i]),pMax=ys.getPixelForValue(bMaxs[i]);ctx2.fillStyle=boxFill;ctx2.fillRect(cx-hw,pQ3,hw*2,pQ1-pQ3);ctx2.strokeStyle=PAL.el;ctx2.lineWidth=1.5;ctx2.strokeRect(cx-hw,pQ3,hw*2,pQ1-pQ3);ctx2.strokeStyle=PAL.foglio;ctx2.lineWidth=2;ctx2.beginPath();ctx2.moveTo(cx-hw,pMed);ctx2.lineTo(cx+hw,pMed);ctx2.stroke();ctx2.strokeStyle=wColor;ctx2.lineWidth=1.2;ctx2.beginPath();ctx2.moveTo(cx,pQ1);ctx2.lineTo(cx,pMin);ctx2.stroke();ctx2.beginPath();ctx2.moveTo(cx-ww,pMin);ctx2.lineTo(cx+ww,pMin);ctx2.stroke();ctx2.beginPath();ctx2.moveTo(cx,pQ3);ctx2.lineTo(cx,pMax);ctx2.stroke();ctx2.beginPath();ctx2.moveTo(cx-ww,pMax);ctx2.lineTo(cx+ww,pMax);ctx2.stroke();}ctx2.restore();}};
+  cBox=new Chart(document.getElementById('chartBox'),{type:'line',plugins:[boxPlugin],data:{labels:labels,datasets:[{label:'Media',data:bMeans,borderColor:PAL.media,borderWidth:1.5,pointRadius:3,pointBackgroundColor:PAL.media,fill:false,tension:0.3,spanGaps:true}]},options:{responsive:true,maintainAspectRatio:false,animation:{duration:200},plugins:{legend:{display:true,position:'bottom',labels:{color:tickCol(),font:{size:11},padding:12}},tooltip:{callbacks:{title:function(items){return labels[items[0].dataIndex];},label:function(ctx){var i=ctx.dataIndex;if(bMins[i]===null)return null;return['Min: '+fmt(bMins[i]),'Q1: '+fmt(bQ1s[i]),'Mediana: '+fmt(bMeds[i]),'Media: '+fmt(bMeans[i]),'Q3: '+fmt(bQ3s[i]),'Max: '+fmt(bMaxs[i])];} }}},scales:{x:{ticks:{color:tickCol(),font:{size:10},maxRotation:45},grid:{color:gridCol()}},y:{min:isNaN(yMin)?undefined:yMin,max:isNaN(yMax)?undefined:yMax,ticks:{color:tickCol(),font:{size:11},callback:function(v){return fmt(v);}},grid:{color:gridCol()},title:{display:true,text:'kWh',color:tickCol(),font:{size:11}}}}}});
+}
+
+function renderCarpet(b,map,cMin,cMax){
+  var days=dayList(b),HOURS=24,CH=14,nc=days.length;
+  var wrap=document.querySelector('.carpet-cw'),aw=wrap.clientWidth||600;
+  var cw=Math.max(1,Math.floor(aw/nc)),W=cw*nc,H=CH*HOURS;
+  var canvas=document.getElementById('carpetCanvas');canvas.width=W;canvas.height=H;canvas.style.height=H+'px';
+  var ctx=canvas.getContext('2d'),img=ctx.createImageData(W,H),px=img.data,range=cMax-cMin;if(range<=0)range=1;
+  for(var col=0;col<nc;col++){var dkv=dk(days[col]);for(var row=0;row<HOURS;row++){var h=HOURS-row,val=map[dkv+'_'+h],rr,gg,bb;if(val!==undefined){var t=Math.min(Math.max((val-cMin)/range,0),1);var c=heatCol(t);rr=c[0];gg=c[1];bb=c[2];}else{rr=30;gg=30;bb=30;}var ys2=row*CH,xs2=col*cw;for(var dy=0;dy<CH;dy++){for(var dx=0;dx<cw;dx++){var idx=((ys2+dy)*W+(xs2+dx))*4;px[idx]=rr;px[idx+1]=gg;px[idx+2]=bb;px[idx+3]=255;}}}}
+  ctx.putImageData(img,0,0);
+  var lbl=document.getElementById('yLabels');lbl.innerHTML='';lbl.style.height=H+'px';
+  for(var row=0;row<HOURS;row++){var h=HOURS-row,sp=document.createElement('span');sp.textContent=h+':00';sp.style.cssText='flex:none;height:'+CH+'px;line-height:'+CH+'px;display:flex;align-items:center;justify-content:flex-end;font-size:9px;color:var(--color-text-tertiary)';lbl.appendChild(sp);}
+  var lb=document.getElementById('legBar');lb.width=300;lb.height=12;var lc=lb.getContext('2d');
+  for(var x=0;x<300;x++){var c=heatCol(x/299);lc.fillStyle='rgb('+c[0]+','+c[1]+','+c[2]+')';lc.fillRect(x,0,1,12);}
+  document.getElementById('legMin').textContent=fmt(cMin)+' kWh';document.getElementById('legMax').textContent=fmt(cMax)+' kWh';
+}
+
+function getCM(){var a=parseFloat(document.getElementById('cMin').value),b=parseFloat(document.getElementById('cMax').value);return{cMin:isNaN(a)?0:a,cMax:isNaN(b)?lastPeak:b};}
+
+function renderAll(){
+  if(!rows.length)return;
+  var b=bounds();lastB=b;
+  document.getElementById('periodLabel').textContent=fmtPeriod(b);
+  var map=buildMap(b);lastMap=map;
+  var ser=buildSeries(b,map);
+  var valid=ser.data.filter(function(v){return v!==null;});
+  if(!valid.length){
+    ['nodataLine','nodataCum','nodataBox','nodataMulti'].forEach(function(id){document.getElementById(id).style.display='flex';});
+    ['chartLine','chartCum','chartBox','chartMulti'].forEach(function(id){document.getElementById(id).style.display='none';});
+    document.getElementById('carpetNoData').style.display='flex';document.getElementById('carpetViz').style.display='none';
+    document.getElementById('fasceNoData').style.display='flex';document.getElementById('fasceBar').style.display='none';document.getElementById('fasceDough').style.display='none';
+    ['statTotal','statAvg','statPeak','statCount'].forEach(function(id){document.getElementById(id).textContent='—';});return;
+  }
+  var total=valid.reduce(function(s,v){return s+v;},0),avg=total/valid.length,peak=Math.max.apply(null,valid),minV=Math.min.apply(null,valid);
+  lastPeak=peak;lastMin=minV;
+  document.getElementById('statTotal').textContent=fmt(total)+' kWh';
+  document.getElementById('statAvg').textContent=fmt(avg)+' kWh';
+  document.getElementById('statPeak').textContent=fmt(peak)+' kWh';
+  document.getElementById('statCount').textContent=valid.length.toLocaleString('it-IT');
+  if(autoScale){var nm=Math.ceil(peak*1.05);document.getElementById('yMin').value=0;document.getElementById('yMax').value=nm;document.getElementById('cMin').value=0;document.getElementById('cMax').value=nm;}
+  var sorted1=valid.slice().sort(function(a,b){return a-b;}),n1=Math.max(1,Math.ceil(sorted1.length*0.01)),s1=0;
+  for(var i=0;i<n1;i++)s1+=sorted1[i];lastCumAutoMin=Math.floor((s1/n1)*0.9);
+  document.getElementById('cumMin').value=lastCumAutoMin;
+  var yMin=parseFloat(document.getElementById('yMin').value),yMax=parseFloat(document.getElementById('yMax').value);
+  var cumMinVal=parseFloat(document.getElementById('cumMin').value);if(isNaN(cumMinVal))cumMinVal=lastCumAutoMin;
+  renderFasce(b);
+  renderLine(ser.labels,ser.data,yMin,yMax);
+  renderCum(valid,yMax,cumMinVal);
+  renderMulti(b,map,yMin,yMax);
+  renderBox(b,yMin,yMax);
+  document.getElementById('carpetNoData').style.display='none';document.getElementById('carpetViz').style.display='block';
+  var cm=getCM();
+  setTimeout(function(){renderCarpet(b,map,cm.cMin,cm.cMax);},0);
+  setTimeout(drawCumOverlay,50);
+}
+
+function applyLineScale(){
+  autoScale=false;
+  var mn=parseFloat(document.getElementById('yMin').value),mx=parseFloat(document.getElementById('yMax').value);
+  if(cLine){cLine.options.scales.y.min=isNaN(mn)?undefined:mn;cLine.options.scales.y.max=isNaN(mx)?undefined:mx;cLine.update('none');}
+  if(cCum){cCum.options.scales.y.max=isNaN(mx)?undefined:mx;cCum.update('none');}
+  if(cBox){cBox.options.scales.y.min=isNaN(mn)?undefined:mn;cBox.options.scales.y.max=isNaN(mx)?undefined:mx;cBox.update('none');}
+  if(cMulti){cMulti.options.scales.y.min=isNaN(mn)?undefined:mn;cMulti.options.scales.y.max=isNaN(mx)?undefined:mx;cMulti.update('none');}
+}
+function applyCumScale(){var mn=parseFloat(document.getElementById('cumMin').value);if(cCum){cCum.options.scales.y.min=isNaN(mn)?undefined:mn;cCum.update('none');}}
+function resetCumScale(){document.getElementById('cumMin').value=lastCumAutoMin;if(cCum){cCum.options.scales.y.min=lastCumAutoMin;cCum.update('none');}}
+function applyCarpetScale(){autoScale=false;if(!lastB)return;var cm=getCM();renderCarpet(lastB,lastMap,cm.cMin,cm.cMax);}
+function resetScale(){
+  if(!rows.length||!lastB)return;var nm=Math.ceil(lastPeak*1.05);
+  document.getElementById('yMin').value=0;document.getElementById('yMax').value=nm;document.getElementById('cMin').value=0;document.getElementById('cMax').value=nm;
+  if(cLine){cLine.options.scales.y.min=0;cLine.options.scales.y.max=nm;cLine.update('none');}
+  if(cCum){cCum.options.scales.y.max=nm;cCum.update('none');}
+  if(cBox){cBox.options.scales.y.min=0;cBox.options.scales.y.max=nm;cBox.update('none');}
+  if(cMulti){cMulti.options.scales.y.min=0;cMulti.options.scales.y.max=nm;cMulti.update('none');}
+  renderCarpet(lastB,lastMap,0,nm);
+}
+
+function updateRadio(s){var ks=['Week','Month','Year'];for(var i=0;i<ks.length;i++){var a=ks[i].toLowerCase()===s;document.getElementById('dot'+ks[i]).style.background=a?'var(--primario)':'transparent';document.getElementById('radio'+ks[i]).style.borderColor=a?'var(--primario)':'var(--bordo)';}}
+function setScale(s){scale=s;offset=0;autoScale=true;updateRadio(s);if(rows.length)renderAll();}
+function navigate(dir){offset+=dir;autoScale=false;if(rows.length)renderAll();}
+function toggleHelp(){var el=document.getElementById('helpBox');el.style.display=el.style.display==='none'?'block':'none';}
+function contactAuthor(){var email='ing.paolo.bianco@gmail.com';var ta=document.createElement('textarea');ta.value=email;ta.style.cssText='position:fixed;top:0;left:0;opacity:0';document.body.appendChild(ta);ta.focus();ta.select();try{document.execCommand('copy');}catch(e){}document.body.removeChild(ta);var btn=document.getElementById('contactBtn');var orig=btn.textContent;btn.textContent='Email copiata!';setTimeout(function(){btn.textContent=orig;},2000);}
+
+function drillDown(frac){
+  if(scale==='week')return;
+  var b=bounds(),days=dayList(b),clicked=days[Math.min(Math.floor(frac*days.length),days.length-1)],lat=latestD();
+  if(scale==='year'){scale='month';offset=(clicked.getFullYear()-lat.getFullYear())*12+(clicked.getMonth()-lat.getMonth());}
+  else{scale='week';var cws=new Date(clicked),cdow=cws.getDay()===0?6:cws.getDay()-1;cws.setDate(cws.getDate()-cdow);var lws=new Date(lat),ldow=lws.getDay()===0?6:lws.getDay()-1;lws.setDate(lws.getDate()-ldow);offset=Math.round((cws-lws)/(7*86400000));}
+  autoScale=true;updateRadio(scale);renderAll();
+}
+
+document.getElementById('chartLine').addEventListener('click',function(e){if(!rows.length||scale==='week'||!cLine)return;var rect=this.getBoundingClientRect(),x=e.clientX-rect.left,ca=cLine.chartArea;if(x<ca.left||x>ca.right)return;drillDown((x-ca.left)/(ca.right-ca.left));});
+document.getElementById('chartMulti').addEventListener('click',function(e){if(!rows.length||scale==='week'||!cMulti)return;var rect=this.getBoundingClientRect(),x=e.clientX-rect.left,ca=cMulti.chartArea;if(x<ca.left||x>ca.right)return;drillDown((x-ca.left)/(ca.right-ca.left));});
+document.getElementById('carpetCanvas').addEventListener('click',function(e){if(!rows.length||scale==='week')return;var rect=this.getBoundingClientRect();drillDown((e.clientX-rect.left)/rect.width);});
+
+function onWheel(e){if(!rows.length)return;e.preventDefault();navigate(e.deltaY>0?-1:1);}
+document.getElementById('outerLine').addEventListener('wheel',onWheel,{passive:false});
+document.getElementById('outerCum').addEventListener('wheel',onWheel,{passive:false});
+document.getElementById('carpetViz').addEventListener('wheel',onWheel,{passive:false});
+document.getElementById('outerBox').addEventListener('wheel',onWheel,{passive:false});
+document.getElementById('outerMulti').addEventListener('wheel',onWheel,{passive:false});
+
+window.addEventListener('resize',function(){
+  if(cLine)cLine.resize();if(cCum){cCum.resize();setTimeout(drawCumOverlay,50);}
+  if(cBar)cBar.resize();if(cDough)cDough.resize();if(cBox)cBox.resize();if(cMulti)cMulti.resize();
+  if(lastB&&lastMap){var cm=getCM();setTimeout(function(){renderCarpet(lastB,lastMap,cm.cMin,cm.cMax);},100);}
+});
+
+// fix fasce panel header overlap
+(function(){var p=document.querySelector('.panel:has(#fasceNoData)');if(p)p.style.position='relative';})();
+// remove absolute positioning hack for fasce - restructure it
+/* (titolo del pannello Fasce ora è sopra i grafici nel markup) */
+
+/* ── integrazione nel sito: ridisegno al cambio di tema ── */
+PF.alCambioTema(function(){ if(rows.length) renderAll(); });
+</script>
+<script src="assets/sito.js" defer></script>
+</body>
+</html>

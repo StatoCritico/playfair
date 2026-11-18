@@ -1,0 +1,109 @@
+/* =====================================================================================================
+   Playfair · tema.css — il "CSS modificabile"
+   SOLO variabili e caratteri. Cambiando questo file (e nient'altro) si ristila tutto il sito.
+   Base: vestito Corallo di EuGEnio (stesso autore), con un tocco "blueprint" per la tavola della home.
+   Tema scuro predefinito; tema chiaro con data-theme="light" su <html>.
+   Documentazione di ogni variabile: docs/CONTRATTO_CSS.md
+   ===================================================================================================== */
+
+/* ---- caratteri self-hosted (OFL 1.1, da @fontsource): niente CDN ---- */
+@font-face { font-family: "Hanken Grotesk"; font-style: normal; font-weight: 400; font-display: swap; src: url("font/hanken-grotesk-latin-400-normal.woff2") format("woff2"); }
+@font-face { font-family: "Hanken Grotesk"; font-style: italic; font-weight: 400; font-display: swap; src: url("font/hanken-grotesk-latin-400-italic.woff2") format("woff2"); }
+@font-face { font-family: "Hanken Grotesk"; font-style: normal; font-weight: 600; font-display: swap; src: url("font/hanken-grotesk-latin-600-normal.woff2") format("woff2"); }
+@font-face { font-family: "Hanken Grotesk"; font-style: normal; font-weight: 700; font-display: swap; src: url("font/hanken-grotesk-latin-700-normal.woff2") format("woff2"); }
+@font-face { font-family: "Barlow"; font-style: normal; font-weight: 500; font-display: swap; src: url("font/barlow-latin-500-normal.woff2") format("woff2"); }
+@font-face { font-family: "Barlow"; font-style: normal; font-weight: 600; font-display: swap; src: url("font/barlow-latin-600-normal.woff2") format("woff2"); }
+@font-face { font-family: "Barlow"; font-style: normal; font-weight: 700; font-display: swap; src: url("font/barlow-latin-700-normal.woff2") format("woff2"); }
+@font-face { font-family: "IBM Plex Mono"; font-style: normal; font-weight: 400; font-display: swap; src: url("font/ibm-plex-mono-latin-400-normal.woff2") format("woff2"); }
+@font-face { font-family: "IBM Plex Mono"; font-style: normal; font-weight: 500; font-display: swap; src: url("font/ibm-plex-mono-latin-500-normal.woff2") format("woff2"); }
+@font-face { font-family: "IBM Plex Mono"; font-style: normal; font-weight: 600; font-display: swap; src: url("font/ibm-plex-mono-latin-600-normal.woff2") format("woff2"); }
+
+/* ---------------------------------------------------------------------------------- tema scuro (predefinito) */
+:root, [data-theme="dark"] {
+  /* superfici */
+  --carta: #19171c;          /* fondo della pagina */
+  --foglio: #232027;         /* pannelli e riquadri */
+  --rialzo: #2d2932;         /* righe al passaggio, campi disattivi, intestazioni di tabella */
+  --tinta: #3a2230;          /* accento chiaro per aree (zona di trascinamento attiva) */
+  --linea: #39343f;          /* bordi e separatori */
+  --bordo: #7b7385;          /* bordi di campi e pulsanti secondari: 3,5:1 sul pannello */
+  /* testo */
+  --inchiostro: #f3eff4;     /* testo: 15,6:1 sul fondo */
+  --tenue: #b5adbd;          /* testo secondario: 8,2:1 */
+  /* marca */
+  --primario: #ff7a50;       /* link, pulsanti, voce attiva: 6,9:1 */
+  --primario-forte: #ff9775; /* passaggio del mouse sul primario */
+  --su-primario: #19171c;    /* testo sui pulsanti principali */
+  --profondo: #ffd0c0;       /* titoli dei grafici, cifre in evidenza */
+  --segno: #8f9bff;          /* secondo accento: soglie, riferimenti, valore di legge */
+  /* stati */
+  --successo: #8fcf86;   --successo-fondo: #1f2a1d;
+  --attenzione: #f2c14e; --attenzione-fondo: #2f2715;
+  --errore: #ff8a8a;     --errore-fondo: #361a1c;
+  /* serie dei grafici */
+  --serie-1: #ff7a50; --serie-2: #8ccbf2; --serie-3: #f2d16b; --serie-4: #e070ad; --serie-5: #9ccf8f; --serie-6: #b9b2ad;
+  /* vettori energetici (Sankey, home, strumenti) */
+  --flusso-el: #4fd68a;      /* verde: kWh elettrici, lavoro utile */
+  --flusso-th: #ff9a3d;      /* arancione: Sm³ gas, MWh termici, calore e vapore */
+  --flusso-acqua: #4cc6f5;   /* azzurro: m³ d'acqua, ritorni */
+  --flusso-co2: #c4946a;     /* marrone: t CO₂ */
+  --flusso-altro: #9b96a6;   /* grigio: perdite, altro */
+  /* blueprint (tavola della home) */
+  --bp-fondo: #0a1830;       /* blu notte */
+  --bp-fondo-2: #0f2140;     /* riquadri di annotazione */
+  --bp-linea: #9cc7f0;       /* tratto della tavola e delle linee di richiamo */
+  --bp-luce: #7af4ff;        /* ciano luminoso: bagliori, riquadro acceso */
+  --bp-griglia: rgb(140 190 255 / .075); /* quadrettatura di fondo */
+  --bp-testo: #e2efff;       /* testo sui riquadri: 14:1 */
+  --bp-tenue: #93b2d8;       /* testo secondario sui riquadri: 7,5:1 */
+  /* ombre */
+  --ombra-1: 0 1px 2px rgb(0 0 0 / .35);
+  --ombra-2: 0 6px 20px rgb(0 0 0 / .45);
+  color-scheme: dark;
+}
+
+/* ---------------------------------------------------------------------------------- tema chiaro */
+[data-theme="light"] {
+  --carta: #f7f6f8; --foglio: #ffffff; --rialzo: #efedf1; --tinta: #ffe6dd; --linea: #e1dde6; --bordo: #847c8e;
+  --inchiostro: #1c1820; --tenue: #5f5868;
+  --primario: #c43c12; --primario-forte: #a8260c; --su-primario: #ffffff; --profondo: #8a1530; --segno: #3f4bd0;
+  --successo: #2e7a34;   --successo-fondo: #e7f2e4;
+  --attenzione: #8a5a00; --attenzione-fondo: #fbf0d6;
+  --errore: #a8133c;     --errore-fondo: #fbe5ea;
+  --serie-1: #c43c12; --serie-2: #1f6fb4; --serie-3: #a87800; --serie-4: #b3418a; --serie-5: #4f7f22; --serie-6: #6b625d;
+  --flusso-el: #1b8a45; --flusso-th: #d45a00; --flusso-acqua: #1272b0; --flusso-co2: #7a4a26; --flusso-altro: #706a7a;
+  --bp-fondo: #e8eff8; --bp-fondo-2: #f6f9fd; --bp-linea: #23477e; --bp-luce: #0069b4;
+  --bp-griglia: rgb(35 71 126 / .07); --bp-testo: #0f2547; --bp-tenue: #44618a;
+  --ombra-1: 0 1px 2px rgb(42 29 25 / .08);
+  --ombra-2: 0 6px 20px rgb(42 29 25 / .14);
+  color-scheme: light;
+}
+
+/* ---------------------------------------------------------------------------------- comuni ai due temi */
+:root {
+  /* caratteri */
+  --testo: "Hanken Grotesk", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --titoli: "Barlow", "Hanken Grotesk", system-ui, sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  /* scala dei corpi (base 16 px) */
+  --c-xs: .78rem; --c-s: .875rem; --c-m: 1rem; --c-l: 1.125rem; --c-xl: 1.375rem; --c-2xl: 1.75rem;
+  --c-h1: clamp(2rem, 1.25rem + 2.6vw, 3.25rem);
+  /* spaziature (passo 4 px) */
+  --s1: .25rem; --s2: .5rem; --s3: .75rem; --s4: 1rem; --s5: 1.5rem; --s6: 2rem; --s7: 3rem; --s8: 4rem;
+  --margine: clamp(1rem, 3vw, 2rem);
+  --larghezza: 1440px;       /* larghezza massima dei contenuti */
+  /* raggi */
+  --raggio: 6px; --r-s: 4px; --r: var(--raggio); --r-l: 10px; --r-tondo: 999px;
+  /* misure */
+  --tocco: 2.75rem;          /* 44 px, altezza minima di campi e pulsanti */
+  --alto-testata: 3.75rem;   /* aggiornata da sito.js con l'altezza reale */
+  /* movimento */
+  --durata: .18s;
+  --ritardo-tip: .35s;
+
+  /* alias per gli artifact Playfair originali (references/design.md): puntano alle variabili del tema */
+  --pf-blue: var(--primario); --pf-green: var(--successo); --pf-red: var(--errore); --pf-amber: var(--attenzione);
+  --pf-bg-app: var(--carta); --pf-bg-panel: var(--foglio); --pf-border: var(--linea); --pf-focus: var(--primario);
+  --pf-text-primary: var(--inchiostro); --pf-text-secondary: var(--tenue); --pf-text-hint: var(--tenue); --pf-divider: var(--linea);
+  --pf-s1: var(--serie-1); --pf-s2: var(--serie-2); --pf-s3: var(--serie-3); --pf-s4: var(--serie-4);
+}

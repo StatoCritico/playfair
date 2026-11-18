@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sankey — editor di diagrammi di flusso energetico · Playfair</title>
+<meta name="description" content="Disegna diagrammi di Sankey a blocchi: flussi di elettricità, gas, calore, acqua e CO₂ con spessori proporzionali, verifica dei bilanci, calcolo dei valori mancanti ed esportazione in JPG, PDF e SVG. Tutto nel browser.">
+<link rel="icon" href="img/favicon.svg" type="image/svg+xml">
+<script>try{var t=localStorage.getItem('pf-tema');if(t)document.documentElement.dataset.theme=t;}catch(e){}</script>
+<link rel="stylesheet" href="assets/tema.css">
+<link rel="stylesheet" href="assets/sito.css">
+<link rel="stylesheet" href="assets/sankey.css">
+</head>
+<body class="sk-pagina">
+<header class="pf-testata">
+  <a class="pf-marchio" href="index.html" aria-label="Playfair, home">Playfair<span class="pf-marchio-sub">.statocritico</span></a>
+  <button class="pf-menu-apri" aria-expanded="false" aria-controls="pf-menu">Menu</button>
+  <nav class="pf-menu" id="pf-menu" aria-label="Strumenti">
+    <a href="playfair-s.html" data-tip="Site — analisi del singolo sito: costi e consumi di elettricità, gas, calore e acqua">Playfair-S</a>
+    <a href="playfair-e.html" data-tip="Electric — curve di carico elettriche quartorarie: profili, mappe orarie, picchi e base">Playfair-E</a>
+    <a href="playfair-t.html" data-tip="Thermal — consumi termici ed elettrici, simulazione di cogenerazione e valutazione economica">Playfair-T</a>
+    <a href="playfair-m.html" data-tip="Money — confronto di investimenti energetici: VAN, TIR, ROI, WACC e flussi di cassa">Playfair-M</a>
+    <a href="playfair-c.html" data-tip="Cusum — regressione, residui e carta CUSUM secondo ISO 50006">Playfair-C</a>
+    <a href="sankey.html" aria-current="page" data-tip="Sankey — disegna diagrammi di flusso energetico a blocchi e verifica i bilanci">Sankey</a>
+    <a href="personaggi.html" data-tip="William Playfair e Matthew H. P. R. Sankey: chi erano">Personaggi</a>
+  </nav>
+  <button class="pf-tema" type="button" aria-label="Cambia tema chiaro/scuro">◐</button>
+</header>
+
+<main class="sk-app" id="sk-app">
+  <h1 class="sk-sr">Sankey — editor di diagrammi di flusso energetico</h1>
+
+  <!-- ============ MENU A SINISTRA ============ -->
+  <aside class="sk-strumenti" aria-label="Strumenti del diagramma">
+    <section class="sk-gruppo" aria-labelledby="sk-g-prim">
+      <h2 id="sk-g-prim" class="sk-gruppo-tit">Primitive</h2>
+      <div class="sk-primitive" role="toolbar" aria-label="Modalità di disegno">
+        <button type="button" class="sk-btn sk-prim" data-modo="seleziona" aria-pressed="true" data-tip="Seleziona e sposta blocchi e collegamenti (V). Maiusc+trascina: selezione a riquadro">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 3l14 8-6 1.5L10 19z"/></svg><span>Seleziona</span><kbd>V</kbd>
+        </button>
+        <button type="button" class="sk-btn sk-prim" data-modo="blocco" aria-pressed="false" data-tip="Blocco: clicca nell'area di disegno per creare un blocco (B). Esc per uscire">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="6.5" width="17" height="11" rx="2"/></svg><span>Blocco</span><kbd>B</kbd>
+        </button>
+        <button type="button" class="sk-btn sk-prim" data-modo="collegamento" aria-pressed="false" data-tip="Collegamento: clicca il dato di partenza e poi quello di arrivo (L). Esc per uscire">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="4" width="6" height="6" rx="1"/><rect x="16" y="14" width="6" height="6" rx="1"/><path d="M8 7h4a2 2 0 0 1 2 2v6a2 2 0 0 0 2 2" fill="none"/></svg><span>Collegamento</span><kbd>L</kbd>
+        </button>
+      </div>
+    </section>
+
+    <section class="sk-gruppo" aria-labelledby="sk-g-calc">
+      <h2 id="sk-g-calc" class="sk-gruppo-tit">Calcolo</h2>
+      <button type="button" id="sk-aggiorna" class="sk-btn sk-primario" data-tip="Aggiorna (A): spessori proporzionali ai valori, verifica dei bilanci e calcolo delle caselle vuote">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.3-5.6M20 4v5h-5" fill="none"/></svg><span>Aggiorna</span>
+      </button>
+    </section>
+
+    <section class="sk-gruppo" aria-labelledby="sk-g-mod">
+      <h2 id="sk-g-mod" class="sk-gruppo-tit">Modifica</h2>
+      <div class="sk-griglia-btn">
+        <button type="button" class="sk-btn sk-icona" id="sk-annulla" data-tip="Annulla (Ctrl+Z)" aria-label="Annulla"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 14L4 9l5-5M4 9h10a6 6 0 0 1 0 12h-3" fill="none"/></svg></button>
+        <button type="button" class="sk-btn sk-icona" id="sk-ripeti" data-tip="Ripeti (Ctrl+Y)" aria-label="Ripeti"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 14l5-5-5-5M20 9H10a6 6 0 0 0 0 12h3" fill="none"/></svg></button>
+        <button type="button" class="sk-btn sk-icona" id="sk-duplica" data-tip="Duplica la selezione (Ctrl+D)" aria-label="Duplica"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2" fill="none"/><path d="M16 8V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h3" fill="none"/></svg></button>
+        <button type="button" class="sk-btn sk-icona" id="sk-elimina" data-tip="Elimina la selezione (Canc)" aria-label="Elimina"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3" fill="none"/></svg></button>
+      </div>
+    </section>
+
+    <section class="sk-gruppo" aria-labelledby="sk-g-file">
+      <h2 id="sk-g-file" class="sk-gruppo-tit">Progetto</h2>
+      <button type="button" class="sk-btn" id="sk-nuovo" data-tip="Nuovo diagramma vuoto (il precedente si può recuperare con Annulla)"><span>Nuovo</span></button>
+      <button type="button" class="sk-btn" id="sk-salva" data-tip="Salva il progetto come file .json (Ctrl+S)"><span>Salva .json</span></button>
+      <label class="sk-apri" data-tip="Apri un progetto .json salvato in precedenza (puoi anche trascinarlo sulla pagina)">
+        <span class="sk-apri-tit">Apri .json o trascinalo qui</span>
+        <input type="file" id="sk-file" accept=".json,application/json" aria-label="Apri progetto JSON">
+      </label>
+      <label class="sk-campo-inline" for="sk-esempio">Esempi</label>
+      <div class="sk-colonna-ctl">
+        <select id="sk-esempio" aria-label="Esempio da caricare">
+          <option value="cogenerazione">Centrale di cogenerazione</option>
+          <option value="ospedale">Ospedale: elettricità, gas, acqua, CO₂</option>
+          <option value="vapore">Macchina a vapore (Sankey, 1898)</option>
+          <option value="minimo">Esempio minimo A → B → C, D</option>
+        </select>
+        <button type="button" class="sk-btn sk-piccolo" id="sk-carica-esempio" data-tip="Carica l'esempio scelto (sostituisce il diagramma; Ctrl+Z per tornare indietro)">Carica l'esempio</button>
+      </div>
+    </section>
+
+    <section class="sk-gruppo" aria-labelledby="sk-g-esp">
+      <h2 id="sk-g-esp" class="sk-gruppo-tit">Esporta</h2>
+      <div class="sk-griglia-btn sk-tre">
+        <button type="button" class="sk-btn sk-piccolo" id="sk-esp-jpg" data-tip="Immagine JPG ad alta risoluzione con titolo, legenda e data">JPG</button>
+        <button type="button" class="sk-btn sk-piccolo" id="sk-esp-pdf" data-tip="PDF vettoriale orizzontale con titolo, legenda e data">PDF</button>
+        <button type="button" class="sk-btn sk-piccolo" id="sk-esp-svg" data-tip="SVG vettoriale, modificabile con Inkscape o Illustrator">SVG</button>
+      </div>
+      <div class="sk-riga-ctl">
+        <label for="sk-formato" class="sk-campo-inline">Foglio PDF</label>
+        <select id="sk-formato"><option value="a4">A4 orizzontale</option><option value="a3">A3 orizzontale</option></select>
+      </div>
+      <label class="sk-check"><input type="checkbox" id="sk-esp-esito"> Mostra esito verifica</label>
+    </section>
+
+    <section class="sk-gruppo" aria-labelledby="sk-g-aiuto">
+      <h2 id="sk-g-aiuto" class="sk-gruppo-tit">Aiuto</h2>
+      <button type="button" class="sk-btn" id="sk-tutorial-apri" data-tip="Rivedi la mini guida introduttiva"><span>Guida introduttiva</span></button>
+      <details class="sk-tasti">
+        <summary>Scorciatoie da tastiera</summary>
+        <dl>
+          <dt>B · L · V</dt><dd>Blocco · Collegamento · Seleziona</dd>
+          <dt>A</dt><dd>Aggiorna</dd>
+          <dt>Canc</dt><dd>Elimina selezione</dd>
+          <dt>Esc</dt><dd>Esci dalla modalità / deseleziona</dd>
+          <dt>Frecce</dt><dd>Sposta (Maiusc: ×5)</dd>
+          <dt>Ctrl+Z · Ctrl+Y</dt><dd>Annulla · Ripeti</dd>
+          <dt>Ctrl+D · Ctrl+A</dt><dd>Duplica · Seleziona tutto</dd>
+          <dt>Ctrl+S</dt><dd>Salva .json</dd>
+          <dt>+ · − · 0</dt><dd>Zoom · Adatta alla vista</dd>
+          <dt>Spazio+trascina</dt><dd>Sposta la vista</dd>
+          <dt>Invio · F2</dt><dd>Modifica il blocco selezionato</dd>
+        </dl>
+      </details>
+    </section>
+  </aside>
+
+  <!-- ============ AREA DI DISEGNO ============ -->
+  <section class="sk-area" aria-label="Area di disegno">
+    <div class="sk-testa-area">
+      <label for="sk-titolo" class="sk-sr">Titolo del diagramma</label>
+      <input id="sk-titolo" class="sk-titolo" type="text" maxlength="120" value="Diagramma di Sankey" data-tip="Titolo del diagramma: compare anche nelle esportazioni">
+      <span id="sk-salvato" class="sk-salvato" aria-live="off"></span>
+      <button type="button" class="sk-btn sk-piccolo sk-pannello-apri" id="sk-pannello-apri" aria-controls="sk-pannello" aria-expanded="false">Proprietà</button>
+    </div>
+    <div class="sk-tela-box" id="sk-tela-box">
+      <svg id="sk-tela" class="sk-tela modo-seleziona" tabindex="0" role="application" aria-roledescription="area di disegno" aria-label="Diagramma di Sankey. Usa B per creare blocchi, L per i collegamenti, Tab per spostarti tra gli elementi." aria-describedby="sk-stato-testo" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <pattern id="sk-griglia-fine" width="10" height="10" patternUnits="userSpaceOnUse"><path d="M10 0H0V10" class="sk-griglia-l1"/></pattern>
+          <pattern id="sk-griglia-grossa" width="100" height="100" patternUnits="userSpaceOnUse"><rect width="100" height="100" fill="url(#sk-griglia-fine)"/><path d="M100 0H0V100" class="sk-griglia-l2"/></pattern>
+        </defs>
+        <g id="sk-mondo">
+          <rect id="sk-griglia" class="sk-sfondo" x="-5000" y="-5000" width="10000" height="10000" fill="url(#sk-griglia-grossa)"/>
+          <g id="sk-contenuto"></g>
+          <g id="sk-sovra" pointer-events="none"></g>
+        </g>
+      </svg>
+      <div class="sk-zoom" role="group" aria-label="Zoom">
+        <button type="button" class="sk-btn sk-icona" id="sk-zoom-meno" data-tip="Riduci (−)" aria-label="Riduci">−</button>
+        <button type="button" class="sk-btn sk-zoom-val" id="sk-zoom-100" data-tip="Zoom al 100%">100%</button>
+        <button type="button" class="sk-btn sk-icona" id="sk-zoom-piu" data-tip="Ingrandisci (+)" aria-label="Ingrandisci">+</button>
+        <button type="button" class="sk-btn sk-icona" id="sk-adatta" data-tip="Adatta alla vista (0)" aria-label="Adatta alla vista"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" fill="none"/></svg></button>
+      </div>
+      <div class="sk-legenda" id="sk-legenda" aria-label="Legenda"></div>
+      <div class="sk-vuoto" id="sk-vuoto" hidden>
+        <p><strong>L'area è vuota.</strong> Premi <kbd>B</kbd> e clicca qui per creare un blocco, oppure carica un esempio dal menu.</p>
+      </div>
+    </div>
+    <div class="sk-stato" id="sk-stato">
+      <span id="sk-stato-testo" role="status" aria-live="polite"></span>
+      <span id="sk-stato-info" class="sk-stato-info"></span>
+    </div>
+  </section>
+
+  <!-- ============ PANNELLO PROPRIETÀ ============ -->
+  <aside class="sk-pannello" id="sk-pannello" aria-label="Proprietà">
+    <div id="sk-pannello-corpo"></div>
+  </aside>
+</main>
+
+<footer class="pf-piede">
+  <p>Playfair · un progetto di <a href="https://statocritico.it">Stato Critico</a> · <a href="guida-rapida.pdf">Guida rapida</a> · Immagini storiche: pubblico dominio (Wikimedia Commons)</p>
+  <p>I dati caricati restano nel browser: nulla viene inviato a server.</p>
+</footer>
+
+<dialog class="sk-dialogo" id="sk-tutorial" aria-labelledby="sk-tut-tit">
+  <form method="dialog" class="sk-tut">
+    <p class="sk-tut-passo" id="sk-tut-passo">1 / 5</p>
+    <h2 id="sk-tut-tit">Benvenuto nell'editor Sankey</h2>
+    <div id="sk-tut-testo"></div>
+    <div class="sk-tut-azioni">
+      <label class="sk-check"><input type="checkbox" id="sk-tut-nonpiu" checked> Non mostrare più all'avvio</label>
+      <span class="sk-spazio"></span>
+      <button type="button" class="sk-btn sk-piccolo" id="sk-tut-indietro">Indietro</button>
+      <button type="button" class="sk-btn sk-piccolo sk-primario" id="sk-tut-avanti">Avanti</button>
+      <button type="submit" class="sk-btn sk-piccolo" id="sk-tut-chiudi" aria-label="Chiudi la guida">Chiudi</button>
+    </div>
+  </form>
+</dialog>
+
+<script src="assets/vendor/jspdf.umd.min.js" defer></script>
+<script src="assets/sankey.js" defer></script>
+<script src="assets/sito.js" defer></script>
+</body>
+</html>

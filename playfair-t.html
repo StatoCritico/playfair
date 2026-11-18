@@ -1,0 +1,877 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Playfair-T — Termico e cogenerazione · Playfair</title>
+<meta name="description" content="Playfair-T: consumi elettrici e termici orari a confronto, simulazione di un cogeneratore e valutazione economica con e senza cogenerazione.">
+<link rel="icon" href="img/favicon.svg" type="image/svg+xml">
+<script>try{var t=localStorage.getItem('pf-tema');if(t)document.documentElement.dataset.theme=t;}catch(e){}</script>
+<link rel="stylesheet" href="assets/tema.css">
+<link rel="stylesheet" href="assets/sito.css">
+<link rel="stylesheet" href="assets/strumenti.css">
+<style>
+.pf-app.t .wrap{max-width:none}
+.pf-app.t .chSmall{position:relative;width:100%;height:90px}
+.pf-app.t .legbox{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:8px}
+.pf-app.t .legitem{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--tenue)}
+.pf-app.t .legdot{width:16px;height:3px;border-radius:1px;display:inline-block}
+.pf-app.t .upbox{border:1px dashed var(--bordo);border-radius:var(--raggio,6px);padding:.75rem 1rem;background:var(--foglio);margin-bottom:.75rem}
+.pf-app.t .upbox:last-child{margin-bottom:0}
+.pf-app.t .uplabel{font:600 12px/1.3 var(--titoli);color:var(--tenue);text-transform:uppercase;letter-spacing:.07em;margin-bottom:4px}
+.pf-app.t .updrop{font-size:13px;color:var(--inchiostro);margin-bottom:8px}
+.pf-app.t .updrop code{font-family:var(--mono);background:var(--rialzo);padding:0 4px;border-radius:3px}
+.pf-app.t .uprow{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.pf-app.t .uphint{font-size:13px;color:var(--tenue)}
+.pf-app.t .radio-row{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.pf-app.t .radio-item{display:flex;align-items:center;gap:5px;cursor:pointer;font-size:13px;color:var(--inchiostro)}
+.pf-app.t .radio-circle{width:14px;height:14px;border:1.5px solid var(--bordo);border-radius:50%;display:flex;align-items:center;justify-content:center}
+.pf-app.t .radio-dot{width:7px;height:7px;border-radius:50%;background:transparent}
+.pf-app.t .help{display:none;font-size:13px;color:var(--inchiostro);background:var(--rialzo);border:1px solid var(--linea);border-radius:4px;padding:8px 10px;margin-bottom:8px;line-height:1.6}
+.pf-app.t .cogen-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:8px;margin-bottom:.75rem}
+.pf-app.t .cogen-field{background:var(--rialzo);border-radius:var(--raggio,6px);padding:8px 10px}
+.pf-app.t .cogen-field label{font-size:12px;color:var(--tenue);display:block;margin-bottom:4px}
+.pf-app.t .cogen-field input{width:100%}
+.pf-app.t .cogen-2col{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:8px}
+.pf-app.t .cogen-2col .ch{height:260px}
+.pf-app.t .econ-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-top:.75rem}
+.pf-app.t .econ-table{width:100%;border-collapse:collapse;font-size:14px}
+.pf-app.t .econ-table td{padding:6px 10px;border-bottom:1px solid var(--linea)}
+.pf-app.t .econ-table td.num{text-align:right;font-variant-numeric:tabular-nums}
+.pf-app.t .econ-table tr.tot td{font-weight:600;border-top:1px solid var(--bordo);border-bottom:none}
+.pf-app.t .econ-saving{background:var(--rialzo);border-radius:var(--raggio,6px);padding:12px;margin-top:.75rem;display:flex;flex-wrap:wrap;align-items:baseline;gap:14px}
+.pf-app.t .econ-saving-label{font-size:13px;color:var(--tenue)}
+.pf-app.t .econ-saving-value{font:600 22px/1.2 var(--titoli);font-variant-numeric:tabular-nums}
+.pf-app.t .econ-saving-value.pos{color:var(--successo)}
+.pf-app.t .econ-saving-value.neg{color:var(--errore)}
+</style>
+</head>
+<body class="pf-pagina-strumento">
+<header class="pf-testata">
+  <a class="pf-marchio" href="index.html" aria-label="Playfair, home">Playfair<span class="pf-marchio-sub">.statocritico</span></a>
+  <button class="pf-menu-apri" aria-expanded="false" aria-controls="pf-menu">Menu</button>
+  <nav class="pf-menu" id="pf-menu" aria-label="Strumenti">
+    <a href="playfair-s.html" data-tip="Site — analisi del singolo sito: costi e consumi di elettricità, gas, calore e acqua">Playfair-S</a>
+    <a href="playfair-e.html" data-tip="Electric — curve di carico elettriche quartorarie: profili, mappe orarie, picchi e base">Playfair-E</a>
+    <a href="playfair-t.html" aria-current="page" data-tip="Thermal — consumi termici ed elettrici, simulazione di cogenerazione e valutazione economica">Playfair-T</a>
+    <a href="playfair-m.html" data-tip="Money — confronto di investimenti energetici: VAN, TIR, ROI, WACC e flussi di cassa">Playfair-M</a>
+    <a href="playfair-c.html" data-tip="Cusum — regressione, residui e carta CUSUM secondo ISO 50006">Playfair-C</a>
+    <a href="sankey.html" data-tip="Sankey — disegna diagrammi di flusso energetico a blocchi e verifica i bilanci">Sankey</a>
+    <a href="personaggi.html" data-tip="William Playfair e Matthew H. P. R. Sankey: chi erano">Personaggi</a>
+  </nav>
+  <button class="pf-tema" type="button" aria-label="Cambia tema chiaro/scuro">◐</button>
+</header>
+
+<main class="pf-strumento" id="contenuto">
+<section class="pf-intro" aria-labelledby="titolo-strumento">
+  <p class="pf-occhiello">Strumento · Thermal</p>
+  <h1 id="titolo-strumento">Playfair-T <span class="pf-sotto">— termico e cogenerazione</span> <small>v1.3</small></h1>
+  <p class="pf-sommario">Mette a confronto i consumi elettrici e termici orari dello stesso sito e simula un cogeneratore (piena potenza, inseguimento elettrico o termico): copertura dei fabbisogni, energia elettrica immessa, calore dissipato, metano consumato e confronto economico con e senza cogenerazione.</p>
+  <p class="pf-file"><b>File accettati (due):</b> la curva elettrica oraria come <code>1_curva_di_carico.csv</code> (data <code>gg/mm/aaaa</code>, ora <code>1–24</code>, kWh) e i consumi termici come <code>termico_sito_1.csv</code> (<code>data;ora;kWh</code> orari) oppure mensili (data o mese, kWh: ripartiti in modo uniforme sulle ore del mese; scegli «Mensili» prima di caricare). Separatore <code>;</code> o <code>,</code>, decimali con la virgola. Se i due file sono di anni diversi, vengono riportati sullo stesso anno (il più recente dei due scelti).</p>
+  <details class="pf-come">
+    <summary>Come si usa</summary>
+    <ol>
+      <li>Trascina la curva elettrica e il file termico nei rispettivi riquadri, oppure entrambi insieme sulla pagina: vengono smistati in base al nome (<code>curva</code> / <code>termico</code>).</li>
+      <li>Scegli l’anno di ciascuna serie con i menu «Anno»; con Settimana/Mese/Anno cambi il periodo dei grafici, un clic sulla curva ingrandisce.</li>
+      <li>Nella curva cumulata termica il Riferimento (potenza termica) dà ore piene ed equivalenti.</li>
+      <li>In «Cogenerazione» imposta potenza, rendimenti, PCI del metano e la modalità di funzionamento.</li>
+      <li>In «Valutazione economica» inserisci prezzi dell’energia e rendimento della caldaia: risparmio annuo e grafico si aggiornano subito.</li>
+    </ol>
+  </details>
+</section>
+
+<div class="pf-app fam-b t">
+<div class="wrap">
+
+<div class="panel">
+  <div class="ph">
+    <span class="ptitle">Caricamento dati</span>
+    <button class="obtn" onclick="toggleHelp()">Istruzioni</button>
+  </div>
+  <div id="helpBox" class="help">
+    Carica due file .csv separati: uno per i consumi <b>elettrici</b> (data, ora 1-24, kWh) e uno per i consumi <b>termici</b>. Per il termico è possibile scegliere tra valori orari (data, ora 1-24, kWh) e valori mensili (data, kWh: viene distribuito uniformemente sulle ore del mese). Seleziona l'anno per ciascuna serie con i menu a destra. Puoi anche trascinare i due file insieme sulla pagina: quello con «curva» nel nome va all'elettrico, quello con «termico» al termico.
+  </div>
+
+  <div class="upbox">
+    <div class="uplabel">Consumi elettrici</div>
+    <p class="updrop">Trascina qui il file della curva elettrica oraria, es. <code>1_curva_di_carico.csv</code> (colonne data, ora 1–24, kWh).</p>
+    <div class="uprow">
+      <input type="file" id="csvElec" accept=".csv" data-pf-pattern="curva" data-pf-testo="Scegli la curva elettrica o trascinala qui" aria-label="File CSV dei consumi elettrici orari (es. 1_curva_di_carico.csv)">
+      <span class="uphint" id="statusElec">Nessun file caricato</span>
+      <label style="margin-left:auto;font-size:12px;color:var(--color-text-secondary)">Anno</label>
+      <select id="yearE" class="ifield" onchange="onYearChange()" style="width:90px"><option value="">—</option></select>
+    </div>
+  </div>
+
+  <div class="upbox">
+    <div class="uplabel">Consumi termici</div>
+    <p class="updrop">Trascina qui il file dei consumi termici, es. <code>termico_sito_1.csv</code> (orari: data, ora 1–24, kWh; mensili: data o mese, kWh).</p>
+    <div class="uprow" style="margin-bottom:8px">
+      <span style="font-size:12px;color:var(--color-text-secondary)">Tipo:</span>
+      <label class="radio-item" onclick="setThermType('hourly')"><span class="radio-circle"><span class="radio-dot" id="rdH"></span></span>Orari</label>
+      <label class="radio-item" onclick="setThermType('monthly')"><span class="radio-circle"><span class="radio-dot" id="rdM"></span></span>Mensili</label>
+    </div>
+    <div class="uprow">
+      <input type="file" id="csvTherm" accept=".csv" data-pf-pattern="termico" data-pf-testo="Scegli il file termico o trascinalo qui" aria-label="File CSV dei consumi termici (es. termico_sito_1.csv)">
+      <span class="uphint" id="statusTherm">Nessun file caricato</span>
+      <label style="margin-left:auto;font-size:12px;color:var(--color-text-secondary)">Anno</label>
+      <select id="yearT" class="ifield" onchange="onYearChange()" style="width:90px"><option value="">—</option></select>
+    </div>
+  </div>
+</div>
+
+<div class="panel">
+  <div class="ptitle">Curve di carico</div>
+  <div class="radio-row" style="margin-bottom:10px">
+    <label class="radio-item" onclick="setScale('week')"><span class="radio-circle" id="radioWeek"><span class="radio-dot" id="dotWeek"></span></span>Settimana</label>
+    <label class="radio-item" onclick="setScale('month')"><span class="radio-circle" id="radioMonth"><span class="radio-dot" id="dotMonth"></span></span>Mese</label>
+    <label class="radio-item" onclick="setScale('year')"><span class="radio-circle" id="radioYear"><span class="radio-dot" id="dotYear"></span></span>Anno</label>
+    <span id="periodLabel" style="font-size:13px;font-weight:500;margin-left:auto">—</span>
+  </div>
+  <div class="stats" style="margin-bottom:10px">
+    <div class="stat"><div class="stat-label">Consumo elettrico</div><div class="stat-value" id="statTotE">—</div></div>
+    <div class="stat"><div class="stat-label">Consumo termico</div><div class="stat-value" id="statTotT">—</div></div>
+    <div class="stat"><div class="stat-label">Picco elettrico</div><div class="stat-value" id="statPeakE">—</div></div>
+    <div class="stat"><div class="stat-label">Picco termico</div><div class="stat-value" id="statPeakT">—</div></div>
+    <div class="stat"><div class="stat-label">Ore registrate</div><div class="stat-value" id="statCount">—</div></div>
+  </div>
+  <div class="legbox">
+    <span class="legitem"><span class="legdot" style="background:var(--flusso-el)"></span>Elettrico</span>
+    <span class="legitem"><span class="legdot" style="background:var(--flusso-th)"></span>Termico</span>
+  </div>
+  <div class="ch" id="outerLine">
+    <div class="nodata" id="ndLine">Nessun dato caricato</div>
+    <canvas id="chartLine" style="display:none;position:absolute;top:0;left:0;width:100%;height:100%;cursor:pointer"></canvas>
+  </div>
+  <div class="srow">
+    <label>Minimo</label><input type="number" id="yMin" class="ifield" step="any" oninput="applyLineScale()">
+    <label>Massimo</label><input type="number" id="yMax" class="ifield" step="any" oninput="applyLineScale()">
+    <button class="obtn" onclick="resetScale()">Reimposta scala</button>
+    <label style="margin-left:8px">Riferimento</label><input type="number" id="refVal" class="ifield" step="any" placeholder="—" oninput="applyRef()">
+  </div>
+</div>
+
+<div class="panel">
+  <div class="ptitle">Curva cumulata consumi termici</div>
+  <div class="ch" id="outerCum">
+    <div class="nodata" id="ndCum">Nessun dato termico caricato</div>
+    <canvas id="chartCum" style="display:none;position:absolute;top:0;left:0;width:100%;height:100%"></canvas>
+  </div>
+  <div class="srow">
+    <label>Minimo</label><input type="number" id="cumMin" class="ifield" step="any" oninput="applyCumScale()">
+    <button class="obtn" onclick="resetCumScale()">Reimposta scala</button>
+    <label style="margin-left:8px">Riferimento</label><input type="number" id="refVal2" class="ifield" step="any" placeholder="—" oninput="applyRef2()">
+    <span style="font-size:12px;color:var(--color-text-secondary);margin-left:8px">Ore piene</span>
+    <span style="font-size:13px;font-weight:500" id="oreEq">—</span>
+    <span style="font-size:12px;color:var(--color-text-secondary)">Ore equivalenti</span>
+    <span style="font-size:13px;font-weight:500" id="oreEquiv">—</span>
+  </div>
+</div>
+
+<div class="panel">
+  <div class="ptitle">Cogenerazione</div>
+  <div class="cogen-grid">
+    <div class="cogen-field"><label>Potenza nominale (kW)</label><input type="number" id="cgPower" class="ifield" step="any" value="1000" oninput="recalcCogen()"></div>
+    <div class="cogen-field"><label>Rendimento elettrico (%)</label><input type="number" id="cgEtaE" class="ifield" step="any" value="40" oninput="recalcCogen()"></div>
+    <div class="cogen-field"><label>Rendimento termico (%)</label><input type="number" id="cgEtaT" class="ifield" step="any" value="45" oninput="recalcCogen()"></div>
+    <div class="cogen-field"><label>PCI metano (kWh/Sm³)</label><input type="number" id="cgPCI" class="ifield" step="any" value="9.59" oninput="recalcCogen()"></div>
+  </div>
+  <div class="radio-row" style="margin-bottom:10px">
+    <span style="font-size:12px;color:var(--color-text-secondary)">Modalità:</span>
+    <label class="radio-item" onclick="setMode('full')"><span class="radio-circle" id="rmF"><span class="radio-dot" id="dotF"></span></span>Piena potenza</label>
+    <label class="radio-item" onclick="setMode('elec')"><span class="radio-circle" id="rmE"><span class="radio-dot" id="dotE"></span></span>Inseguimento elettrico</label>
+    <label class="radio-item" onclick="setMode('term')"><span class="radio-circle" id="rmT"><span class="radio-dot" id="dotT"></span></span>Inseguimento termico</label>
+  </div>
+  <div class="stats">
+    <div class="stat"><div class="stat-label">Copertura elettrica</div><div class="stat-value" id="kCovE">—</div></div>
+    <div class="stat"><div class="stat-label">Copertura termica</div><div class="stat-value" id="kCovT">—</div></div>
+    <div class="stat"><div class="stat-label">En. elettrica immessa</div><div class="stat-value" id="kExpE">—</div></div>
+    <div class="stat"><div class="stat-label">En. termica dissipata</div><div class="stat-value" id="kDisT">—</div></div>
+    <div class="stat"><div class="stat-label">Metano consumato</div><div class="stat-value" id="kGas">—</div></div>
+  </div>
+  <div style="margin-top:12px">
+    <div style="font-size:12px;color:var(--color-text-secondary);margin-bottom:6px">Ripartizione ore per fascia di carico</div>
+    <div class="chSmall" id="outerLoad">
+      <div class="nodata" id="ndLoad">In attesa di dati</div>
+      <canvas id="chartLoad" style="display:none;position:absolute;top:0;left:0;width:100%;height:100%"></canvas>
+    </div>
+  </div>
+  <div class="cogen-2col">
+    <div class="ch" id="outerBar">
+      <div class="nodata" id="ndBar">In attesa di dati</div>
+      <canvas id="chartBar" style="display:none;position:absolute;top:0;left:0;width:100%;height:100%"></canvas>
+    </div>
+    <div class="cogen-2col" style="grid-template-columns:1fr 1fr;gap:8px;margin-top:0">
+      <div class="ch" id="outerPieE" style="height:260px">
+        <div class="nodata" id="ndPieE">—</div>
+        <canvas id="chartPieE" style="display:none;position:absolute;top:0;left:0;width:100%;height:100%"></canvas>
+      </div>
+      <div class="ch" id="outerPieT" style="height:260px">
+        <div class="nodata" id="ndPieT">—</div>
+        <canvas id="chartPieT" style="display:none;position:absolute;top:0;left:0;width:100%;height:100%"></canvas>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="panel">
+  <div class="ptitle">Valutazione economica</div>
+  <div class="cogen-grid">
+    <div class="cogen-field"><label>Costo elettricità acquistata (€/kWh)</label><input type="number" id="ecCostBuyE" class="ifield" step="any" value="0.18" oninput="recalcEcon()"></div>
+    <div class="cogen-field"><label>Prezzo elettricità immessa (€/kWh)</label><input type="number" id="ecCostSellE" class="ifield" step="any" value="0.08" oninput="recalcEcon()"></div>
+    <div class="cogen-field"><label>Costo metano (€/Sm³)</label><input type="number" id="ecCostGas" class="ifield" step="any" value="0.45" oninput="recalcEcon()"></div>
+    <div class="cogen-field"><label>Rendimento caldaia esistente (%)</label><input type="number" id="ecEtaBoiler" class="ifield" step="any" value="92" oninput="recalcEcon()"></div>
+  </div>
+  <div class="econ-grid">
+    <div>
+      <div style="font-size:12px;color:var(--color-text-secondary);margin-bottom:6px">Senza cogeneratore</div>
+      <table class="econ-table" id="tabBase"><tbody></tbody></table>
+    </div>
+    <div>
+      <div style="font-size:12px;color:var(--color-text-secondary);margin-bottom:6px">Con cogeneratore</div>
+      <table class="econ-table" id="tabCog"><tbody></tbody></table>
+    </div>
+  </div>
+  <div class="econ-saving">
+    <span class="econ-saving-label">Risparmio annuo</span>
+    <span class="econ-saving-value" id="ecSaveAbs">—</span>
+    <span class="econ-saving-label">Riduzione</span>
+    <span class="econ-saving-value" id="ecSavePct">—</span>
+  </div>
+  <div style="margin-top:12px" class="ch" id="outerEcon">
+    <div class="nodata" id="ndEcon">In attesa di dati</div>
+    <canvas id="chartEcon" style="display:none;position:absolute;top:0;left:0;width:100%;height:100%"></canvas>
+  </div>
+</div>
+
+</div>
+</div>
+</main>
+
+<footer class="pf-piede">
+  <p>Playfair · un progetto di <a href="https://statocritico.it">Stato Critico</a> · <a href="guida-rapida.pdf">Guida rapida</a> · Immagini storiche: pubblico dominio (Wikimedia Commons)</p>
+  <p>I dati caricati restano nel browser: nulla viene inviato a server.</p>
+</footer>
+
+<script src="assets/vendor/chart.umd.js"></script>
+<script src="assets/vendor/chartjs-plugin-annotation.min.js"></script>
+<script src="assets/vendor/papaparse.min.js"></script>
+<script src="assets/strumenti.js"></script>
+<script>
+var rowsE=[], rowsT=[];
+var rowsE_view=[], rowsT_view=[];
+var yearE=null, yearT=null;
+var thermType='hourly';
+var scale='year', offset=0, autoScale=true;
+var cLine=null, cCum=null, cBar=null, cPieE=null, cPieT=null, cLoad=null, cEcon=null;
+var lastB=null, lastPeak=0, lastCumAutoMin=0, lastSorted=[];
+var cogenMode='full';
+var cogResults={demE:0,demT:0,covE:0,covT:0,expE:0,disT:0,gas:0,valid:false};
+
+/* tema del sito (data-theme su <html>) invece del tema di sistema; colori da tema.css */
+function isDark(){return PF.scuroAttivo();}
+function tickCol(){return PF.tenue();}
+function gridCol(){return PF.griglia();}
+var PAL=PF.tavolozza({el:['--flusso-el','#378add'],th:['--flusso-th','#e07a1a'],neutro:['--flusso-altro','#CCCCCC'],ink:['--inchiostro','#000000'],foglio:['--foglio','#ffffff'],
+  elS:function(){return PF.scuro(PAL.el,.38);},elC:function(){return PF.chiaro(PAL.el,.5);},
+  thS:function(){return PF.scuro(PAL.th,.38);},thC:function(){return PF.chiaro(PAL.th,.5);}});
+function fmt(v){return Math.round(v).toLocaleString('it-IT');}
+function fmt1(v){return v.toLocaleString('it-IT',{minimumFractionDigits:1,maximumFractionDigits:1});}
+function fmtEuro(v){return (Math.round(v)).toLocaleString('it-IT')+' €';}
+
+function toggleHelp(){var e=document.getElementById('helpBox');e.style.display=e.style.display==='block'?'none':'block';}
+
+function parseDate(s){
+  if(!s)return null; s=String(s).trim();
+  var m=s.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})/);
+  if(m)return new Date(+m[3],+m[2]-1,+m[1]);
+  m=s.match(/^(\d{4})[\/\-](\d{1,2})[\/\-](\d{1,2})/);
+  if(m)return new Date(+m[1],+m[2]-1,+m[3]);
+  m=s.match(/^(\d{1,2})[\/\-](\d{4})/);
+  if(m)return new Date(+m[2],+m[1]-1,1);
+  m=s.match(/^(\d{4})[\/\-](\d{1,2})/);
+  if(m)return new Date(+m[1],+m[2]-1,1);
+  var d=new Date(s); return isNaN(d)?null:new Date(d.getFullYear(),d.getMonth(),d.getDate());
+}
+function dk(d){return d.getFullYear()*10000+(d.getMonth()+1)*100+d.getDate();}
+function daysInMonth(y,m){return new Date(y,m+1,0).getDate();}
+
+function setThermType(t){
+  thermType=t;
+  document.getElementById('rdH').style.background=t==='hourly'?'var(--primario)':'transparent';
+  document.getElementById('rdM').style.background=t==='monthly'?'var(--primario)':'transparent';
+}
+setThermType('hourly');
+
+function parseCSVFile(f, isMonthlyTherm, cb){
+  Papa.parse(f,{header:true,skipEmptyLines:true,dynamicTyping:false,delimiter:'',complete:function(res){
+    var raw=res.data; if(!raw.length){cb([],0);return;}
+    var keys=Object.keys(raw[0]);
+    var dK=keys.find(function(k){return /^data$/i.test(k.trim())||/^date$/i.test(k.trim())||/^mese$/i.test(k.trim());})||keys[0];
+    var hK=keys.find(function(k){return /^ora$/i.test(k.trim())||/^hour$/i.test(k.trim());});
+    var vK=keys.find(function(k){return /kwh/i.test(k.trim())||/energy/i.test(k.trim())||/consumo/i.test(k.trim());});
+    if(!vK){vK=isMonthlyTherm?keys[1]:keys[2]||keys[1];}
+    var parsed=[],errs=0;
+    if(isMonthlyTherm){
+      for(var i=0;i<raw.length;i++){
+        var r=raw[i]; var d=parseDate(r[dK]);
+        var v=parseFloat(String(r[vK]).trim().replace(/\./g,'').replace(',','.'));
+        if(!d||isNaN(v)){errs++;continue;}
+        var y=d.getFullYear(), m=d.getMonth();
+        var nd=daysInMonth(y,m), nh=nd*24;
+        var perHour=v/nh;
+        for(var dd=1;dd<=nd;dd++){
+          for(var hh=1;hh<=24;hh++){
+            var dt=new Date(y,m,dd);
+            parsed.push({d:dt,dk:dk(dt),h:hh,v:perHour});
+          }
+        }
+      }
+    } else {
+      if(!hK)hK=keys[1];
+      for(var i=0;i<raw.length;i++){
+        var r=raw[i]; var d=parseDate(r[dK]);
+        var h=parseInt(String(r[hK]).trim(),10);
+        var v=parseFloat(String(r[vK]).trim().replace(/\./g,'').replace(',','.'));
+        if(!d||isNaN(h)||isNaN(v)||h<1||h>24){errs++;continue;}
+        parsed.push({d:d,dk:dk(d),h:h,v:v});
+      }
+    }
+    cb(parsed,errs);
+  }});
+}
+
+document.getElementById('csvElec').addEventListener('change',function(e){
+  var f=e.target.files[0]; if(!f)return;
+  document.getElementById('statusElec').textContent='Parsing in corso…';
+  parseCSVFile(f,false,function(parsed,errs){
+    if(!parsed.length){document.getElementById('statusElec').textContent='Nessun record valido.';return;}
+    rowsE=parsed;
+    document.getElementById('statusElec').textContent=parsed.length+' record caricati'+(errs?' ('+errs+' ignorate)':'');
+    populateYearSelect('yearE',rowsE,function(y){yearE=y;});
+    rebuildView('all');
+    offset=0; autoScale=true; renderAll();
+  });
+});
+document.getElementById('csvTherm').addEventListener('change',function(e){
+  var f=e.target.files[0]; if(!f)return;
+  document.getElementById('statusTherm').textContent='Parsing in corso…';
+  parseCSVFile(f,thermType==='monthly',function(parsed,errs){
+    if(!parsed.length){document.getElementById('statusTherm').textContent='Nessun record valido.';return;}
+    rowsT=parsed;
+    document.getElementById('statusTherm').textContent=parsed.length+' record caricati'+(errs?' ('+errs+' ignorate)':'');
+    populateYearSelect('yearT',rowsT,function(y){yearT=y;});
+    rebuildView('all');
+    offset=0; autoScale=true; renderAll();
+  });
+});
+
+function populateYearSelect(selId, rows, setter){
+  var years={};
+  for(var i=0;i<rows.length;i++){years[rows[i].d.getFullYear()]=true;}
+  var ys=Object.keys(years).map(Number).sort(function(a,b){return a-b;});
+  var sel=document.getElementById(selId);
+  sel.innerHTML='';
+  for(var i=0;i<ys.length;i++){
+    var o=document.createElement('option');
+    o.value=ys[i]; o.textContent=ys[i];
+    sel.appendChild(o);
+  }
+  if(ys.length){
+    sel.value=ys[ys.length-1];
+    setter(ys[ys.length-1]);
+  } else {
+    setter(null);
+  }
+}
+
+function viewYear(){
+  if(yearE!==null && yearT!==null) return Math.max(yearE,yearT);
+  if(yearE!==null) return yearE;
+  if(yearT!==null) return yearT;
+  return null;
+}
+
+function rebuildView(which){
+  var vy=viewYear();
+  if(vy===null){
+    if(which==='E'||which==='all')rowsE_view=[];
+    if(which==='T'||which==='all')rowsT_view=[];
+    return;
+  }
+  if(which==='E'||which==='all'){
+    rowsE_view = remapRowsToYear(rowsE, yearE, vy);
+  }
+  if(which==='T'||which==='all'){
+    rowsT_view = remapRowsToYear(rowsT, yearT, vy);
+  }
+}
+
+function remapRowsToYear(rows, sourceYear, targetYear){
+  if(!rows.length || sourceYear===null) return [];
+  var out=[];
+  for(var i=0;i<rows.length;i++){
+    var r=rows[i];
+    if(r.d.getFullYear()!==sourceYear) continue;
+    var m=r.d.getMonth(), dd=r.d.getDate();
+    if(m===1 && dd===29){
+      var isLeapTarget=(targetYear%4===0 && (targetYear%100!==0 || targetYear%400===0));
+      if(!isLeapTarget) continue;
+    }
+    var nd=new Date(targetYear,m,dd);
+    out.push({d:nd,dk:dk(nd),h:r.h,v:r.v});
+  }
+  return out;
+}
+
+function onYearChange(){
+  var nyE=document.getElementById('yearE').value;
+  var nyT=document.getElementById('yearT').value;
+  yearE = nyE===''?null:parseInt(nyE,10);
+  yearT = nyT===''?null:parseInt(nyT,10);
+  rebuildView('all');
+  offset=0; autoScale=true; renderAll();
+}
+
+function latestOverall(){
+  var all=rowsE_view.concat(rowsT_view);
+  if(!all.length)return null;
+  return all.reduce(function(m,r){return r.d>m?r.d:m;},all[0].d);
+}
+function bounds(){
+  var lat=latestOverall(); if(!lat)return null;
+  if(scale==='week'){
+    var b=new Date(lat), dow=b.getDay()===0?6:b.getDay()-1;
+    b.setDate(b.getDate()-dow); b.setDate(b.getDate()+offset*7);
+    var e=new Date(b); e.setDate(e.getDate()+6);
+    return{start:b,end:e};
+  }
+  if(scale==='month'){
+    var b=new Date(lat.getFullYear(),lat.getMonth()+offset,1);
+    var e=new Date(b.getFullYear(),b.getMonth()+1,0);
+    return{start:b,end:e};
+  }
+  var b=new Date(lat.getFullYear()+offset,0,1);
+  var e=new Date(b.getFullYear(),11,31);
+  return{start:b,end:e};
+}
+function dayList(b){var out=[],d=new Date(b.start);while(d<=b.end){out.push(new Date(d));d.setDate(d.getDate()+1);}return out;}
+function periodLabel(b){
+  if(scale==='week')return b.start.toLocaleDateString('it-IT',{day:'2-digit',month:'short'})+' – '+b.end.toLocaleDateString('it-IT',{day:'2-digit',month:'short',year:'numeric'});
+  if(scale==='month')return b.start.toLocaleDateString('it-IT',{month:'long',year:'numeric'});
+  return String(b.start.getFullYear());
+}
+
+function buildSeries(b, rows){
+  var labels=[], data=[], valid=[], map={};
+  var days=dayList(b);
+  for(var i=0;i<rows.length;i++){var r=rows[i]; map[r.dk+'_'+r.h]=r.v;}
+  for(var i=0;i<days.length;i++){
+    var dkv=dk(days[i]);
+    for(var h=1;h<=24;h++){
+      labels.push(days[i].toLocaleDateString('it-IT',{day:'2-digit',month:'short'})+' '+h+':00');
+      var v=map[dkv+'_'+h];
+      if(v!==undefined){data.push(v); valid.push(v);}
+      else data.push(null);
+    }
+  }
+  return{labels:labels,data:data,valid:valid};
+}
+
+function getRef1(){var v=parseFloat(document.getElementById('refVal').value);return isNaN(v)?null:v;}
+function getRef2(){var v=parseFloat(document.getElementById('refVal2').value);return isNaN(v)?null:v;}
+
+function buildAnnotation(ref){if(ref===null)return{};return{annotations:{refLine:{type:'line',yMin:ref,yMax:ref,borderColor:PAL.ink,borderWidth:1.5}}};}
+
+function calcStats1(sorted,ref){
+  if(ref===null||ref<=0||!sorted.length)return{orePiene:null,oreEquiv:null};
+  var op=0;
+  for(var i=0;i<sorted.length;i++){if(sorted[i]>=ref)op++;else break;}
+  var area=0;
+  for(var i=0;i<sorted.length;i++)area+=Math.min(sorted[i],ref);
+  return{orePiene:op,oreEquiv:area/ref};
+}
+
+function refreshLabels(){
+  var ref=getRef2();
+  var s=calcStats1(lastSorted,ref);
+  document.getElementById('oreEq').textContent=s.orePiene!==null?s.orePiene.toLocaleString('it-IT'):'—';
+  document.getElementById('oreEquiv').textContent=s.oreEquiv!==null?Math.round(s.oreEquiv).toLocaleString('it-IT'):'—';
+}
+
+function buildCumRefDataset(sorted,ref){
+  if(ref===null||!sorted.length)return{label:'_ref',data:[],borderColor:'transparent',borderWidth:0,pointRadius:0,fill:false};
+  var d=[];
+  for(var i=0;i<sorted.length;i++)d.push(sorted[i]>=ref?ref:null);
+  return{label:'_ref',data:d,borderColor:PAL.ink,borderWidth:1.5,pointRadius:0,fill:false,tension:0,spanGaps:false};
+}
+
+function renderLine(serE,serT,yMin,yMax){
+  document.getElementById('ndLine').style.display='none';
+  document.getElementById('chartLine').style.display='block';
+  if(cLine){cLine.destroy();cLine=null;}
+  var labels=serE.labels.length?serE.labels:serT.labels;
+  var datasets=[];
+  if(rowsE_view.length){
+    datasets.push({label:'Elettrico',data:serE.data,borderColor:PAL.el,backgroundColor:PF.rgba(PAL.el,0.06),borderWidth:1.5,pointRadius:0,pointHoverRadius:3,fill:false,tension:0.2,spanGaps:false});
+  }
+  if(rowsT_view.length){
+    datasets.push({label:'Termico',data:serT.data,borderColor:PAL.th,backgroundColor:PF.rgba(PAL.th,0.06),borderWidth:1.5,pointRadius:0,pointHoverRadius:3,fill:false,tension:0.2,spanGaps:false});
+  }
+  cLine=new Chart(document.getElementById('chartLine'),{type:'line',
+    data:{labels:labels,datasets:datasets},
+    options:{responsive:true,maintainAspectRatio:false,animation:{duration:200},
+      plugins:{legend:{display:false},annotation:buildAnnotation(getRef1()),
+        tooltip:{callbacks:{label:function(ctx){return ctx.dataset.label+': '+(ctx.parsed.y!=null?fmt(ctx.parsed.y)+' kWh':'n.d.');}}}},
+      scales:{x:{ticks:{color:tickCol(),font:{size:10},maxTicksLimit:14,autoSkip:true,maxRotation:40,callback:function(v){var l=this.getLabelForValue(v);return l&&l.endsWith('1:00')?l.replace(' 1:00',''):'';}},grid:{color:gridCol()}},
+              y:{min:isNaN(yMin)?0:yMin,max:isNaN(yMax)?undefined:yMax,ticks:{color:tickCol(),font:{size:11},callback:function(v){return fmt(v);}},grid:{color:gridCol()},title:{display:true,text:'kWh',color:tickCol(),font:{size:11}}}}}});
+}
+
+function renderCum(validT,yMax,cumMinVal){
+  if(!validT.length){
+    document.getElementById('ndCum').style.display='flex';
+    document.getElementById('chartCum').style.display='none';
+    if(cCum){cCum.destroy();cCum=null;}
+    lastSorted=[]; refreshLabels(); return;
+  }
+  lastSorted=validT.slice().sort(function(a,b){return b-a;});
+  var ref=getRef2(); refreshLabels();
+  document.getElementById('ndCum').style.display='none';
+  document.getElementById('chartCum').style.display='block';
+  if(cCum){cCum.destroy();cCum=null;}
+  cCum=new Chart(document.getElementById('chartCum'),{type:'line',
+    data:{labels:lastSorted.map(function(_,i){return i+1;}),
+      datasets:[
+        {label:'kWh',data:lastSorted,borderColor:PAL.th,backgroundColor:PF.rgba(PAL.th,0.08),borderWidth:1.5,pointRadius:0,pointHoverRadius:3,fill:true,tension:0,spanGaps:false},
+        buildCumRefDataset(lastSorted,ref)
+      ]},
+    options:{responsive:true,maintainAspectRatio:false,animation:{duration:200},
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:function(ctx){if(ctx.dataset.label==='_ref')return null;return fmt(ctx.parsed.y)+' kWh';}}}},
+      scales:{x:{ticks:{color:tickCol(),font:{size:10},maxTicksLimit:10},grid:{color:gridCol()},title:{display:true,text:'Ore (ordine decrescente)',color:tickCol(),font:{size:11}}},
+              y:{min:cumMinVal,max:isNaN(yMax)?undefined:yMax,ticks:{color:tickCol(),font:{size:11},callback:function(v){return fmt(v);}},grid:{color:gridCol()},title:{display:true,text:'kWh',color:tickCol(),font:{size:11}}}}}});
+}
+
+function renderStats(b){
+  var serE=buildSeries(b,rowsE_view), serT=buildSeries(b,rowsT_view);
+  var totE=serE.valid.reduce(function(a,b){return a+b;},0);
+  var totT=serT.valid.reduce(function(a,b){return a+b;},0);
+  var peakE=serE.valid.length?Math.max.apply(null,serE.valid):0;
+  var peakT=serT.valid.length?Math.max.apply(null,serT.valid):0;
+  document.getElementById('statTotE').textContent=rowsE_view.length?fmt(totE)+' kWh':'—';
+  document.getElementById('statTotT').textContent=rowsT_view.length?fmt(totT)+' kWh':'—';
+  document.getElementById('statPeakE').textContent=rowsE_view.length?fmt(peakE)+' kWh':'—';
+  document.getElementById('statPeakT').textContent=rowsT_view.length?fmt(peakT)+' kWh':'—';
+  document.getElementById('statCount').textContent=fmt(serE.valid.length+serT.valid.length);
+  return{serE:serE,serT:serT,peakE:peakE,peakT:peakT,totE:totE,totT:totT};
+}
+
+function renderAll(){
+  if(!rowsE_view.length && !rowsT_view.length){
+    document.getElementById('periodLabel').textContent='—';
+    document.getElementById('statTotE').textContent='—';
+    document.getElementById('statTotT').textContent='—';
+    document.getElementById('statPeakE').textContent='—';
+    document.getElementById('statPeakT').textContent='—';
+    document.getElementById('statCount').textContent='—';
+    return;
+  }
+  var b=bounds(); if(!b)return;
+  lastB=b;
+  document.getElementById('periodLabel').textContent=periodLabel(b);
+  var st=renderStats(b);
+  lastPeak=Math.max(st.peakE,st.peakT);
+  var nm=Math.ceil(lastPeak*1.05);
+  if(autoScale){
+    document.getElementById('yMin').value=0;
+    document.getElementById('yMax').value=nm;
+  }
+  var yMin=parseFloat(document.getElementById('yMin').value);
+  var yMax=parseFloat(document.getElementById('yMax').value);
+
+  var validT=st.serT.valid;
+  if(validT.length){
+    var sorted1=validT.slice().sort(function(a,b){return a-b;});
+    var pct1count=Math.max(1,Math.ceil(sorted1.length*0.01));
+    var pct1sum=0; for(var i=0;i<pct1count;i++)pct1sum+=sorted1[i];
+    lastCumAutoMin=Math.floor((pct1sum/pct1count)*0.9);
+  } else lastCumAutoMin=0;
+  if(autoScale)document.getElementById('cumMin').value=lastCumAutoMin;
+  var cumMinVal=parseFloat(document.getElementById('cumMin').value);
+  if(isNaN(cumMinVal))cumMinVal=lastCumAutoMin;
+
+  renderLine(st.serE,st.serT,yMin,yMax);
+  renderCum(validT,yMax,cumMinVal);
+  recalcCogen();
+}
+
+function applyLineScale(){
+  autoScale=false;
+  var mn=parseFloat(document.getElementById('yMin').value),mx=parseFloat(document.getElementById('yMax').value);
+  if(cLine){cLine.options.scales.y.min=isNaN(mn)?undefined:mn;cLine.options.scales.y.max=isNaN(mx)?undefined:mx;cLine.update('none');}
+  if(cCum){cCum.options.scales.y.max=isNaN(mx)?undefined:mx;cCum.update('none');}
+}
+function applyCumScale(){var mn=parseFloat(document.getElementById('cumMin').value);if(cCum){cCum.options.scales.y.min=isNaN(mn)?undefined:mn;cCum.update('none');}}
+function resetCumScale(){document.getElementById('cumMin').value=lastCumAutoMin;if(cCum){cCum.options.scales.y.min=lastCumAutoMin;cCum.update('none');}}
+function resetScale(){
+  if(!lastB)return;
+  var nm=Math.ceil(lastPeak*1.05);
+  document.getElementById('yMin').value=0;document.getElementById('yMax').value=nm;
+  if(cLine){cLine.options.scales.y.min=0;cLine.options.scales.y.max=nm;cLine.update('none');}
+  if(cCum){cCum.options.scales.y.max=nm;cCum.update('none');}
+}
+function applyRef(){if(cLine){cLine.options.plugins.annotation=buildAnnotation(getRef1());cLine.update('none');}}
+function applyRef2(){if(cCum){cCum.data.datasets[1]=buildCumRefDataset(lastSorted,getRef2());cCum.update('none');}refreshLabels();}
+
+function updateRadio(s){
+  var ks=['Week','Month','Year'];
+  for(var i=0;i<ks.length;i++){
+    var a=ks[i].toLowerCase()===s;
+    document.getElementById('dot'+ks[i]).style.background=a?'var(--primario)':'transparent';
+    document.getElementById('radio'+ks[i]).style.borderColor=a?'var(--primario)':'var(--bordo)';
+  }
+}
+function setScale(s){scale=s;offset=0;autoScale=true;updateRadio(s);if(rowsE_view.length||rowsT_view.length)renderAll();}
+updateRadio('year');
+
+function drillDown(frac){
+  if(scale==='week')return;
+  var b=bounds(); if(!b)return;
+  var days=dayList(b),clicked=days[Math.min(Math.floor(frac*days.length),days.length-1)],lat=latestOverall();
+  if(scale==='year'){scale='month';offset=(clicked.getFullYear()-lat.getFullYear())*12+(clicked.getMonth()-lat.getMonth());}
+  else{scale='week';var cws=new Date(clicked),cdow=cws.getDay()===0?6:cws.getDay()-1;cws.setDate(cws.getDate()-cdow);var lws=new Date(lat),ldow=lws.getDay()===0?6:lws.getDay()-1;lws.setDate(lws.getDate()-ldow);offset=Math.round((cws-lws)/(7*86400000));}
+  autoScale=true;updateRadio(scale);renderAll();
+}
+document.getElementById('chartLine').addEventListener('click',function(e){
+  if((!rowsE_view.length&&!rowsT_view.length)||scale==='week'||!cLine)return;
+  var rect=this.getBoundingClientRect(),x=e.clientX-rect.left,ca=cLine.chartArea;
+  if(x<ca.left||x>ca.right)return; drillDown((x-ca.left)/(ca.right-ca.left));
+});
+
+function setMode(m){
+  cogenMode=m;
+  document.getElementById('dotF').style.background=m==='full'?'var(--primario)':'transparent';
+  document.getElementById('rmF').style.borderColor=m==='full'?'var(--primario)':'var(--bordo)';
+  document.getElementById('dotE').style.background=m==='elec'?'var(--primario)':'transparent';
+  document.getElementById('rmE').style.borderColor=m==='elec'?'var(--primario)':'var(--bordo)';
+  document.getElementById('dotT').style.background=m==='term'?'var(--primario)':'transparent';
+  document.getElementById('rmT').style.borderColor=m==='term'?'var(--primario)':'var(--bordo)';
+  recalcCogen();
+}
+setMode('full');
+
+function recalcCogen(){
+  var P=parseFloat(document.getElementById('cgPower').value);
+  var etaE=parseFloat(document.getElementById('cgEtaE').value)/100;
+  var etaT=parseFloat(document.getElementById('cgEtaT').value)/100;
+  var pci=parseFloat(document.getElementById('cgPCI').value);
+  if(isNaN(P)||P<=0||isNaN(etaE)||etaE<=0||isNaN(etaT)||isNaN(pci)||pci<=0){return;}
+  if(!rowsE_view.length && !rowsT_view.length){return;}
+
+  var mE={},mT={}, allKeys={};
+  for(var i=0;i<rowsE_view.length;i++){var r=rowsE_view[i],k=r.dk+'_'+r.h; mE[k]=r.v; allKeys[k]=true;}
+  for(var i=0;i<rowsT_view.length;i++){var r=rowsT_view[i],k=r.dk+'_'+r.h; mT[k]=r.v; allKeys[k]=true;}
+
+  var maxE = P;
+  var maxT = P * etaT/etaE;
+
+  var totDemE=0, totDemT=0;
+  var totProdE=0, totProdT=0;
+  var totCovE=0, totCovT=0;
+  var totExpE=0, totDisT=0;
+  var totGasKWh=0;
+  var bin0=0, bin1=0, bin2=0, bin3=0;
+
+  for(var k in allKeys){
+    var dE=mE[k]!==undefined?mE[k]:0;
+    var dT=mT[k]!==undefined?mT[k]:0;
+    totDemE+=dE; totDemT+=dT;
+    var loadFrac=1;
+    if(cogenMode==='elec'){
+      loadFrac = maxE>0 ? Math.min(1, dE/maxE) : 0;
+    } else if(cogenMode==='term'){
+      loadFrac = maxT>0 ? Math.min(1, dT/maxT) : 0;
+    }
+    var prodE = maxE*loadFrac;
+    var prodT = maxT*loadFrac;
+    totProdE+=prodE; totProdT+=prodT;
+    var cE=Math.min(prodE,dE), cT=Math.min(prodT,dT);
+    totCovE+=cE; totCovT+=cT;
+    totExpE+=Math.max(0, prodE-dE);
+    totDisT+=Math.max(0, prodT-dT);
+    totGasKWh += prodE / etaE;
+
+    if(loadFrac>=0.999) bin3++;
+    else if(loadFrac>=0.75) bin2++;
+    else if(loadFrac>=0.5) bin1++;
+    else bin0++;
+  }
+
+  var totGasSm3 = totGasKWh / pci;
+
+  var pctCovE=totDemE>0?(totCovE/totDemE*100):0;
+  var pctCovT=totDemT>0?(totCovT/totDemT*100):0;
+  var pctExpE=totProdE>0?(totExpE/totProdE*100):0;
+  var pctDisT=totProdT>0?(totDisT/totProdT*100):0;
+
+  document.getElementById('kCovE').textContent=fmt(totCovE)+' kWh ('+fmt1(pctCovE)+'%)';
+  document.getElementById('kCovT').textContent=fmt(totCovT)+' kWh ('+fmt1(pctCovT)+'%)';
+  document.getElementById('kExpE').textContent=fmt(totExpE)+' kWh ('+fmt1(pctExpE)+'%)';
+  document.getElementById('kDisT').textContent=fmt(totDisT)+' kWh ('+fmt1(pctDisT)+'%)';
+  document.getElementById('kGas').textContent=fmt(totGasSm3)+' Sm³';
+
+  cogResults={demE:totDemE,demT:totDemT,covE:totCovE,covT:totCovT,expE:totExpE,disT:totDisT,gas:totGasSm3,valid:true};
+
+  drawBar(totDemE,totDemT,totCovE,totCovT,totExpE,totDisT);
+  drawPies(totDemE,totCovE,totDemT,totCovT,totProdE,totExpE,totProdT,totDisT);
+  drawLoadBins(bin0,bin1,bin2,bin3);
+  recalcEcon();
+}
+
+function drawBar(dE,dT,cE,cT,expE,disT){
+  document.getElementById('ndBar').style.display='none';
+  document.getElementById('chartBar').style.display='block';
+  if(cBar){cBar.destroy();cBar=null;}
+  cBar=new Chart(document.getElementById('chartBar'),{type:'bar',
+    data:{labels:['Elettrico','Termico'],datasets:[
+      {label:'Domanda',data:[dE,dT],backgroundColor:[PAL.el,PAL.th],borderWidth:0},
+      {label:'Coperto da cogen.',data:[cE,cT],backgroundColor:[PAL.elS,PAL.thS],borderWidth:0},
+      {label:'Immesso/Dissipato',data:[expE,disT],backgroundColor:[PAL.elC,PAL.thC],borderWidth:0}
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,animation:{duration:200},
+      plugins:{legend:{display:true,position:'bottom',labels:{color:tickCol(),font:{size:11},boxWidth:12,padding:8}},
+        tooltip:{callbacks:{label:function(ctx){return ctx.dataset.label+': '+fmt(ctx.parsed.y)+' kWh';}}}},
+      scales:{x:{ticks:{color:tickCol(),font:{size:11}},grid:{display:false}},
+              y:{ticks:{color:tickCol(),font:{size:11},callback:function(v){return fmt(v);}},grid:{color:gridCol()},title:{display:true,text:'kWh',color:tickCol(),font:{size:11}}}}}});
+}
+
+function drawPies(dE,cE,dT,cT,prodE,expE,prodT,disT){
+  var unCovE=Math.max(0,dE-cE), unCovT=Math.max(0,dT-cT);
+  document.getElementById('ndPieE').style.display='none';
+  document.getElementById('chartPieE').style.display='block';
+  if(cPieE){cPieE.destroy();cPieE=null;}
+  cPieE=new Chart(document.getElementById('chartPieE'),{type:'doughnut',
+    data:{labels:['Coperto','Da rete','Immesso'],datasets:[{data:[cE,unCovE,expE],backgroundColor:[PAL.elS,PAL.neutro,PAL.elC],borderColor:PAL.foglio,borderWidth:2}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{
+      title:{display:true,text:'Elettrico',color:tickCol(),font:{size:12,weight:'500'}},
+      legend:{display:true,position:'bottom',labels:{color:tickCol(),font:{size:10},boxWidth:10,padding:6}},
+      tooltip:{callbacks:{label:function(ctx){return ' '+ctx.label+': '+fmt(ctx.parsed)+' kWh';}}}}}});
+
+  document.getElementById('ndPieT').style.display='none';
+  document.getElementById('chartPieT').style.display='block';
+  if(cPieT){cPieT.destroy();cPieT=null;}
+  cPieT=new Chart(document.getElementById('chartPieT'),{type:'doughnut',
+    data:{labels:['Coperto','Da caldaia','Dissipato'],datasets:[{data:[cT,unCovT,disT],backgroundColor:[PAL.thS,PAL.neutro,PAL.thC],borderColor:PAL.foglio,borderWidth:2}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{
+      title:{display:true,text:'Termico',color:tickCol(),font:{size:12,weight:'500'}},
+      legend:{display:true,position:'bottom',labels:{color:tickCol(),font:{size:10},boxWidth:10,padding:6}},
+      tooltip:{callbacks:{label:function(ctx){return ' '+ctx.label+': '+fmt(ctx.parsed)+' kWh';}}}}}});
+}
+
+function drawLoadBins(b0,b1,b2,b3){
+  document.getElementById('ndLoad').style.display='none';
+  document.getElementById('chartLoad').style.display='block';
+  if(cLoad){cLoad.destroy();cLoad=null;}
+  cLoad=new Chart(document.getElementById('chartLoad'),{type:'bar',
+    data:{labels:['Ore'],datasets:[
+      {label:'≤ 50%',          data:[b0], backgroundColor:PAL.neutro, borderWidth:0},
+      {label:'50% – 75%',      data:[b1], backgroundColor:PAL.elC, borderWidth:0},
+      {label:'75% – 99,9%',    data:[b2], backgroundColor:PAL.el, borderWidth:0},
+      {label:'100%',           data:[b3], backgroundColor:PAL.elS, borderWidth:0}
+    ]},
+    options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,animation:{duration:200},
+      plugins:{legend:{display:true,position:'bottom',labels:{color:tickCol(),font:{size:11},boxWidth:12,padding:8}},
+        tooltip:{callbacks:{label:function(ctx){return ctx.dataset.label+': '+ctx.parsed.x.toLocaleString('it-IT')+' ore';}}}},
+      scales:{x:{stacked:true,ticks:{color:tickCol(),font:{size:11},callback:function(v){return v.toLocaleString('it-IT');}},grid:{color:gridCol()},title:{display:true,text:'Ore',color:tickCol(),font:{size:11}}},
+              y:{stacked:true,display:false}}}});
+}
+
+function recalcEcon(){
+  if(!cogResults.valid){
+    document.getElementById('tabBase').innerHTML='<tbody></tbody>';
+    document.getElementById('tabCog').innerHTML='<tbody></tbody>';
+    document.getElementById('ecSaveAbs').textContent='—';
+    document.getElementById('ecSavePct').textContent='—';
+    document.getElementById('ndEcon').style.display='flex';
+    document.getElementById('chartEcon').style.display='none';
+    if(cEcon){cEcon.destroy();cEcon=null;}
+    return;
+  }
+  var cBuyE=parseFloat(document.getElementById('ecCostBuyE').value);
+  var cSellE=parseFloat(document.getElementById('ecCostSellE').value);
+  var cGas=parseFloat(document.getElementById('ecCostGas').value);
+  var etaBoil=parseFloat(document.getElementById('ecEtaBoiler').value)/100;
+  var pci=parseFloat(document.getElementById('cgPCI').value);
+  if(isNaN(cBuyE)||isNaN(cSellE)||isNaN(cGas)||isNaN(etaBoil)||etaBoil<=0||isNaN(pci)||pci<=0){return;}
+
+  var demE=cogResults.demE, demT=cogResults.demT;
+  var covE=cogResults.covE, covT=cogResults.covT;
+  var expE=cogResults.expE;
+  var gasCog=cogResults.gas;
+
+  var costElecBase = demE * cBuyE;
+  var gasBoilerBase_Sm3 = demT / (pci * etaBoil);
+  var costGasBase = gasBoilerBase_Sm3 * cGas;
+  var totBase = costElecBase + costGasBase;
+
+  var elecBuyCog = Math.max(0, demE - covE);
+  var costElecCog_buy = elecBuyCog * cBuyE;
+  var revElecCog = expE * cSellE;
+  var thermResidual = Math.max(0, demT - covT);
+  var gasBoilerCog_Sm3 = thermResidual / (pci * etaBoil);
+  var gasTotCog_Sm3 = gasCog + gasBoilerCog_Sm3;
+  var costGasCog = gasTotCog_Sm3 * cGas;
+  var totCog = costElecCog_buy - revElecCog + costGasCog;
+
+  var saveAbs = totBase - totCog;
+  var savePct = totBase>0 ? (saveAbs/totBase*100) : 0;
+
+  document.getElementById('tabBase').innerHTML =
+    '<tbody>'+
+    '<tr><td>Elettricità acquistata</td><td class="num">'+fmt(demE)+' kWh</td><td class="num">'+fmtEuro(costElecBase)+'</td></tr>'+
+    '<tr><td>Metano caldaia</td><td class="num">'+fmt(gasBoilerBase_Sm3)+' Sm³</td><td class="num">'+fmtEuro(costGasBase)+'</td></tr>'+
+    '<tr class="tot"><td colspan="2">Costo totale</td><td class="num">'+fmtEuro(totBase)+'</td></tr>'+
+    '</tbody>';
+  document.getElementById('tabCog').innerHTML =
+    '<tbody>'+
+    '<tr><td>Elettricità acquistata</td><td class="num">'+fmt(elecBuyCog)+' kWh</td><td class="num">'+fmtEuro(costElecCog_buy)+'</td></tr>'+
+    '<tr><td>Elettricità immessa (ricavo)</td><td class="num">'+fmt(expE)+' kWh</td><td class="num" style="color:var(--successo)">−'+fmtEuro(revElecCog)+'</td></tr>'+
+    '<tr><td>Metano cogeneratore</td><td class="num">'+fmt(gasCog)+' Sm³</td><td class="num">'+fmtEuro(gasCog*cGas)+'</td></tr>'+
+    '<tr><td>Metano caldaia integrazione</td><td class="num">'+fmt(gasBoilerCog_Sm3)+' Sm³</td><td class="num">'+fmtEuro(gasBoilerCog_Sm3*cGas)+'</td></tr>'+
+    '<tr class="tot"><td colspan="2">Costo totale</td><td class="num">'+fmtEuro(totCog)+'</td></tr>'+
+    '</tbody>';
+
+  var sAbsEl=document.getElementById('ecSaveAbs'), sPctEl=document.getElementById('ecSavePct');
+  sAbsEl.textContent=fmtEuro(saveAbs);
+  sPctEl.textContent=fmt1(savePct)+' %';
+  sAbsEl.className='econ-saving-value '+(saveAbs>=0?'pos':'neg');
+  sPctEl.className='econ-saving-value '+(saveAbs>=0?'pos':'neg');
+
+  drawEconChart(costElecBase,costGasBase,costElecCog_buy,-revElecCog,gasCog*cGas,gasBoilerCog_Sm3*cGas);
+}
+
+function drawEconChart(elBase,gasBase,elBuyCog,revCog,gasCogenCost,gasBoilCogCost){
+  document.getElementById('ndEcon').style.display='none';
+  document.getElementById('chartEcon').style.display='block';
+  if(cEcon){cEcon.destroy();cEcon=null;}
+  cEcon=new Chart(document.getElementById('chartEcon'),{type:'bar',
+    data:{labels:['Senza cogen.','Con cogen.'],datasets:[
+      {label:'Elettricità acquistata',data:[elBase,elBuyCog],backgroundColor:PAL.el,borderWidth:0,stack:'s'},
+      {label:'Metano caldaia',data:[gasBase,gasBoilCogCost],backgroundColor:PAL.th,borderWidth:0,stack:'s'},
+      {label:'Metano cogeneratore',data:[0,gasCogenCost],backgroundColor:PAL.thS,borderWidth:0,stack:'s'},
+      {label:'Ricavo elettricità immessa',data:[0,revCog],backgroundColor:PAL.elC,borderWidth:0,stack:'s'}
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,animation:{duration:200},
+      plugins:{legend:{display:true,position:'bottom',labels:{color:tickCol(),font:{size:11},boxWidth:12,padding:8}},
+        tooltip:{callbacks:{label:function(ctx){return ctx.dataset.label+': '+fmtEuro(ctx.parsed.y);}}}},
+      scales:{x:{stacked:true,ticks:{color:tickCol(),font:{size:11}},grid:{display:false}},
+              y:{stacked:true,ticks:{color:tickCol(),font:{size:11},callback:function(v){return fmtEuro(v);}},grid:{color:gridCol()},title:{display:true,text:'€/anno',color:tickCol(),font:{size:11}}}}}});
+}
+
+window.addEventListener('resize',function(){if(cLine)cLine.resize();if(cCum)cCum.resize();if(cBar)cBar.resize();if(cPieE)cPieE.resize();if(cPieT)cPieT.resize();if(cLoad)cLoad.resize();if(cEcon)cEcon.resize();});
+
+/* ── integrazione nel sito: ridisegno al cambio di tema ── */
+PF.alCambioTema(function(){ if(rowsE_view.length||rowsT_view.length) renderAll(); });
+</script>
+<script src="assets/sito.js" defer></script>
+</body>
+</html>

@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pagina non trovata — 404 · Playfair</title>
+<meta name="description" content="La pagina cercata non esiste: torna alla home di Playfair o scegli uno strumento.">
+<meta name="robots" content="noindex">
+<link rel="icon" href="/img/favicon.svg" type="image/svg+xml">
+<script>try{var t=localStorage.getItem('pf-tema');if(t)document.documentElement.dataset.theme=t;}catch(e){}</script>
+<link rel="stylesheet" href="/assets/tema.css">
+<link rel="stylesheet" href="/assets/sito.css">
+<style>
+.perso { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: var(--s7); align-items: center; padding-block: var(--s8) var(--s6); }
+.perso h1 { margin: 0 0 var(--s4); }
+.perso p { color: var(--tenue); font-size: var(--c-l); max-width: 46ch; }
+.perso .azioni { display: flex; flex-wrap: wrap; gap: var(--s3); margin-top: var(--s5); }
+.bilancio { width: 100%; max-width: 520px; height: auto; justify-self: center; }
+.bilancio .t { font: 500 13px var(--mono); fill: var(--tenue); letter-spacing: .08em; }
+.bilancio .n { font: 700 64px var(--titoli); fill: var(--inchiostro); }
+.bilancio path { fill: none; stroke-linecap: butt; }
+.bilancio .fuga { stroke-dasharray: 10 14; animation: fuga 1.2s linear infinite; }
+@keyframes fuga { to { stroke-dashoffset: -24; } }
+@media (max-width: 760px) { .perso { grid-template-columns: 1fr; gap: var(--s5); padding-top: var(--s6); } }
+</style>
+</head>
+<body>
+<a class="pf-salta" href="#contenuto">Vai al contenuto</a>
+<header class="pf-testata">
+  <a class="pf-marchio" href="/index.html" aria-label="Playfair, home">Playfair<span class="pf-marchio-sub">.statocritico</span></a>
+  <button class="pf-menu-apri" aria-expanded="false" aria-controls="pf-menu">Menu</button>
+  <nav class="pf-menu" id="pf-menu" aria-label="Strumenti">
+    <a href="/playfair-s.html" data-tip="Site — analisi del singolo sito: costi e consumi di elettricità, gas, calore e acqua">Playfair-S</a>
+    <a href="/playfair-e.html" data-tip="Electric — curve di carico elettriche quartorarie: profili, mappe orarie, picchi e base">Playfair-E</a>
+    <a href="/playfair-t.html" data-tip="Thermal — consumi termici ed elettrici, simulazione di cogenerazione e valutazione economica">Playfair-T</a>
+    <a href="/playfair-m.html" data-tip="Money — confronto di investimenti energetici: VAN, TIR, ROI, WACC e flussi di cassa">Playfair-M</a>
+    <a href="/playfair-c.html" data-tip="Cusum — regressione, residui e carta CUSUM secondo ISO 50006">Playfair-C</a>
+    <a href="/sankey.html" data-tip="Sankey — disegna diagrammi di flusso energetico a blocchi e verifica i bilanci">Sankey</a>
+    <a href="/personaggi.html" data-tip="William Playfair e Matthew H. P. R. Sankey: chi erano">Personaggi</a>
+  </nav>
+  <button class="pf-tema" type="button" aria-label="Cambia tema chiaro/scuro">◐</button>
+</header>
+
+<main id="contenuto" class="pf-contenitore">
+  <section class="perso">
+    <div>
+      <p class="pf-sopratitolo">Errore 404 · perdita non contabilizzata</p>
+      <h1>Questa pagina è finita al condensatore</h1>
+      <p>Il flusso che cercavi non arriva da nessuna parte: l'indirizzo è sbagliato oppure la pagina è stata spostata. Il bilancio, però, si chiude sempre.</p>
+      <div class="azioni">
+        <a class="pf-btn" href="/index.html">Torna alla home</a>
+        <a class="pf-btn secondario" href="/sankey.html">Disegna un Sankey</a>
+      </div>
+    </div>
+    <svg class="bilancio" viewBox="0 0 520 340" role="img" aria-label="Piccolo diagramma di Sankey: 100 entra, 0 arriva alla pagina, 100 si perde">
+      <text class="t" x="0" y="62">ENTRATA · 100</text>
+      <path d="M0 110 H200 C290 110 300 230 380 230 H520" stroke="var(--flusso-altro)" stroke-width="70" opacity=".35"/>
+      <path class="fuga" d="M0 110 H200 C290 110 300 230 380 230 H520" stroke="var(--flusso-th)" stroke-width="10"/>
+      <path d="M200 75 H520" stroke="var(--flusso-el)" stroke-width="2" stroke-dasharray="4 6"/>
+      <text class="t" x="520" y="62" text-anchor="end">PAGINA RICHIESTA · 0</text>
+      <text class="n" x="520" y="335" text-anchor="end">404</text>
+      <text class="t" x="520" y="182" text-anchor="end">PERDITE · 100</text>
+    </svg>
+  </section>
+</main>
+
+<footer class="pf-piede">
+  <p>Playfair · un progetto di <a href="https://statocritico.it">Stato Critico</a> · <a href="/guida-rapida.pdf">Guida rapida</a> · Immagini storiche: pubblico dominio (Wikimedia Commons)</p>
+  <p class="pf-piede-nota">I dati caricati restano nel browser: nulla viene inviato a server.</p>
+</footer>
+<script src="/assets/sito.js" defer></script>
+</body>
+</html>

@@ -1,0 +1,35 @@
+# File del repository che NON vanno pubblicati sul sito (stessa sintassi di .gitignore).
+# Wrangler li salta quando carica la cartella "." indicata in wrangler.jsonc.
+
+# Git e configurazione
+.git
+.github
+.gitignore
+.gitattributes
+.assetsignore
+wrangler.jsonc
+wrangler.toml
+package.json
+package-lock.json
+
+# Strumenti e file locali
+node_modules
+.wrangler
+.dev.vars
+.env*
+.vscode
+.idea
+
+# Documentazione interna (contratti, istruzioni, script di pubblicazione)
+/docs/
+*.md
+*.ps1
+
+# File di lavoro e spazzatura di sistema
+*.bak
+*.tmp
+*.log
+~$*
+Thumbs.db
+desktop.ini
+.DS_Store

@@ -1,0 +1,21 @@
+# Strumenti (se un giorno si installa wrangler in locale con npm)
+node_modules/
+.wrangler/
+
+# Segreti e variabili locali: non devono MAI finire su GitHub
+.dev.vars
+.env
+.env.*
+
+# Editor e sistema operativo
+.vscode/
+.idea/
+Thumbs.db
+desktop.ini
+.DS_Store
+
+# File di lavoro
+*.bak
+*.tmp
+*.log
+~$*

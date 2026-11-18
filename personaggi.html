@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Personaggi — William Playfair e Matthew Sankey · Playfair</title>
+<meta name="description" content="Chi erano William Playfair (1759–1823), inventore dei grafici a linee, a barre e a torta, e Matthew H. P. R. Sankey (1853–1925), autore del diagramma di flusso del 1898.">
+<link rel="icon" href="img/favicon.svg" type="image/svg+xml">
+<meta property="og:title" content="Personaggi — William Playfair e Matthew Sankey">
+<meta property="og:image" content="https://playfair.statocritico.it/img/macchina-sankey.gif">
+<script>try{var t=localStorage.getItem('pf-tema');if(t)document.documentElement.dataset.theme=t;}catch(e){}</script>
+<link rel="stylesheet" href="assets/tema.css">
+<link rel="stylesheet" href="assets/sito.css">
+<style>
+.schede { display: grid; gap: var(--s7); padding-bottom: var(--s4); }
+.scheda { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); gap: var(--s6); align-items: start;
+  padding-top: var(--s6); border-top: 1px solid var(--linea); }
+.scheda:nth-child(even) { grid-template-columns: minmax(0, 6fr) minmax(0, 5fr); }
+.scheda:nth-child(even) .scheda-figure { order: 2; }
+.scheda-figure { margin: 0; display: grid; gap: var(--s3); }
+.scheda-figure img { display: block; width: 100%; height: auto; border-radius: var(--r-l); border: 1px solid var(--linea); background: var(--foglio); }
+.scheda-figure .coppia { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.6fr); gap: var(--s4); align-items: end; margin-top: var(--s3); }
+.didascalia { margin: 0; color: var(--tenue); font-size: var(--c-xs); line-height: 1.5; }
+.didascalia i { color: var(--inchiostro); }
+.ritratto { max-width: 360px; justify-self: center; }
+.ritratto img { filter: grayscale(1) contrast(1.02); }
+figcaption { color: var(--tenue); font-size: var(--c-xs); line-height: 1.45; }
+figcaption i { color: var(--inchiostro); }
+.scheda h2 { margin: 0 0 var(--s2); font-size: clamp(1.8rem, 1.3rem + 1.6vw, 2.6rem); letter-spacing: -.01em; }
+.date { margin: 0 0 var(--s4); font: 500 var(--c-s)/1.3 var(--mono); color: var(--primario); letter-spacing: .06em; }
+.scheda p { max-width: 64ch; margin: 0 0 var(--s4); }
+.tappe { list-style: none; margin: var(--s4) 0 var(--s5); padding: 0; display: grid; gap: .1rem; border-left: 2px solid var(--linea); }
+.tappe li { position: relative; display: grid; grid-template-columns: 4.2rem 1fr; gap: var(--s3); padding: .35rem 0 .35rem var(--s4); font-size: var(--c-s); }
+.tappe li::before { content: ""; position: absolute; left: -6px; top: .8rem; width: 10px; height: 10px; border-radius: 50%; background: var(--carta); border: 2px solid var(--primario); }
+.tappe b { font: 600 var(--c-s)/1.4 var(--mono); color: var(--inchiostro); }
+@media (max-width: 860px) {
+  .scheda, .scheda:nth-child(even) { grid-template-columns: 1fr; gap: var(--s5); }
+  .scheda:nth-child(even) .scheda-figure { order: 0; }
+}
+</style>
+</head>
+<body>
+<a class="pf-salta" href="#contenuto">Vai al contenuto</a>
+<header class="pf-testata">
+  <a class="pf-marchio" href="index.html" aria-label="Playfair, home">Playfair<span class="pf-marchio-sub">.statocritico</span></a>
+  <button class="pf-menu-apri" aria-expanded="false" aria-controls="pf-menu">Menu</button>
+  <nav class="pf-menu" id="pf-menu" aria-label="Strumenti">
+    <a href="playfair-s.html" data-tip="Site — analisi del singolo sito: costi e consumi di elettricità, gas, calore e acqua">Playfair-S</a>
+    <a href="playfair-e.html" data-tip="Electric — curve di carico elettriche quartorarie: profili, mappe orarie, picchi e base">Playfair-E</a>
+    <a href="playfair-t.html" data-tip="Thermal — consumi termici ed elettrici, simulazione di cogenerazione e valutazione economica">Playfair-T</a>
+    <a href="playfair-m.html" data-tip="Money — confronto di investimenti energetici: VAN, TIR, ROI, WACC e flussi di cassa">Playfair-M</a>
+    <a href="playfair-c.html" data-tip="Cusum — regressione, residui e carta CUSUM secondo ISO 50006">Playfair-C</a>
+    <a href="sankey.html" data-tip="Sankey — disegna diagrammi di flusso energetico a blocchi e verifica i bilanci">Sankey</a>
+    <a href="personaggi.html" aria-current="page" data-tip="William Playfair e Matthew H. P. R. Sankey: chi erano">Personaggi</a>
+  </nav>
+  <button class="pf-tema" type="button" aria-label="Cambia tema chiaro/scuro">◐</button>
+</header>
+
+<main id="contenuto" class="pf-contenitore">
+  <header class="pf-intestazione">
+    <p class="pf-sopratitolo">Personaggi</p>
+    <h1>Chi mise in moto tutto</h1>
+    <p>Un economista scozzese che inventò il modo di disegnare i numeri e un capitano del genio che disegnò dove va a finire l'energia. Il sito porta il nome del primo e la home la macchina del secondo.</p>
+  </header>
+
+  <div class="schede">
+    <article class="scheda" id="playfair" aria-labelledby="t-playfair">
+      <figure class="scheda-figure">
+        <img src="img/playfair-atlas-1786.webp" width="1200" height="886" alt="Grafico di William Playfair: esportazioni e importazioni dell'Inghilterra verso Danimarca e Norvegia dal 1700 al 1780, con due linee e l'area della bilancia commerciale colorata tra di esse" loading="lazy">
+        <figcaption><i>Exports and Imports to and from Denmark &amp; Norway from 1700 to 1780</i>, dal <i>Commercial and Political Atlas</i> (1786). Non esiste un ritratto noto di Playfair: lo rappresentano i suoi grafici. Pubblico dominio, Wikimedia Commons.</figcaption>
+        <div class="coppia">
+          <img src="img/playfair-breviary-1801.webp" width="400" height="462" alt="Grafico a torta di Playfair sui territori dell'Impero ottomano divisi tra Asia, Africa ed Europa" loading="lazy">
+          <p class="didascalia"><span class="pf-etichetta">Il primo grafico a torta</span><br>L'Impero turco nel <i>Statistical Breviary</i> (1801), uno dei primi grafici a torta. Pubblico dominio, Wikimedia Commons.</p>
+        </div>
+      </figure>
+      <div>
+        <h2 id="t-playfair">William Playfair</h2>
+        <p class="date">Scozia, 1759 – Londra, 1823 · ingegnere ed economista politico</p>
+        <p>Nato vicino a Dundee, lavorò da giovane come disegnatore per James Watt nell'officina di Boulton &amp; Watt a Birmingham, dove le macchine a vapore si progettavano a forza di disegni tecnici. Passò poi all'economia politica, al giornalismo e a una lunga serie di imprese, non sempre fortunate.</p>
+        <p>Nel 1786 pubblicò il <i>Commercial and Political Atlas</i>: 44 tavole in cui importazioni, esportazioni e debito pubblico inglese diventavano <strong>linee, aree e barre</strong>. Era la prima volta che dati economici venivano mostrati così. Nel 1801, con lo <i>Statistical Breviary</i>, aggiunse i primi <strong>grafici a torta</strong> e a cerchi. Sosteneva che un grafico fa capire in un colpo d'occhio ciò che una tabella nasconde: è l'idea su cui si regge questo sito.</p>
+        <ol class="tappe">
+          <li><b>1759</b><span>nasce a Liff, presso Dundee</span></li>
+          <li><b>1777</b><span>disegnatore per James Watt a Birmingham</span></li>
+          <li><b>1786</b><span><i>Commercial and Political Atlas</i>: grafici a linee, ad area e a barre</span></li>
+          <li><b>1801</b><span><i>Statistical Breviary</i>: i primi grafici a torta</span></li>
+          <li><b>1823</b><span>muore a Londra</span></li>
+        </ol>
+        <a class="pf-btn secondario" href="https://en.wikipedia.org/wiki/William_Playfair" rel="noopener">William Playfair su Wikipedia (inglese) ↗</a>
+      </div>
+    </article>
+
+    <article class="scheda" id="sankey" aria-labelledby="t-sankey">
+      <figure class="scheda-figure ritratto">
+        <img src="img/sankey-ritratto.webp" width="432" height="598" alt="Ritratto fotografico ovale del capitano Matthew H. P. R. Sankey in età matura, con baffi, giacca e cravatta" loading="lazy">
+        <figcaption>Matthew Henry Phineas Riall Sankey. Pubblico dominio, Wikimedia Commons.</figcaption>
+      </figure>
+      <div>
+        <h2 id="t-sankey">Matthew H. P. R. Sankey</h2>
+        <p class="date">Nenagh (Irlanda), 1853 – Londra, 1925 · ingegnere, capitano dei Royal Engineers</p>
+        <p>Nato a Nenagh, nella contea di Tipperary, studiò all'accademia militare di Woolwich ed entrò nel 1873 nel genio militare britannico, i Royal Engineers: disegnatore, istruttore di fortificazioni in Canada, poi all'Ordnance Survey. Lasciato l'esercito da capitano nel 1889, entrò nella direzione della Willans &amp; Robinson, costruttrice di macchine a vapore, e divenne in seguito ingegnere consulente; nel 1920 e 1921 presiedette l'Institution of Mechanical Engineers.</p>
+        <p>Nel 1898 pubblicò nei <i>Minutes of Proceedings of the Institution of Civil Engineers</i> il diagramma sull'<strong>efficienza termica delle macchine a vapore</strong> che si vede nella home: frecce larghe quanto il calore che trasportano, dal focolare al lavoro utile, con tutte le perdite in vista. Da lui prendono il nome i <strong>diagrammi di Sankey</strong>, ancora oggi lo strumento più chiaro per un bilancio energetico.</p>
+        <ol class="tappe">
+          <li><b>1853</b><span>nasce a Nenagh, contea di Tipperary</span></li>
+          <li><b>1873</b><span>ufficiale dei Royal Engineers</span></li>
+          <li><b>1889</b><span>lascia l'esercito, entra alla Willans &amp; Robinson</span></li>
+          <li><b>1898</b><span><i>The thermal efficiency of steam-engines</i>: il diagramma di flusso</span></li>
+          <li><b>1920</b><span>presidente dell'Institution of Mechanical Engineers</span></li>
+          <li><b>1925</b><span>muore a Ealing, Londra</span></li>
+        </ol>
+        <a class="pf-btn secondario" href="https://en.wikipedia.org/wiki/Matthew_Henry_Phineas_Riall_Sankey" rel="noopener">Matthew Sankey su Wikipedia (inglese) ↗</a>
+      </div>
+    </article>
+  </div>
+</main>
+
+<footer class="pf-piede">
+  <p>Playfair · un progetto di <a href="https://statocritico.it">Stato Critico</a> · <a href="guida-rapida.pdf">Guida rapida</a> · Immagini storiche: pubblico dominio (Wikimedia Commons)</p>
+  <p class="pf-piede-nota">I dati caricati restano nel browser: nulla viene inviato a server.</p>
+</footer>
+<script src="assets/sito.js" defer></script>
+</body>
+</html>

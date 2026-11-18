@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Playfair-S — Analisi di singolo sito · Playfair</title>
+<meta name="description" content="Playfair-S: analisi di costi e consumi mensili di un sito (elettricità, gas, teleriscaldamento, acqua), energia primaria in TEP, emissioni di CO₂, Rolling 12 e MAT.">
+<link rel="icon" href="img/favicon.svg" type="image/svg+xml">
+<script>try{var t=localStorage.getItem('pf-tema');if(t)document.documentElement.dataset.theme=t;}catch(e){}</script>
+<link rel="stylesheet" href="assets/tema.css">
+<link rel="stylesheet" href="assets/sito.css">
+<link rel="stylesheet" href="assets/strumenti.css">
+<style>
+.pf-app .site-title{font:600 17px/1.3 var(--titoli);color:var(--primario);margin-bottom:10px;min-height:22px}
+.pf-app .year-nav{display:flex;align-items:center;gap:4px;font-size:13px}
+.pf-app .year-nav button{padding:3px 9px;font-size:13px}
+.pf-app .year-label{min-width:42px;text-align:center;font-weight:600;font-size:14px;font-variant-numeric:tabular-nums}
+.pf-app .conv-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:8px}
+.pf-app .charts-row{display:grid;grid-template-columns:2fr 1fr;gap:12px;align-items:start}
+.pf-app .eco-section{margin-bottom:18px}
+.pf-app .eco-section-title{font:600 12px/1.3 var(--titoli);color:var(--tenue);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;padding-bottom:4px;border-bottom:1px solid var(--linea)}
+@media(max-width:600px){.pf-app .charts-row{grid-template-columns:1fr}}
+</style>
+</head>
+<body class="pf-pagina-strumento">
+<header class="pf-testata">
+  <a class="pf-marchio" href="index.html" aria-label="Playfair, home">Playfair<span class="pf-marchio-sub">.statocritico</span></a>
+  <button class="pf-menu-apri" aria-expanded="false" aria-controls="pf-menu">Menu</button>
+  <nav class="pf-menu" id="pf-menu" aria-label="Strumenti">
+    <a href="playfair-s.html" aria-current="page" data-tip="Site — analisi del singolo sito: costi e consumi di elettricità, gas, calore e acqua">Playfair-S</a>
+    <a href="playfair-e.html" data-tip="Electric — curve di carico elettriche quartorarie: profili, mappe orarie, picchi e base">Playfair-E</a>
+    <a href="playfair-t.html" data-tip="Thermal — consumi termici ed elettrici, simulazione di cogenerazione e valutazione economica">Playfair-T</a>
+    <a href="playfair-m.html" data-tip="Money — confronto di investimenti energetici: VAN, TIR, ROI, WACC e flussi di cassa">Playfair-M</a>
+    <a href="playfair-c.html" data-tip="Cusum — regressione, residui e carta CUSUM secondo ISO 50006">Playfair-C</a>
+    <a href="sankey.html" data-tip="Sankey — disegna diagrammi di flusso energetico a blocchi e verifica i bilanci">Sankey</a>
+    <a href="personaggi.html" data-tip="William Playfair e Matthew H. P. R. Sankey: chi erano">Personaggi</a>
+  </nav>
+  <button class="pf-tema" type="button" aria-label="Cambia tema chiaro/scuro">◐</button>
+</header>
+
+<main class="pf-strumento" id="contenuto">
+<section class="pf-intro" aria-labelledby="titolo-strumento">
+  <p class="pf-occhiello">Strumento · Site</p>
+  <h1 id="titolo-strumento">Playfair-S <span class="pf-sotto">— analisi di singolo sito</span> <small>v0.75</small></h1>
+  <p class="pf-sommario">Costi e consumi mensili di un sito: elettricità, gas, teleriscaldamento e acqua. Calcola energia primaria (TEP) ed emissioni di CO₂ con fattori modificabili e mostra gli andamenti Rolling 12 (mese su mese dell’anno prima) e MAT (totale mobile annuo).</p>
+  <p class="pf-file"><b>File accettato:</b> un CSV mensile come <code>1_consumi.csv</code>, separatore <code>;</code> o <code>,</code>, decimali con la virgola e senza separatore delle migliaia. Colonne: <code>anno</code>, <code>mese</code> (1–12 o nome), <code>consumo_elettrico</code> (kWh), <code>costo_elettrico</code> (€), <code>consumo_gas</code> (Sm³), <code>costo_gas</code>, <code>consumo_teleriscaldamento</code> (MWh), <code>costo_teleriscaldamento</code>, <code>consumo_acqua</code> (m³), <code>costo_acqua</code>. Le colonne possono restare vuote; il nome del file diventa il nome del sito.</p>
+  <details class="pf-come">
+    <summary>Come si usa</summary>
+    <ol>
+      <li>Trascina il file CSV in un punto qualsiasi della pagina, oppure sceglilo nel riquadro «Caricamento dati».</li>
+      <li>Con le frecce ← → accanto al file scegli l’anno delle torte dell’impronta ecologica (costi, TEP, CO₂).</li>
+      <li>Nel pannello «Fattori di conversione» puoi cambiare i coefficienti TEP e CO₂: i grafici si aggiornano subito.</li>
+      <li>In «Andamenti» scegli vettore e intervallo di anni; la rotella del mouse sopra i grafici sposta la finestra di un mese.</li>
+      <li>I pulsanti ▲/▼ comprimono ed espandono i pannelli; passa sopra barre e torte per leggere i valori.</li>
+    </ol>
+  </details>
+</section>
+
+<div class="pf-app fam-a s">
+<div class="site-title" id="site-title">– nessun sito caricato –</div>
+
+<!-- CARICAMENTO DATI -->
+<div class="panel" id="panel-load">
+  <div class="panel-hdr">
+    <span class="panel-title">Caricamento dati</span>
+    <div class="hdr-btns">
+      <button class="hdr-btn" onclick="collapseAll()">Comprimi tutti</button>
+      <button class="hdr-btn" onclick="expandAll()">Espandi tutti</button>
+      <button class="hdr-btn" onclick="togglePanel('panel-load')">▲</button>
+    </div>
+  </div>
+  <div class="panel-body" id="body-panel-load">
+    <div class="file-row">
+      <button onclick="document.getElementById('modal-istr').classList.add('open')">Istruzioni</button>
+      <input type="file" id="csv-file" accept=".csv" style="font-size:13px;flex:1;min-width:180px" onchange="loadCSV()" aria-label="File CSV dei consumi mensili (es. 1_consumi.csv)">
+      <div class="year-nav">
+        <button onclick="prevYear()">&#8592;</button>
+        <span class="year-label" id="year-label">–</span>
+        <button onclick="nextYear()">&#8594;</button>
+      </div>
+      <span style="font-size:12px;color:var(--tenue)" id="year-range-label"></span>
+    </div>
+    <div id="csv-msg" style="font-size:12px;color:var(--tenue);margin-top:6px"></div>
+  </div>
+</div>
+
+<!-- FATTORI DI CONVERSIONE -->
+<div class="panel" id="panel-fc">
+  <div class="panel-hdr">
+    <span class="panel-title">Fattori di conversione</span>
+    <div class="hdr-btns"><button class="hdr-btn" onclick="togglePanel('panel-fc')">▲</button></div>
+  </div>
+  <div class="panel-body collapsed" id="body-panel-fc">
+    <div class="conv-grid">
+      <div class="field"><label>Elettricità → TEP (TEP/MWh)</label><input type="number" id="fc-el-tep"  value="0.187"    step="0.001"    oninput="updateEcoAndTotali()"></div>
+      <div class="field"><label>Gas → TEP (TEP/Sm³)</label>        <input type="number" id="fc-gas-tep" value="0.000836" step="0.000001" oninput="updateEcoAndTotali()"></div>
+      <div class="field"><label>Teleriscaldamento → TEP (TEP/MWh)</label><input type="number" id="fc-th-tep" value="0.086" step="0.001" oninput="updateEcoAndTotali()"></div>
+      <div class="field"><label>Elettricità → CO₂ (kg/kWh)</label> <input type="number" id="fc-el-co2"  value="0.216"    step="0.001"    oninput="updateEcoAndTotali()"></div>
+      <div class="field"><label>Gas → CO₂ (kg/Sm³)</label>         <input type="number" id="fc-gas-co2" value="1.96"     step="0.01"     oninput="updateEcoAndTotali()"></div>
+      <div class="field"><label>Teleriscaldamento → CO₂ (kg/MWh)</label><input type="number" id="fc-th-co2" value="106" step="1" oninput="updateEcoAndTotali()"></div>
+    </div>
+  </div>
+</div>
+
+<!-- IMPRONTA ECOLOGICA -->
+<div class="panel" id="panel-eco">
+  <div class="panel-hdr">
+    <span class="panel-title">Impronta ecologica</span>
+    <div class="hdr-btns"><button class="hdr-btn" onclick="togglePanel('panel-eco')">▲</button></div>
+  </div>
+  <div class="panel-body" id="body-panel-eco">
+    <div id="eco-area"><div class="empty-state">Carica un file .csv per visualizzare i dati</div></div>
+  </div>
+</div>
+
+<!-- ANDAMENTI -->
+<div class="panel" id="panel-and">
+  <div class="panel-hdr">
+    <span class="panel-title">Andamenti</span>
+    <div class="hdr-btns"><button class="hdr-btn" onclick="togglePanel('panel-and')">▲</button></div>
+  </div>
+  <div class="panel-body" id="body-panel-and">
+    <div class="file-row" style="margin-bottom:10px;gap:12px;flex-wrap:wrap">
+      <div style="display:flex;align-items:center;gap:6px">
+        <span style="font-size:12px;color:var(--tenue)">Da anno:</span>
+        <div class="year-nav">
+          <button onclick="prevYearFrom()">&#8592;</button>
+          <span class="year-label" id="from-year-label">–</span>
+          <button onclick="nextYearFrom()">&#8594;</button>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:6px">
+        <span style="font-size:12px;color:var(--tenue)">Ad anno:</span>
+        <div class="year-nav">
+          <button onclick="prevYearTo()">&#8592;</button>
+          <span class="year-label" id="to-year-label">–</span>
+          <button onclick="nextYearTo()">&#8594;</button>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:6px">
+        <span style="font-size:12px;color:var(--tenue)">Vettore:</span>
+        <select id="trend-vector" onchange="renderAndamenti()">
+          <option value="el">Energia elettrica</option>
+          <option value="gas">Gas</option>
+          <option value="th">Teleriscaldamento</option>
+          <option value="acq">Acqua</option>
+        </select>
+      </div>
+    </div>
+    <div id="andamenti-area"><div class="empty-state">Carica un file .csv per visualizzare gli andamenti</div></div>
+  </div>
+</div>
+
+<!-- MODAL ISTRUZIONI -->
+<div class="modal-bg" id="modal-istr" onclick="if(event.target===this)this.classList.remove('open')">
+  <div class="modal">
+    <h3>Come preparare il file CSV</h3>
+    <p style="margin-top:6px">Caricare un file <strong>.csv</strong> con le seguenti colonne (separatore: virgola o punto e virgola). Le colonne possono essere vuote.</p>
+    <p style="margin-top:8px"><strong>Colonne:</strong></p>
+    <ul>
+      <li><code>anno</code> – anno (es. 2023)</li>
+      <li><code>mese</code> – numero 1–12 oppure nome (es. gennaio)</li>
+      <li><code>consumo_elettrico</code> – kWh</li>
+      <li><code>costo_elettrico</code> – €</li>
+      <li><code>consumo_gas</code> – Sm³</li>
+      <li><code>costo_gas</code> – €</li>
+      <li><code>consumo_teleriscaldamento</code> – MWh</li>
+      <li><code>costo_teleriscaldamento</code> – €</li>
+      <li><code>consumo_acqua</code> – m³</li>
+      <li><code>costo_acqua</code> – €</li>
+    </ul>
+    <p style="margin-top:8px"><strong>Il nome del file</strong> viene usato come titolo del sito.</p>
+    <div style="margin-top:14px;text-align:right"><button onclick="document.getElementById('modal-istr').classList.remove('open')">Chiudi</button></div>
+  </div>
+</div>
+</div>
+</main>
+
+<footer class="pf-piede">
+  <p>Playfair · un progetto di <a href="https://statocritico.it">Stato Critico</a> · <a href="guida-rapida.pdf">Guida rapida</a> · Immagini storiche: pubblico dominio (Wikimedia Commons)</p>
+  <p>I dati caricati restano nel browser: nulla viene inviato a server.</p>
+</footer>
+
+<script src="assets/vendor/chart.umd.js"></script>
+<script src="assets/strumenti.js"></script>
+<script>
+var MESI_NOMI=['Gennaio','Febbraio','Marzo','Aprile','Maggio','Giugno','Luglio','Agosto','Settembre','Ottobre','Novembre','Dicembre'];
+var MESI_MAP={gennaio:1,febbraio:2,marzo:3,aprile:4,maggio:5,giugno:6,luglio:7,agosto:8,settembre:9,ottobre:10,novembre:11,dicembre:12};
+/* colori dei vettori letti da tema.css (verde elettrico, arancione gas, azzurro acqua) */
+PF.tavolozza({COLOR_EL:['--flusso-el','#1a6fdb'],COLOR_GAS:['--flusso-th','#e07b00'],COLOR_TH:['--serie-4','#C0392B'],COLOR_ACQ:['--flusso-acqua','#1A8A4A'],COLOR_PREV:['--flusso-altro','#aaaaaa']},window);
+var allData=[],years=[],curYearIdx=0,charts={};
+var fromYearIdx=0,toYearIdx=0;
+var andamentiOffset=0;
+
+/* ── PANEL TOGGLE ── */
+var PANELS=['panel-load','panel-fc','panel-eco','panel-and'];
+function togglePanel(id){
+  var body=document.getElementById('body-'+id);
+  var btn=document.querySelector('#'+id+' .hdr-btn:last-child');
+  var collapsed=body.classList.toggle('collapsed');
+  if(btn)btn.textContent=collapsed?'▼':'▲';
+}
+function collapseAll(){PANELS.forEach(function(id){var body=document.getElementById('body-'+id);var btn=document.querySelector('#'+id+' .hdr-btn:last-child');if(body&&!body.classList.contains('collapsed')){body.classList.add('collapsed');if(btn)btn.textContent='▼';}});}
+function expandAll(){PANELS.forEach(function(id){var body=document.getElementById('body-'+id);var btn=document.querySelector('#'+id+' .hdr-btn:last-child');if(body){body.classList.remove('collapsed');if(btn)btn.textContent='▲';}});}
+
+/* ── UTILS ── */
+function parseMese(v){var n=parseInt(v);if(!isNaN(n)&&n>=1&&n<=12)return n;return MESI_MAP[String(v).toLowerCase().trim()]||null;}
+function parseNum(v){var n=parseFloat(String(v).replace(',','.'));return isNaN(n)?null:n;}
+function fmtN(n,dec){if(n===null||n===undefined)return '–';return n.toLocaleString('it-IT',{minimumFractionDigits:dec||0,maximumFractionDigits:dec||0});}
+function fmtCur(n){return n===null?'–':fmtN(Math.round(n),0)+' €';}
+function getFC(id){return parseFloat(document.getElementById(id).value)||0;}
+function destroyChart(k){if(charts[k]){charts[k].destroy();charts[k]=null;}}
+function getYearData(y){return allData.filter(function(r){return r.anno===y;}).sort(function(a,b){return a.mese-b.mese;});}
+function getRecord(y,m){return allData.find(function(r){return r.anno===y&&r.mese===m;})||null;}
+
+/* ── LOAD CSV ── */
+function loadCSV(){
+  var file=document.getElementById('csv-file').files[0];
+  var msg=document.getElementById('csv-msg');
+  if(!file)return;
+  document.getElementById('site-title').textContent=file.name.replace(/\.csv$/i,'');
+  var reader=new FileReader();
+  reader.onload=function(e){
+    try{
+      var lines=e.target.result.split(/\r?\n/).filter(function(l){return l.trim();});
+      if(lines.length<2){msg.style.color='var(--errore)';msg.textContent='File vuoto.';return;}
+      var sep=lines[0].indexOf(';')>-1?';':',';
+      var headers=lines[0].split(sep).map(function(h){return h.trim().toLowerCase().replace(/\s+/g,'_');});
+      function col(row,key){var idx=headers.indexOf(key);return idx>-1?row[idx]:'';}
+      allData=[];
+      for(var i=1;i<lines.length;i++){
+        var p=lines[i].split(sep);
+        var anno=parseInt(col(p,'anno')),mese=parseMese(col(p,'mese'));
+        if(isNaN(anno)||!mese)continue;
+        allData.push({anno:anno,mese:mese,
+          el:parseNum(col(p,'consumo_elettrico')),   cel:parseNum(col(p,'costo_elettrico')),
+          gas:parseNum(col(p,'consumo_gas')),         cgas:parseNum(col(p,'costo_gas')),
+          th:parseNum(col(p,'consumo_teleriscaldamento')),cth:parseNum(col(p,'costo_teleriscaldamento')),
+          acq:parseNum(col(p,'consumo_acqua')),       cacq:parseNum(col(p,'costo_acqua'))});
+      }
+      if(!allData.length){msg.style.color='var(--errore)';msg.textContent='Nessuna riga valida.';return;}
+      var ySet={};allData.forEach(function(r){ySet[r.anno]=1;});
+      years=Object.keys(ySet).map(Number).sort(function(a,b){return a-b;});
+      curYearIdx=years.length-1;
+      // default: fromYear = last-1, toYear = last
+      toYearIdx=years.length-1;
+      fromYearIdx=years.length-1;
+      andamentiOffset=0;
+      msg.style.color='var(--successo)';
+      msg.textContent='Caricati '+allData.length+' record ('+years.length+' anni).';
+      expandAll();
+      updateYearLabels();
+      updateAll();
+    }catch(ex){msg.style.color='var(--errore)';msg.textContent='Errore: '+ex.message;}
+  };
+  reader.readAsText(file);
+}
+
+/* ── YEAR NAV ── */
+function updateYearLabels(){
+  document.getElementById('year-label').textContent=years.length?years[curYearIdx]:'–';
+  document.getElementById('year-range-label').textContent=years.length?'('+years[0]+' – '+years[years.length-1]+')':'';
+  document.getElementById('from-year-label').textContent=years.length?years[fromYearIdx]:'–';
+  document.getElementById('to-year-label').textContent=years.length?years[toYearIdx]:'–';
+}
+function prevYear(){if(curYearIdx>0){curYearIdx--;updateYearLabels();updateEcoAndTotali();}}
+function nextYear(){if(curYearIdx<years.length-1){curYearIdx++;updateYearLabels();updateEcoAndTotali();}}
+function prevYearFrom(){if(fromYearIdx>0){fromYearIdx--;curYearIdx=fromYearIdx;updateYearLabels();updateEcoAndTotali();renderAndamenti();}}
+function nextYearFrom(){if(fromYearIdx<toYearIdx){fromYearIdx++;curYearIdx=fromYearIdx;updateYearLabels();updateEcoAndTotali();renderAndamenti();}}
+function prevYearTo(){if(toYearIdx>fromYearIdx){toYearIdx--;fromYearIdx=toYearIdx;curYearIdx=fromYearIdx;updateYearLabels();updateEcoAndTotali();renderAndamenti();}}
+function nextYearTo(){if(toYearIdx<years.length-1){toYearIdx++;updateYearLabels();renderAndamenti();}}
+
+function updateAll(){updateYearLabels();updateEcoAndTotali();renderAndamenti();}
+function updateEcoAndTotali(){if(years.length)renderEco(years[curYearIdx]);}
+
+/* ── ANNUAL SUMS ── */
+function getAnnualSums(){
+  return years.map(function(y){
+    var rows=getYearData(y);
+    function sum(fn){var s=0,any=false;rows.forEach(function(r){var v=fn(r);if(v!==null){s+=v;any=true;}});return any?s:null;}
+    return{y:y,el:sum(function(r){return r.el;}),cel:sum(function(r){return r.cel;}),
+      gas:sum(function(r){return r.gas;}),cgas:sum(function(r){return r.cgas;}),
+      th:sum(function(r){return r.th;}),cth:sum(function(r){return r.cth;}),
+      acq:sum(function(r){return r.acq;}),cacq:sum(function(r){return r.cacq;})};
+  });
+}
+
+/* ── ZERO LINE PLUGIN ── */
+var zeroLinePlugin={id:'zeroLine',afterDraw:function(chart){
+  if(!chart.config.options._showZeroLine)return;
+  var yP=chart.scales['yP'];if(!yP)return;
+  var z=yP.getPixelForValue(0);
+  if(z<yP.top||z>yP.bottom)return;
+  var ctx=chart.ctx,x=chart.scales['x'];
+  ctx.save();ctx.beginPath();ctx.moveTo(x.left,z);ctx.lineTo(x.right,z);
+  ctx.strokeStyle=PF.rgba(PF.testo(),.5);ctx.lineWidth=1;ctx.setLineDash([4,3]);ctx.stroke();ctx.restore();
+}};
+Chart.register(zeroLinePlugin);
+
+/* ── DOUGHNUT ── */
+function renderDoughnut(id,title,items,fmtFn){
+  destroyChart(id);
+  var el=document.getElementById(id);if(!el)return;
+  var filtered=items.filter(function(x){return x.v!==null&&x.v>0;});
+  if(!filtered.length){el.parentElement.innerHTML='<div style="height:240px"></div>';return;}
+  charts[id]=new Chart(el,{type:'doughnut',
+    data:{labels:filtered.map(function(x){return x.l;}),datasets:[{data:filtered.map(function(x){return x.v;}),backgroundColor:filtered.map(function(x){return x.c+'cc';}),borderColor:filtered.map(function(x){return x.c;}),borderWidth:1}]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{position:'bottom',labels:{font:{size:11}}},
+        title:{display:true,text:title,font:{size:12,weight:'500'},color:PF.testo(),padding:{bottom:4}},
+        tooltip:{callbacks:{label:function(ctx){var tot=ctx.dataset.data.reduce(function(a,b){return a+b;},0);return ctx.label+': '+fmtFn(ctx.parsed)+' ('+(ctx.parsed/tot*100).toFixed(1).replace('.',',')+' %)';}}}}
+    }});
+}
+
+/* ── STACKED BAR ── */
+function renderStackedBar(id,title,labelsArr,datasets,yFmt,ttFmt){
+  destroyChart(id);
+  var el=document.getElementById(id);if(!el)return;
+  charts[id]=new Chart(el,{type:'bar',data:{labels:labelsArr,datasets:datasets},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{labels:{font:{size:11}}},title:{display:true,text:title,font:{size:12,weight:'500'},color:PF.testo(),padding:{bottom:6}},
+        tooltip:{callbacks:{label:function(ctx){return ctx.dataset.label+': '+ttFmt(ctx.parsed.y);}}}},
+      scales:{x:{stacked:true,grid:{display:false},ticks:{font:{size:11}}},y:{stacked:true,ticks:{callback:function(v){return yFmt(v);},font:{size:10}},grid:{color:PF.griglia()}}}
+    }});
+}
+
+/* ── ECO ── */
+function renderEco(selYear){
+  var area=document.getElementById('eco-area');
+  if(!years.length){area.innerHTML='<div class="empty-state">Nessun dato</div>';return;}
+  var sums=getAnnualSums();
+  var selSums=sums.find(function(t){return t.y===selYear;})||{};
+  var fcElTep=getFC('fc-el-tep')/1000,fcGasTep=getFC('fc-gas-tep'),fcThTep=getFC('fc-th-tep');
+  var fcElCo2=getFC('fc-el-co2'),fcGasCo2=getFC('fc-gas-co2'),fcThCo2=getFC('fc-th-co2');
+  var yLabels=years.map(String);
+
+  area.innerHTML=
+    '<div class="eco-section"><div class="eco-section-title">Costi totali (€)</div>'+
+    '<div class="charts-row"><div><div class="chart-wrap" style="height:240px"><canvas id="eco-cost-bar"></canvas></div></div>'+
+    '<div><div class="chart-wrap" style="height:240px"><canvas id="eco-cost-pie"></canvas></div></div></div></div>'+
+    '<div class="eco-section"><div class="eco-section-title">Energia primaria (TEP)</div>'+
+    '<div class="charts-row"><div><div class="chart-wrap" style="height:240px"><canvas id="eco-tep-bar"></canvas></div></div>'+
+    '<div><div class="chart-wrap" style="height:240px"><canvas id="eco-tep-pie"></canvas></div></div></div></div>'+
+    '<div class="eco-section"><div class="eco-section-title">Emissioni di CO₂ (t CO₂)</div>'+
+    '<div class="charts-row"><div><div class="chart-wrap" style="height:240px"><canvas id="eco-co2-bar"></canvas></div></div>'+
+    '<div><div class="chart-wrap" style="height:240px"><canvas id="eco-co2-pie"></canvas></div></div></div></div>'+
+    '<div class="eco-section"><div class="eco-section-title">Consumi idrici (m³)</div>'+
+    '<div class="charts-row"><div><div class="chart-wrap" style="height:240px"><canvas id="eco-acq-bar"></canvas></div></div>'+
+    '<div><div class="chart-wrap" style="height:240px"><canvas id="eco-acq-pie"></canvas></div></div></div></div>';
+
+  renderStackedBar('eco-cost-bar','Costi annui totali (€)',yLabels,[
+    {label:'Elettricità',data:sums.map(function(s){return s.cel;}), backgroundColor:COLOR_EL+'cc', borderColor:COLOR_EL, borderWidth:1},
+    {label:'Gas',        data:sums.map(function(s){return s.cgas;}),backgroundColor:COLOR_GAS+'cc',borderColor:COLOR_GAS,borderWidth:1},
+    {label:'TLR',        data:sums.map(function(s){return s.cth;}), backgroundColor:COLOR_TH+'cc', borderColor:COLOR_TH, borderWidth:1},
+    {label:'Acqua',      data:sums.map(function(s){return s.cacq;}),backgroundColor:COLOR_ACQ+'cc',borderColor:COLOR_ACQ,borderWidth:1}
+  ],function(v){return fmtN(v,0)+' €';},function(v){return fmtCur(v);});
+  renderDoughnut('eco-cost-pie','Costi '+selYear,
+    [{l:'Elettricità',v:selSums.cel,c:COLOR_EL},{l:'Gas',v:selSums.cgas,c:COLOR_GAS},{l:'TLR',v:selSums.cth,c:COLOR_TH},{l:'Acqua',v:selSums.cacq,c:COLOR_ACQ}],
+    function(v){return fmtCur(v);});
+
+  var tepEl=sums.map(function(s){return s.el!==null?+(s.el*fcElTep).toFixed(2):null;});
+  var tepGas=sums.map(function(s){return s.gas!==null?+(s.gas*fcGasTep).toFixed(2):null;});
+  var tepTh=sums.map(function(s){return s.th!==null?+(s.th*fcThTep).toFixed(2):null;});
+  renderStackedBar('eco-tep-bar','Energia primaria annua (TEP)',yLabels,[
+    {label:'Elettricità',data:tepEl, backgroundColor:COLOR_EL+'cc', borderColor:COLOR_EL, borderWidth:1},
+    {label:'Gas',        data:tepGas,backgroundColor:COLOR_GAS+'cc',borderColor:COLOR_GAS,borderWidth:1},
+    {label:'TLR',        data:tepTh, backgroundColor:COLOR_TH+'cc', borderColor:COLOR_TH, borderWidth:1}
+  ],function(v){return fmtN(v,1)+' TEP';},function(v){return fmtN(v,2)+' TEP';});
+  renderDoughnut('eco-tep-pie','Energia primaria '+selYear+' (TEP)',
+    [{l:'Elettricità',v:selSums.el!==null?selSums.el*fcElTep:null,c:COLOR_EL},
+     {l:'Gas',v:selSums.gas!==null?selSums.gas*fcGasTep:null,c:COLOR_GAS},
+     {l:'TLR',v:selSums.th!==null?selSums.th*fcThTep:null,c:COLOR_TH}],
+    function(v){return fmtN(v,2)+' TEP';});
+
+  var co2El=sums.map(function(s){return s.el!==null?+(s.el*fcElCo2/1000).toFixed(2):null;});
+  var co2Gas=sums.map(function(s){return s.gas!==null?+(s.gas*fcGasCo2/1000).toFixed(2):null;});
+  var co2Th=sums.map(function(s){return s.th!==null?+(s.th*fcThCo2/1000).toFixed(2):null;});
+  renderStackedBar('eco-co2-bar','Emissioni CO₂ annue (t CO₂)',yLabels,[
+    {label:'Elettricità',data:co2El, backgroundColor:COLOR_EL+'cc', borderColor:COLOR_EL, borderWidth:1},
+    {label:'Gas',        data:co2Gas,backgroundColor:COLOR_GAS+'cc',borderColor:COLOR_GAS,borderWidth:1},
+    {label:'TLR',        data:co2Th, backgroundColor:COLOR_TH+'cc', borderColor:COLOR_TH, borderWidth:1}
+  ],function(v){return fmtN(v,0)+' t';},function(v){return fmtN(v,2)+' t CO₂';});
+  renderDoughnut('eco-co2-pie','Emissioni CO₂ '+selYear+' (t CO₂)',
+    [{l:'Elettricità',v:selSums.el!==null?selSums.el*fcElCo2/1000:null,c:COLOR_EL},
+     {l:'Gas',v:selSums.gas!==null?selSums.gas*fcGasCo2/1000:null,c:COLOR_GAS},
+     {l:'TLR',v:selSums.th!==null?selSums.th*fcThCo2/1000:null,c:COLOR_TH}],
+    function(v){return fmtN(v,2)+' t CO₂';});
+
+  renderStackedBar('eco-acq-bar','Consumi idrici annui (m³)',yLabels,[
+    {label:'Acqua',data:sums.map(function(s){return s.acq;}),backgroundColor:COLOR_ACQ+'cc',borderColor:COLOR_ACQ,borderWidth:1}
+  ],function(v){return fmtN(v,0)+' m³';},function(v){return fmtN(v,0)+' m³';});
+
+  // torta acqua invisibile (bianca) per allineamento colonne
+  destroyChart('eco-acq-pie');
+  var elPie=document.getElementById('eco-acq-pie');
+  if(elPie){
+    charts['eco-acq-pie']=new Chart(elPie,{type:'doughnut',
+      data:{labels:[''],datasets:[{data:[1],backgroundColor:['transparent'],borderColor:['transparent'],borderWidth:0}]},
+      options:{responsive:true,maintainAspectRatio:false,
+        plugins:{legend:{labels:{color:'transparent',font:{size:11}}},
+          title:{display:true,text:' ',font:{size:12},color:'transparent'},
+          tooltip:{enabled:false}}}});
+  }
+}
+
+/* ── ANDAMENTI ── */
+function buildTimeline(){
+  var set={};
+  allData.forEach(function(r){set[r.anno*100+r.mese]=1;});
+  return Object.keys(set).map(Number).sort(function(a,b){return a-b;}).map(function(k){return{anno:Math.floor(k/100),mese:k%100};});
+}
+
+function getVectorInfo(){
+  var v=document.getElementById('trend-vector').value;
+  var map={
+    el:{cKey:'cel',label:'Energia elettrica',unit:'kWh',color:COLOR_EL},
+    gas:{cKey:'cgas',label:'Gas naturale',unit:'Sm³',color:COLOR_GAS},
+    th:{cKey:'cth',label:'Teleriscaldamento',unit:'MWh',color:COLOR_TH},
+    acq:{cKey:'cacq',label:'Acqua',unit:'m³',color:COLOR_ACQ}
+  };
+  return{vKey:v,cKey:map[v].cKey,label:map[v].label,unit:map[v].unit,color:map[v].color};
+}
+
+function renderAndamenti(){
+  var area=document.getElementById('andamenti-area');
+  if(!years.length){area.innerHTML='<div class="empty-state">Carica un file .csv per visualizzare gli andamenti</div>';return;}
+
+  area.innerHTML=
+    '<div style="margin-bottom:14px"><div class="chart-wrap" style="height:260px"><canvas id="ch-rolling"></canvas></div></div>'+
+    '<div><div class="chart-wrap" style="height:260px"><canvas id="ch-mat"></canvas></div></div>';
+
+  var timeline=buildTimeline();
+  var fromY=years[fromYearIdx], toY=years[toYearIdx];
+
+  // Window size = number of months between fromY Jan and toY Dec (or available data)
+  var allSlice=timeline.filter(function(pt){return pt.anno>=fromY&&pt.anno<=toY;});
+  var windowSize=allSlice.length;
+  if(!windowSize){area.innerHTML='<div class="empty-state">Nessun dato nel periodo selezionato</div>';return;}
+
+  // Build extended timeline (includes months before fromY needed for scrolling)
+  var endIdxInFull=timeline.length-1;
+  for(var i=timeline.length-1;i>=0;i--){if(timeline[i].anno<=toY){endIdxInFull=i;break;}}
+
+  // Clamp offset so we never go past the beginning of full timeline
+  var maxOffset=Math.max(0,endIdxInFull-(windowSize-1));
+  andamentiOffset=Math.min(andamentiOffset,maxOffset);
+
+  // The visible window is always windowSize months ending at (endIdxInFull - andamentiOffset)
+  var pivotEnd=endIdxInFull-andamentiOffset;
+  var pivotStart=Math.max(0,pivotEnd-(windowSize-1));
+  var visSlice=timeline.slice(pivotStart,pivotEnd+1);
+
+  var vi=getVectorInfo();
+  var vKey=vi.vKey,cKey=vi.cKey,color=vi.color,unit=vi.unit,label=vi.label;
+
+  /* ── ROLLING ── */
+  var rollLabels=[],rollCurr=[],rollPrev=[],rollPct=[];
+  visSlice.forEach(function(pt){
+    rollLabels.push(MESI_NOMI[pt.mese-1].substring(0,3)+' '+String(pt.anno).slice(2));
+    var cur=getRecord(pt.anno,pt.mese);
+    var prv=getRecord(pt.anno-1,pt.mese);
+    rollCurr.push(cur&&cur[vKey]!==null?cur[vKey]:null);
+    rollPrev.push(prv&&prv[vKey]!==null?prv[vKey]:null);
+    var vc=cur?cur[cKey]:null,vp=prv?prv[cKey]:null;
+    rollPct.push(vc!==null&&vp!==null&&vp!==0?+((vc-vp)/vp*100).toFixed(1):null);
+  });
+
+  destroyChart('ch-rolling');
+  charts['ch-rolling']=new Chart(document.getElementById('ch-rolling'),{type:'bar',
+    data:{labels:rollLabels,datasets:[
+      {label:label+' ('+unit+')',data:rollCurr,backgroundColor:color+'cc',borderColor:color,borderWidth:1,yAxisID:'yC',order:1},
+      {label:'Anno prec. ('+unit+')',data:rollPrev,backgroundColor:COLOR_PREV+'88',borderColor:COLOR_PREV,borderWidth:1,yAxisID:'yC',order:2},
+      {label:'Var. costo % vs anno prec.',data:rollPct,type:'line',borderColor:PF.testo(),backgroundColor:'transparent',borderWidth:1.5,pointRadius:3,pointBackgroundColor:PF.testo(),yAxisID:'yP',order:0,tension:0}
+    ]},
+    options:{_showZeroLine:true,responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{labels:{font:{size:11}}},title:{display:true,text:'Rolling 12 – '+label,font:{size:12,weight:'500'},color:PF.testo(),padding:{bottom:4}},
+        tooltip:{callbacks:{label:function(ctx){var v=ctx.parsed.y;if(v===null)return null;return ctx.dataset.yAxisID==='yP'?'Var. costo: '+fmtN(v,1)+' %':ctx.dataset.label+': '+fmtN(v,0)+' '+unit;}}}},
+      scales:{x:{grid:{display:false},ticks:{font:{size:10},maxRotation:45,autoSkip:true,maxTicksLimit:24}},
+        yC:{position:'left',title:{display:true,text:unit,font:{size:10}},ticks:{font:{size:10},callback:function(v){return fmtN(v,0);}},grid:{color:PF.griglia()}},
+        yP:{position:'right',title:{display:true,text:'Var. %',font:{size:10}},ticks:{font:{size:10},callback:function(v){return fmtN(v,1)+' %';}},grid:{display:false}}
+      }
+    }});
+
+  /* ── MAT ── */
+  // For MAT we need full timeline to compute trailing 12 months
+  function mat12(tl,idx,key){
+    var s=0,any=false;
+    for(var k=Math.max(0,idx-11);k<=idx;k++){var r=getRecord(tl[k].anno,tl[k].mese);if(r&&r[key]!==null){s+=r[key];any=true;}}
+    return any?s:null;
+  }
+
+  var matLabels=[],matVal=[],matDelta=[],matPct=[];
+  var prevMatC=null;
+  visSlice.forEach(function(pt){
+    // find index in full timeline
+    var fi=-1;
+    for(var i=0;i<timeline.length;i++){if(timeline[i].anno===pt.anno&&timeline[i].mese===pt.mese){fi=i;break;}}
+    matLabels.push(MESI_NOMI[pt.mese-1].substring(0,3)+' '+String(pt.anno).slice(2));
+    var mv=fi>=0?mat12(timeline,fi,vKey):null;
+    var mc=fi>=0?mat12(timeline,fi,cKey):null;
+    matVal.push(mv!==null?+mv.toFixed(0):null);
+    var prevMv=fi>0?mat12(timeline,fi-1,vKey):null;
+    matDelta.push(mv!==null&&prevMv!==null?+(mv-prevMv).toFixed(0):null);
+    matPct.push(mc!==null&&prevMatC!==null&&prevMatC!==0?+((mc-prevMatC)/prevMatC*100).toFixed(1):null);
+    prevMatC=mc;
+  });
+
+  destroyChart('ch-mat');
+  charts['ch-mat']=new Chart(document.getElementById('ch-mat'),{type:'bar',
+    data:{labels:matLabels,datasets:[
+      {label:'MAT consumo ('+unit+')',data:matVal,backgroundColor:color+'55',borderColor:color,borderWidth:1,yAxisID:'yC',order:2},
+      {label:'Var. MAT consumo ('+unit+')',data:matDelta,backgroundColor:color+'cc',borderColor:color,borderWidth:1,yAxisID:'yC',order:1},
+      {label:'Var. % costo MAT',data:matPct,type:'line',borderColor:PF.testo(),backgroundColor:'transparent',borderWidth:1.5,pointRadius:3,pointBackgroundColor:PF.testo(),yAxisID:'yP',order:0,tension:0}
+    ]},
+    options:{_showZeroLine:true,responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{labels:{font:{size:11}}},title:{display:true,text:'Moving Annual Total – '+label,font:{size:12,weight:'500'},color:PF.testo(),padding:{bottom:4}},
+        tooltip:{callbacks:{label:function(ctx){var v=ctx.parsed.y;if(v===null)return null;return ctx.dataset.yAxisID==='yP'?'Var. % costo MAT: '+fmtN(v,1)+' %':ctx.dataset.label+': '+fmtN(v,0)+' '+unit;}}}},
+      scales:{x:{grid:{display:false},ticks:{font:{size:10},maxRotation:45,autoSkip:true,maxTicksLimit:24}},
+        yC:{position:'left',title:{display:true,text:unit,font:{size:10}},ticks:{font:{size:10},callback:function(v){return fmtN(v,0);}},grid:{color:PF.griglia()}},
+        yP:{position:'right',title:{display:true,text:'Var. %',font:{size:10}},ticks:{font:{size:10},callback:function(v){return fmtN(v,1)+' %';}},grid:{display:false}}
+      }
+    }});
+
+  // Wheel scroll – sync both charts
+  function onWheel(e){
+    e.preventDefault();
+    if(e.deltaY>0) andamentiOffset=Math.min(andamentiOffset+1,maxOffset);
+    else andamentiOffset=Math.max(0,andamentiOffset-1);
+    renderAndamenti();
+  }
+  ['ch-rolling','ch-mat'].forEach(function(id){
+    var el=document.getElementById(id);
+    if(el){el.onwheel=null;el.addEventListener('wheel',onWheel,{passive:false});}
+  });
+}
+
+/* ── integrazione nel sito: ridisegno al cambio di tema ── */
+PF.alCambioTema(function(){ if(years.length) updateAll(); });
+</script>
+<script src="assets/sito.js" defer></script>
+</body>
+</html>

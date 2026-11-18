@@ -1,0 +1,29 @@
+# Intestazioni HTTP del sito (Cloudflare Workers static assets legge questo file e non lo pubblica).
+# Sintassi: un percorso per riga, sotto le intestazioni rientrate. Massimo 100 regole.
+
+# --- Sicurezza, valida per tutte le pagine ---
+# CSP: solo risorse del sito stesso (nessuna CDN, nessun tracker, nessuna connessione esterna).
+# 'unsafe-inline' serve perché le pagine hanno script e stili in linea e attributi onclick/onchange.
+# blob: e data: servono per immagini, esportazione PNG/PDF (jsPDF, html2canvas) e worker di PapaParse.
+/*
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  X-Frame-Options: SAMEORIGIN
+  Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=(), interest-cohort=()
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' data: blob:; worker-src 'self' blob:; frame-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'self'
+
+# --- Cache lunga per i file che cambiano raramente ---
+# Librerie (chart.js, papaparse, jspdf…): 30 giorni. Se si aggiorna una libreria, meglio cambiarle nome.
+/assets/vendor/*
+  Cache-Control: public, max-age=2592000
+
+# Font woff2: 1 anno.
+/assets/font/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# Immagini: 7 giorni.
+/img/*
+  Cache-Control: public, max-age=604800
+
+# tema.css, sito.css, sito.js e le pagine HTML restano con la cache predefinita (ricontrollo a ogni visita),
+# così un nuovo tema o una correzione si vede subito dopo il push.

@@ -1,0 +1,24 @@
+// Playfair su Cloudflare Workers (solo file statici, nessuna build).
+// Il sito è HTML + CSS + JS puri nella radice del repository: Cloudflare pubblica la cartella così com'è.
+// I file da NON pubblicare (docs/, README.md, questo file, .git…) sono elencati in .assetsignore.
+// Intestazioni HTTP (cache e sicurezza) in _headers.
+{
+  "name": "playfair",
+  "compatibility_date": "2026-11-01",
+  "assets": {
+    // La radice del repository è la cartella pubblicata.
+    "directory": ".",
+    // Pagina mancante: risponde con 404.html (stato 404).
+    "not_found_handling": "404-page",
+    // Valore predefinito, scritto per chiarezza: /pagina.html viene servita come /pagina
+    // (redirect 307). I link relativi «pagina.html» continuano a funzionare.
+    "html_handling": "auto-trailing-slash"
+  },
+  // Dominio personalizzato: al deploy Cloudflare crea da solo il record DNS e il certificato
+  // (serve che la zona statocritico.it sia attiva su Cloudflare, come per bordovasca).
+  "routes": [
+    { "pattern": "playfair.statocritico.it", "custom_domain": true }
+  ],
+  // Niente indirizzo *.workers.dev: il sito vive solo su playfair.statocritico.it.
+  "workers_dev": false
+}
