@@ -6,7 +6,7 @@ repository e Cloudflare lo pubblica così com'è. Tempo: circa mezz'ora la prima
 
 > **In 10 righe**
 > 1. Su GitHub, in **statocritico**: *New repository* → `playfair`, Public, **senza** README → *Create*.
-> 2. PowerShell nella cartella del sito: `git init -b main` · `git add .` · `git commit -m "Playfair: prima versione"`
+> 2. PowerShell: `cd C:\Users\ingpa\Documents\claude\pj\playfair\playfair-sito` (è già un repository con i commit: niente `git init`)
 > 3. `git remote add origin https://github.com/statocritico/playfair.git` · `git push -u origin main`
 > 4. **dash.cloudflare.com** → *Workers & Pages* → *Create application* → *Import a repository* / GitHub → `statocritico/playfair`.
 > 5. Nome progetto **playfair** · *Build command* **vuoto** · *Deploy command* `npx wrangler deploy` · branch `main` → *Deploy*.
@@ -25,7 +25,7 @@ repository e Cloudflare lo pubblica così com'è. Tempo: circa mezz'ora la prima
 - **Programmi sul PC**: [Git per Windows](https://git-scm.com/download/win) (controlla in PowerShell con `git --version`).
   Facoltativi: [GitHub Desktop](https://desktop.github.com) se preferisci i clic ai comandi; [Node.js LTS](https://nodejs.org)
   solo per `npx wrangler` (prova in locale o pubblicazione senza GitHub, passo F).
-- **Cartella del sito sul PC**, per esempio `C:\Users\ingpa\Documents\claude\pj\statocritico\playfair`. Dentro devono
+- **Cartella del sito sul PC**: `C:\Users\ingpa\Documents\claude\pj\playfair\playfair-sito` (fuori da `statocritico`, va bene così: il repository è indipendente). È **già un repository git** con tutta la storia dei commit. Dentro devono
   esserci `index.html`, `assets\`, `img\`, `wrangler.jsonc`, `.assetsignore`, `_headers`, `404.html`.
   I file che iniziano con il punto (`.assetsignore`, `.gitignore`) in Esplora file si vedono solo con
   *Visualizza → Mostra → Elementi nascosti*: **non vanno persi**, servono.
@@ -34,7 +34,7 @@ repository e Cloudflare lo pubblica così com'è. Tempo: circa mezz'ora la prima
   ma **non** sul sito.
 - Il primo controllo in locale (facoltativo, 1 minuto):
   ```powershell
-  cd C:\Users\ingpa\Documents\claude\pj\statocritico\playfair
+  cd C:\Users\ingpa\Documents\claude\pj\playfair\playfair-sito
   python -m http.server 8000        # apri http://localhost:8000 ; Ctrl+C per uscire
   ```
 
@@ -46,18 +46,18 @@ repository e Cloudflare lo pubblica così com'è. Tempo: circa mezz'ora la prima
    `.gitignore`, né licenza (ci sono già nella cartella) → *Create repository*.
 
 ### A2 (strada consigliata). Carica i file con git da PowerShell
+La cartella è già un repository git con i commit fatti: **non** serve `git init` né il primo commit.
 ```powershell
-cd C:\Users\ingpa\Documents\claude\pj\statocritico\playfair
-git init -b main
-git add .
-git status                        # controlla l'elenco (vedi sotto)
-git commit -m "Playfair: prima versione del sito"
+cd C:\Users\ingpa\Documents\claude\pj\playfair\playfair-sito
+git status                        # deve dire "nothing to commit, working tree clean"
+git log --oneline                 # mostra i commit già fatti
 git remote add origin https://github.com/statocritico/playfair.git
 git push -u origin main
 ```
+Se hai modificato qualcosa nel frattempo, prima del push: `git add .` e `git commit -m "descrizione"`.
+
 Cosa aspettarsi:
-- `git status` elenca `index.html`, `assets/…`, `img/…`, `docs/…`, `.assetsignore`, `.gitignore`, `_headers`,
-  `wrangler.jsonc`. **Non** deve elencare `node_modules/`, `.wrangler/`, file `.env` (sono in `.gitignore`).
+- Se `git status` mostra file modificati che non hai toccato (succede su Windows per i permessi dei file), esegui una volta `git config core.fileMode false`.
 - Al primo `git push` si apre una finestra di accesso a GitHub (*Sign in with your browser*): autorizza. Nessuna
   password va scritta nei file.
 - L'ultima riga è del tipo `* [new branch]  main -> main`.
@@ -65,10 +65,9 @@ Cosa aspettarsi:
   `git config --global user.name "Il tuo nome"` e `git config --global user.email "la-tua-email"`, poi rifai il commit.
 
 ### A2 (alternativa). GitHub Desktop
-1. *File → Add local repository* → scegli la cartella `playfair` → *create a repository* (nome `playfair`,
-   *Git ignore* **None**, nessuna licenza) → *Create repository*.
-2. Scrivi il riassunto «Playfair: prima versione del sito» → *Commit to main*.
-3. *Publish repository* → **togli** la spunta *Keep this code private* → *Organization*/account **statocritico** →
+1. *File → Add local repository* → scegli la cartella `playfair-sito` (è già un repository: GitHub Desktop la riconosce
+   con tutti i commit).
+2. *Publish repository* → **togli** la spunta *Keep this code private* → *Organization*/account **statocritico** →
    *Publish*. (Se hai già creato il repository al passo A1, usa invece *Repository → Repository settings → Remote*
    `https://github.com/statocritico/playfair.git` e poi *Push origin*.)
 
@@ -154,7 +153,7 @@ verso `*.workers.dev` **non** funziona (Cloudflare non riconosce il nome). Quind
 ### E1. Pubblicare una modifica
 Modifichi i file nella cartella, poi da PowerShell:
 ```powershell
-cd C:\Users\ingpa\Documents\claude\pj\statocritico\playfair
+cd C:\Users\ingpa\Documents\claude\pj\playfair\playfair-sito
 .\docs\pubblica.ps1                         # oppure: .\docs\pubblica.ps1 "Nuovo tema"
 ```
 Lo script fa `git add`, `git commit` con data e ora e `git push`. Equivalente a mano:
@@ -181,7 +180,7 @@ locale, poi pubblica. Se il browser mostra ancora il vecchio stile: Ctrl+F5.
 
 Serve Node.js. Dalla cartella del sito:
 ```powershell
-cd C:\Users\ingpa\Documents\claude\pj\statocritico\playfair
+cd C:\Users\ingpa\Documents\claude\pj\playfair\playfair-sito
 npx wrangler login        # si apre il browser: autorizza l'account Cloudflare di statocritico.it
 npx wrangler deploy       # carica i file (rispettando .assetsignore) e collega il dominio
 ```
