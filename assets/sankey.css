@@ -74,6 +74,10 @@
   font: inherit; font-size: .875rem; color: var(--inchiostro, #f3eff4); background: var(--carta, #19171c);
   border: 1px solid var(--bordo, #7b7385); border-radius: calc(var(--raggio, 8px) * .75); padding: .3rem .45rem; min-height: 2rem; min-width: 0;
 }
+.sk-cursore { display: flex; flex-direction: column; gap: .15rem; font-size: .78rem; color: var(--tenue, #b5adbd); }
+.sk-cursore span { display: flex; justify-content: space-between; }
+.sk-cursore output { color: var(--inchiostro, #f3eff4); font-variant-numeric: tabular-nums; font-weight: 600; }
+.sk-cursore input { width: 100%; accent-color: var(--primario, #ff7a50); }
 .sk-check { display: flex; gap: .45rem; align-items: center; font-size: .82rem; color: var(--inchiostro, #f3eff4); cursor: pointer; }
 .sk-check input { accent-color: var(--primario, #ff7a50); width: 1rem; height: 1rem; }
 .sk-apri { display: flex; flex-direction: column; gap: .2rem; font-size: .82rem; border-radius: var(--raggio, 8px); }

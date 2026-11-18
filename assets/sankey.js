@@ -135,21 +135,22 @@
   }
 
   /* ================= 2. MODELLO DATI E STORIA =================
-     Formato JSON versione 3 (le versioni 1 e 2 vengono migrate in automatico da normalizza()):
-       doc   { formato, versione: 3, titolo, nota, blocchi[], collegamenti[], opzioni{}, fattori[] }
+     Formato JSON versione 4 (le versioni 1-3 vengono migrate in automatico da normalizza()):
+       opzioni { conversione, pci, proporzionale, aggancio, scalaUnica (spessore in tep), scalaBlocchi, scalaTubi (0,5–2), spessoreMax }
+       doc   { formato, versione: 4, titolo, nota, blocchi[], collegamenti[], opzioni{}, fattori[] }
        blocco{ id, nome, x, y, tipo: 'bilancio' | 'conversione' | 'confronto', dati[] }
        dato  { id, etichetta, valore, calc, u, ua, ruolo, conv, cmp }
        conv  null | { da: riga d'ingresso, f: fattore delle unità di misura, num, den: unità del fattore, eta: rendimento (1 = 100%), lib: fattore tipico }
        cmp   null | { a: riga A (riferimento), b: riga B (alternativa) }
      Conversione: riga con conv → valore = f × eta × riga «da» (prefissi gestiti da coefConversione).
      Confronto:   riga con cmp  → valore = A − B («riduzione» se positivo, «aumento» se negativo). */
-  const VERSIONE = 3;
+  const VERSIONE = 4;
   const TIPI_BLOCCO = ['bilancio', 'conversione', 'confronto'];
   function docVuoto() {
     return {
       formato: 'playfair-sankey', versione: VERSIONE, titolo: 'Diagramma di Sankey', nota: '',
       blocchi: [], collegamenti: [],
-      opzioni: { conversione: false, pci: 9.59, spessoreMax: 40, proporzionale: false, aggancio: true },
+      opzioni: { conversione: false, pci: 9.59, spessoreMax: 40, proporzionale: false, aggancio: true, scalaUnica: true, scalaBlocchi: 1, scalaTubi: 1 },
       fattori: copiaFattori()
     };
   }
@@ -176,6 +177,14 @@
       o = { ...o, versione: 3 };
       o.blocchi = (o.blocchi || []).map((b) => ({ ...b, dati: (b && Array.isArray(b.dati) ? b.dati : []).map((x) => ({ ...x, conv: x && x.conv ? { ...x.conv, eta: x.conv.eta == null ? 1 : x.conv.eta } : null, cmp: null })) }));
     }
+    if (v < 4) {
+      // v3 → v4: scala unica degli spessori (equivalente tep) attiva; lo «spessore massimo» diventa la scala dei tubi
+      const op = { ...(o.opzioni || {}) };
+      const sm = Number(op.spessoreMax);
+      op.scalaTubi = isFinite(sm) && sm > 0 ? clamp(sm / 40, 0.5, 2) : 1; op.spessoreMax = 40;
+      op.scalaBlocchi = 1; op.scalaUnica = true;
+      o = { ...o, versione: 4, opzioni: op };
+    }
     if (v < VERSIONE) o.migrato = v;
     return o;
   }
@@ -195,6 +204,9 @@
     if (isFinite(op.spessoreMax)) d.opzioni.spessoreMax = clamp(Number(op.spessoreMax), 6, 120);
     d.opzioni.proporzionale = !!op.proporzionale;
     d.opzioni.aggancio = op.aggancio !== false;
+    d.opzioni.scalaUnica = op.scalaUnica !== false;
+    d.opzioni.scalaBlocchi = isFinite(op.scalaBlocchi) && op.scalaBlocchi > 0 ? clamp(Number(op.scalaBlocchi), 0.5, 2) : 1;
+    d.opzioni.scalaTubi = isFinite(op.scalaTubi) && op.scalaTubi > 0 ? clamp(Number(op.scalaTubi), 0.5, 2) : 1;
     if (Array.isArray(o.fattori)) {
       // libreria: si parte dai tipici e si sovrascrivono i valori salvati; i fattori aggiunti dall'utente restano
       const salvati = new Map(o.fattori.filter((x) => x && x.id).map((x) => [String(x.id), x]));
@@ -594,8 +606,8 @@
   /** x del bordo effettivo del blocco all'altezza yRel (per il Confronta i lati sono inclinati). */
   function bordoX(b, g, lato, yRel) {
     if (b.tipo !== 'confronto') return lato === 'R' ? b.x + g.w : b.x;
-    const t = clamp(yRel / g.h, 0, 1);
-    return lato === 'R' ? b.x + g.w - INCL * t : b.x + INCL * (1 - t);
+    const t = clamp(yRel / g.h, 0, 1), s = g.incl != null ? g.incl : INCL;
+    return lato === 'R' ? b.x + g.w - s * t : b.x + s * (1 - t);
   }
 
   /** Dimensioni automatiche: 1 dato → più largo che alto; 2 → quadrato; 3+ → più alto che largo.
@@ -640,22 +652,86 @@
     return { w, h, righe, incl, cyCentro: n ? (TESTA + h) / 2 : h / 2 };
   }
 
+  /* ---- equivalente di riferimento (tep) per lo spessore dei tubi ----
+     Regola (spiegata anche nel pannello «Diagramma»): ogni flusso ha un equivalente in tep.
+     · unità energetiche: elettricità 0,187 tep/MWh, gas 0,000836 tep/Sm³, calore 0,086 tep/MWh, tep = sé stesso
+       (fattori presi dalla libreria del progetto, quindi modificabili);
+     · unità non energetiche (t/kg CO₂, kg, altro): l'equivalente si eredita lungo i tubi e attraverso i blocchi di
+       conversione: uscita = ingresso × rendimento (il fattore delle unità non conta); una riga con più tubi in arrivo
+       vale la somma; il risultato di un Confronta vale |A − B|; l'ingresso di una conversione può ricavarlo
+       all'indietro da un'uscita energetica (uscita ÷ rendimento);
+     · acqua (m³): mai convertita, scala separata; flussi senza equivalente ricavabile: scala propria per unità. */
+  function fattoreEq(d, u) {
+    const f = (id) => { const x = (d.fattori || []).find((y) => y.id === id) || FATTORI_TIPICI.find((y) => y.id === id); return x ? x.f : null; };
+    switch (u) {
+      case 'kWh': return f('el-tep') / 1000; case 'MWh_el': return f('el-tep');
+      case 'Sm3': return f('gas-tep');
+      case 'MWh_th': return f('th-tep'); case 'kWh_th': return f('th-tep') / 1000;
+      case 'tep': return 1;
+      default: return null;
+    }
+  }
+  function equivalenti(d, mb) {
+    const val = (x) => (x.valore != null ? x.valore : x.calc);
+    const eqR = new Map(), eqL = new Map();
+    const links = d.collegamenti.filter((l) => mb.has(l.da.b) && mb.has(l.a.b));
+    const unL = new Map(links.map((l) => [l.id, unitaEffettiva(l, mb)]));
+    d.blocchi.forEach((b) => b.dati.forEach((dt) => { const f = fattoreEq(d, dt.u), v = val(dt); if (f != null && v != null) eqR.set(dt.id, Math.abs(v) * f); }));
+    links.forEach((l) => { const un = unL.get(l.id); const f = un ? fattoreEq(d, un.u) : null, v = val(l); if (f != null && v != null) eqL.set(l.id, Math.abs(v) * f); });
+    const acqua = (dt) => dt && dt.u === 'm3';
+    for (let giro = 0; giro < 40; giro++) {
+      let cambiato = false;
+      const metti = (m, id, v) => { if (v != null && isFinite(v) && !m.has(id)) { m.set(id, v); cambiato = true; } };
+      links.forEach((l) => {
+        if (eqL.has(l.id)) return; const un = unL.get(l.id); if (un && un.u === 'm3') return;
+        for (const [bid, did, verso] of [[l.da.b, l.da.d, 'out'], [l.a.b, l.a.d, 'in']]) {
+          if (!did || !eqR.has(did)) continue;
+          const dt = datoDi(mb.get(bid), did); if (acqua(dt)) continue;
+          const fratelli = links.filter((x) => (verso === 'out' ? x.da.b === bid && x.da.d === did : x.a.b === bid && x.a.d === did));
+          if (fratelli.length === 1) { metti(eqL, l.id, eqR.get(did)); break; }
+          const v = val(l), vr = val(dt); if (v != null && vr) { metti(eqL, l.id, eqR.get(did) * Math.abs(v / vr)); break; }
+        }
+      });
+      d.blocchi.forEach((b) => b.dati.forEach((dt) => {
+        if (eqR.has(dt.id) || acqua(dt)) return;
+        const ins = links.filter((x) => x.a.b === b.id && x.a.d === dt.id), outs = links.filter((x) => x.da.b === b.id && x.da.d === dt.id);
+        const eta = (x) => (x.conv && x.conv.eta > 0 ? x.conv.eta : 1);
+        if (ins.length && ins.every((x) => eqL.has(x.id))) return metti(eqR, dt.id, ins.reduce((t, x) => t + eqL.get(x.id), 0));
+        if (b.tipo === 'conversione' && dt.conv && dt.conv.da && eqR.has(dt.conv.da)) return metti(eqR, dt.id, eqR.get(dt.conv.da) * eta(dt));
+        if (b.tipo === 'confronto' && dt.cmp && eqR.has(dt.cmp.a) && eqR.has(dt.cmp.b)) return metti(eqR, dt.id, Math.abs(eqR.get(dt.cmp.a) - eqR.get(dt.cmp.b)));
+        if (outs.length && outs.every((x) => eqL.has(x.id))) return metti(eqR, dt.id, outs.reduce((t, x) => t + eqL.get(x.id), 0));
+        if (b.tipo === 'conversione') { const o = b.dati.find((x) => x.conv && x.conv.da === dt.id && eqR.has(x.id)); if (o) metti(eqR, dt.id, eqR.get(o.id) / eta(o)); }
+      }));
+      if (!cambiato) break;
+    }
+    return { eqR, eqL };
+  }
+
+  /** Spessore dei tubi. Scala unica (predefinita): proporzionale all'equivalente in tep, una sola scala per tutto il
+      diagramma; acqua e flussi senza equivalente su scale proprie. Senza scala unica: una scala per unità (o per energia). */
   function larghezzeTubi(d, mb) {
     const opz = d.opzioni; const info = new Map(); const maxG = new Map();
+    const unica = opz.scalaUnica !== false;
+    const eq = unica && opz.proporzionale ? equivalenti(d, mb) : null;
     d.collegamenti.forEach((l) => {
       const un = unitaEffettiva(l, mb);
       const v = l.valore != null ? l.valore : l.calc;
       const G = un ? gruppo(un.u, un.ua, opz) : null;
-      const q = (G && v != null) ? Math.abs(v * G.f) : null;
-      info.set(l.id, { un, G, v, q, calc: l.valore == null && l.calc != null });
-      if (q != null) maxG.set(G.g, Math.max(maxG.get(G.g) || 0, q));
+      let q = (G && v != null) ? Math.abs(v * G.f) : null, scala = G ? G.g : null;
+      if (eq && un && un.u !== 'm3' && eq.eqL.has(l.id)) { q = eq.eqL.get(l.id); scala = '*tep'; }
+      else if (eq && un && un.u === 'm3') scala = '*acqua';
+      else if (eq && un) scala = '*propria:' + (G ? G.g : '');
+      info.set(l.id, { un, G, v, q, scala, calc: l.valore == null && l.calc != null });
+      if (q != null && scala) maxG.set(scala, Math.max(maxG.get(scala) || 0, q));
     });
+    const max = (opz.spessoreMax || 40) * (opz.scalaTubi > 0 ? opz.scalaTubi : 1);
     info.forEach((i) => {
-      if (!opz.proporzionale) i.w = 10;
+      if (!opz.proporzionale) i.w = 10 * (opz.scalaTubi > 0 ? opz.scalaTubi : 1);
       else if (i.q == null) i.w = 4;
-      else { const mx = maxG.get(i.G.g) || 0; i.w = mx > 0 ? Math.max(2, opz.spessoreMax * i.q / mx) : 2; }
+      else { const mx = maxG.get(i.scala) || 0; i.w = mx > 0 ? Math.max(1.5, max * i.q / mx) : 2; }
       i.w = Math.round(i.w * 10) / 10;
     });
+    info.scale = new Set([...info.values()].map((i) => i.scala).filter(Boolean));
     return info;
   }
 
@@ -812,14 +888,26 @@
     const M = misuratore(opz.famiglia);
     const mb = mappaBlocchi(d);
     const tubi = larghezzeTubi(d, mb);
+    // scala dei blocchi: la geometria si calcola a scala 1 (con i fasci di tubi riportati a scala 1) e poi si ingrandisce
+    // attorno al centro del blocco, così le posizioni (i centri) restano fisse
+    const sb = d.opzioni.scalaBlocchi > 0 ? d.opzioni.scalaBlocchi : 1;
+    const geoS = (b, fasci) => {
+      const f2 = sb === 1 ? fasci : new Map([...fasci].map(([k, o]) => [k, { ...o, L: o.L / sb, R: o.R / sb }]));
+      const g0 = geometriaBlocco(b, f2, M, opz.compatto);
+      if (sb === 1) return { ...g0, s: 1, base: g0 };
+      const g1 = geometriaBlocco(b, fasci, M, opz.compatto); // ancoraggio: il centro del blocco a scala 1
+      return { ...g0, w: g0.w * sb, h: g0.h * sb, incl: g0.incl * sb, cyCentro: g0.cyCentro * sb, righe: g0.righe.map((r) => ({ ...r, cy: r.cy * sb, alto: r.alto * sb })), s: sb, base: g0, ancora: g1 };
+    };
+    const posa = (geoM) => d.blocchi.forEach((b) => { const g = geoM.get(b.id); mb.set(b.id, sb === 1 ? b : { ...b, x: b.x + (g.ancora.w - g.w) / 2, y: b.y + (g.ancora.h - g.h) / 2 }); });
     const rett = (b, g) => ({ id: b.id, x: b.x, y: b.y, w: g.w, h: g.h });
     const chiaveDato = (b, did) => (did && b.dati.some((x) => x.id === did)) ? did : '_';
     const portaY = (b, g, k) => { if (k === '_') return b.y + g.cyCentro; const r = g.righe.find((rr) => rr.dt.id === k); return b.y + (r ? r.cy : g.cyCentro); };
     const links = d.collegamenti.filter((l) => mb.has(l.da.b) && mb.has(l.a.b) && l.da.b !== l.a.b);
 
     // passo 1: geometria senza fasci → scelta dei lati
-    const geo1 = new Map(d.blocchi.map((b) => [b.id, geometriaBlocco(b, new Map(), M, opz.compatto)]));
-    let ost = d.blocchi.map((b) => rett(b, geo1.get(b.id)));
+    const geo1 = new Map(d.blocchi.map((b) => [b.id, geoS(b, new Map())]));
+    posa(geo1);
+    let ost = d.blocchi.map((b) => rett(mb.get(b.id), geo1.get(b.id)));
     const lati = new Map();
     links.forEach((l) => {
       const bs = mb.get(l.da.b), bt = mb.get(l.a.b), gs = geo1.get(bs.id), gt = geo1.get(bt.id);
@@ -841,8 +929,9 @@
       somma(bs.id + '|' + chiaveDato(bs, l.da.d), L.sA, w);
       somma(bt.id + '|' + chiaveDato(bt, l.a.d), L.sB, w);
     });
-    const geo = new Map(d.blocchi.map((b) => [b.id, geometriaBlocco(b, fasci, M, opz.compatto)]));
-    ost = d.blocchi.map((b) => rett(b, geo.get(b.id)));
+    const geo = new Map(d.blocchi.map((b) => [b.id, geoS(b, fasci)]));
+    posa(geo);
+    ost = d.blocchi.map((b) => rett(mb.get(b.id), geo.get(b.id)));
     // passo 3: porte (tubi affiancati, ordinati secondo la posizione dell'altro estremo)
     const gruppiPorte = new Map();
     links.forEach((l) => {
@@ -902,8 +991,8 @@
       return { l: r.l, pts, w: r.w, ops, d: opsInD(ops), vettore: info.un ? vettoreDi(info.un.u) : 'altro', mancante: info.v == null, etich, freccia, attraversa: r.attraversa };
     });
     piazzaEtichette(scTubi, ost, affollato);
-    const scBlocchi = d.blocchi.map((b) => ({ b, g: geo.get(b.id) }));
-    return { blocchi: scBlocchi, tubi: scTubi, geo };
+    const scBlocchi = d.blocchi.map((b) => ({ b: mb.get(b.id), g: geo.get(b.id) }));
+    return { blocchi: scBlocchi, tubi: scTubi, geo, scale: tubi.scale, unica: d.opzioni.scalaUnica !== false && d.opzioni.proporzionale };
   }
 
   /** Colloca le etichette dei tubi evitando blocchi, altre etichette e (se possibile) gli altri tubi:
@@ -1021,6 +1110,8 @@
       const aria = schermo ? ` tabindex="0" role="button" aria-label="${conv ? 'Blocco di conversione' : cmp ? 'Blocco Confronta' : 'Blocco'} ${esc(b.nome)}, ${b.dati.length} dati${descr ? ', ' + descr : ''}"` : '';
       s += `<g class="${cls}" data-blocco="${b.id}" transform="translate(${r2(b.x)} ${r2(b.y)})"${aria}>`;
       if (schermo && msgs.length) s += `<title>${esc(msgs.map((m) => m.testo).join('\n'))}</title>`;
+      const sbk = g.s || 1; if (g.base) g = g.base; // si disegna a scala 1 dentro un gruppo ingrandito
+      if (sbk !== 1) s += `<g transform="scale(${sbk})">`;
       const fm = formaBlocco(b, g);
       if (fm.para) {
         const dP = 'M' + fm.pts.map((q) => r2(q[0]) + ' ' + r2(q[1])).join('L') + 'Z';
@@ -1062,6 +1153,7 @@
         s += st === 'ok' ? '<path d="M-4.2 0.3l2.8 2.8 5.4-5.6" style="fill:none;stroke-width:2.4px;stroke-linecap:round;stroke-linejoin:round" class="sk-badge-segno"/>' : `<text text-anchor="middle" dominant-baseline="central" y="0.5">${st === 'err' ? '!' : '?'}</text>`;
         s += '</g>';
       }
+      if (sbk !== 1) s += '</g>';
       s += '</g>';
     });
     s += '</g>';
@@ -1092,14 +1184,20 @@
     $('#sk-vuoto').hidden = doc.blocchi.length > 0;
     disegnaSovra(); aggiornaLegenda(); aggiornaInfo();
   }
-  function disegnaTutto() { $('#sk-titolo').value = doc.titolo; disegna(); disegnaPannello(); aggiornaPulsanti(); aggiornaModo(); }
+  function aggiornaCursori() {
+    [['blocchi', doc.opzioni.scalaBlocchi], ['tubi', doc.opzioni.scalaTubi]].forEach(([k, v]) => {
+      const el = $('#sk-scala-' + k); if (!el) return; const pc = Math.round((v > 0 ? v : 1) * 100);
+      el.value = pc; $('#sk-scala-' + k + '-val').textContent = pc + '%';
+    });
+  }
+  function disegnaTutto() { $('#sk-titolo').value = doc.titolo; aggiornaCursori(); disegna(); disegnaPannello(); aggiornaPulsanti(); aggiornaModo(); }
 
   function disegnaSovra() {
     let s = '';
     const dr = stato.drag;
     if (stato.modo === 'collegamento' && stato.collega && stato.mouse && scenaCorrente) {
-      const b = doc.blocchi.find((x) => x.id === stato.collega.b);
-      const g = b && scenaCorrente.geo.get(b.id);
+      const vb = scenaCorrente.blocchi.find((x) => x.b.id === stato.collega.b);
+      const b = vb && vb.b, g = vb && vb.g;
       if (g) {
         const r = g.righe.find((x) => x.dt.id === stato.collega.d);
         const y = b.y + (r ? r.cy : g.cyCentro); const m = stato.mouse;
@@ -1118,6 +1216,7 @@
     doc.blocchi.forEach((b) => b.dati.forEach((dt) => { if (unitaOk(dt.u, dt.ua)) presenti.add(vettoreDi(dt.u)); }));
     const chiavi = Object.keys(VETTORI).filter((k) => presenti.size === 0 || presenti.has(k));
     let h = chiavi.map((k) => `<span><i style="background:var(--${VETTORI[k].v})"></i>${esc(VETTORI[k].nome)}</span>`).join('');
+    const ns = notaScale(scenaCorrente); if (ns) h += `<span class="sk-leg-nota">${esc(ns)}</span>`;
     if (doc.blocchi.some((b) => b.tipo === 'conversione')) h += '<span class="sk-leg-nota">angoli smussati ⇄ = conversione (× fattore × η) · ◆ = riga calcolata</span>';
     if (doc.blocchi.some((b) => b.tipo === 'confronto')) h += '<span class="sk-leg-nota">parallelogramma A−B = confronto (riduzione / aumento)</span>';
     h += '<span class="sk-leg-nota">tratteggio = valore mancante</span><span class="sk-leg-calc">corsivo = calcolato</span>';
@@ -1584,10 +1683,12 @@
     h += `<label class="sk-campo"><span>Nota del diagramma (fonti, ipotesi, rendimenti: compare nelle esportazioni)</span><textarea data-campo="o-nota" rows="4" maxlength="2000">${esc(doc.nota || '')}</textarea></label>`;
     h += '<h3>Calcolo e spessori</h3>';
     h += `<label class="sk-check"><input type="checkbox" data-campo="o-conv"${o.conversione ? ' checked' : ''}> Converti in energia (kWh)</label>`;
-    h += '<p class="sk-nota">Con la conversione MWh → kWh, Sm³ → kWh (con il PCI), elettricità e calore entrano nello stesso bilancio energetico e nella stessa scala degli spessori. Senza, ogni unità ha il suo bilancio e la sua scala (kWh e MWh dello stesso vettore restano sempre confrontabili).</p>';
+    h += '<p class="sk-nota">Riguarda i bilanci dei blocchi: con la conversione MWh → kWh e Sm³ → kWh (con il PCI) elettricità, gas e calore entrano nello stesso bilancio energetico; senza, ogni vettore ha il suo bilancio (kWh e MWh dello stesso vettore restano sempre confrontabili). Gli spessori dipendono invece dalla «Scala unica».</p>';
     h += `<label class="sk-campo"><span>PCI del gas naturale (kWh/Sm³)</span><input class="sk-num" inputmode="decimal" data-campo="o-pci" value="${fmtCampo(o.pci)}"${o.conversione ? '' : ' disabled'}></label>`;
     h += `<label class="sk-check"><input type="checkbox" data-campo="o-prop"${o.proporzionale ? ' checked' : ''}> Spessore proporzionale ai valori</label>`;
-    h += `<label class="sk-campo"><span>Spessore massimo dei tubi: <output id="sk-spess-val">${o.spessoreMax}</output> px</span><input type="range" min="10" max="90" step="2" data-campo="o-spess" value="${o.spessoreMax}"></label>`;
+    h += `<label class="sk-check"><input type="checkbox" data-campo="o-unica"${o.scalaUnica !== false ? ' checked' : ''}> Scala unica (equivalente TEP)</label>`;
+    h += '<p class="sk-nota">Con la scala unica lo spessore di ogni tubo è proporzionale al suo equivalente in tep, su una sola scala per tutto il diagramma: elettricità, gas e calore con i fattori qui sotto; t CO₂ e le altre unità non energetiche ereditano l\'equivalente attraverso i blocchi di conversione (uscita = ingresso × rendimento, il fattore delle unità non conta), una riga che somma più tubi vale la somma, il risultato di un Confronta |A − B|. Così le perdite escono sottili e il tubo delle emissioni totali è spesso quanto la somma dei flussi iniziali. L\'acqua resta su una scala separata. Senza scala unica: una scala per unità di misura.</p>';
+    h += '<h3>Fattori di equivalenza per lo spessore</h3><div class="sk-libreria">' + ['el-tep', 'gas-tep', 'th-tep'].map((id) => fattoreDi(id)).filter(Boolean).map((x) => `<label class="sk-lib-voce"><span>${esc(x.nome)}</span><span class="sk-fattore"><input class="sk-num" inputmode="decimal" data-campo="fl-f" data-id="${esc(x.id)}" value="${fmtCampo(x.f)}" aria-label="${esc(x.nome)}, fattore di equivalenza"><span class="sk-fattore-u">${esc(breveU(x.num) + '/' + breveU(x.den))}</span></span></label>`).join('') + '</div><p class="sk-nota">Gli stessi valori della libreria dei fattori tipici; tep = 1.</p>';
     h += `<label class="sk-check"><input type="checkbox" data-campo="o-aggancio"${o.aggancio ? ' checked' : ''}> Aggancio alla griglia (10 px)</label>`;
     h += '<h3>Verifica dei bilanci</h3>';
     if (!v) h += '<div class="sk-msg info">Premi <strong>Aggiorna</strong> (tasto A) per verificare i bilanci, calcolare le caselle vuote e rendere gli spessori proporzionali.</div>';
@@ -1808,7 +1909,7 @@
       case 'o-conv': if (tipoEv === 'change') modifica(() => { doc.opzioni.conversione = el.checked; }, { pannello: true }); break;
       case 'o-pci': if (tipoEv === 'input') { const v = leggiVal(); if (v != null && v > 0) modifica(() => { doc.opzioni.pci = v; }, { unione: 'o-pci' }); } break;
       case 'o-prop': if (tipoEv === 'change') modifica(() => { doc.opzioni.proporzionale = el.checked; }, { dati: false }); break;
-      case 'o-spess': if (tipoEv === 'input') { const o = $('#sk-spess-val'); if (o) o.textContent = el.value; modifica(() => { doc.opzioni.spessoreMax = Number(el.value); doc.opzioni.proporzionale = true; }, { unione: 'o-spess', dati: false }); } break;
+      case 'o-unica': if (tipoEv === 'change') modifica(() => { doc.opzioni.scalaUnica = el.checked; }, { dati: false, pannello: true }); break;
       case 'o-aggancio': if (tipoEv === 'change') modifica(() => { doc.opzioni.aggancio = el.checked; }, { dati: false }); break;
       default: break;
     }
@@ -1905,7 +2006,7 @@
     if (nuovo.vista) { stato.vista = { ...nuovo.vista }; applicaVista(); } else requestAnimationFrame(adatta);
     delete doc.vista;
     const migrato = doc.migrato; delete doc.migrato;
-    if (migrato) messaggio(`Progetto in formato versione ${migrato} convertito automaticamente alla versione ${VERSIONE} (blocchi di conversione con rendimento, Confronta, tep, nota). Premi Aggiorna per verificare i bilanci.`, 'successo', 9000);
+    if (migrato) messaggio(`Progetto in formato versione ${migrato} convertito automaticamente alla versione ${VERSIONE} (conversioni con rendimento, Confronta, scala unica degli spessori in tep, scale di blocchi e tubi). Premi Aggiorna per verificare i bilanci.`, 'successo', 9000);
     else if (testo) messaggio(testo, 'successo', 6000);
   }
   function apriFile(file) {
@@ -1974,7 +2075,7 @@
     const testa = 78 + righeNota.length * 17 + (righeNota.length ? 6 : 0);
     // legenda su più righe se serve
     const voci = vett.map((k) => ({ k, t: VETTORI[k].nome, w: 30 + M(VETTORI[k].nome, 400, 12) + 22 }));
-    const nl = notaLegenda();
+    const nl = notaLegenda(sc);
     voci.push({ k: null, t: nl, w: M(nl, 400, 12) + 10 });
     const righeLeg = []; let riga = [], lr = 0;
     voci.forEach((v) => { if (lr + v.w > W - margine * 2 && riga.length) { righeLeg.push(riga); riga = []; lr = 0; } riga.push(v); lr += v.w; });
@@ -2004,8 +2105,17 @@
     return { svg: s, W, H, ox, oy, righeLeg };
   }
   /** Testo della legenda per le note grafiche (conversione, tratteggio, corsivo). */
-  function notaLegenda() {
-    return (doc.blocchi.some((b) => b.tipo === 'conversione') ? 'angoli smussati con frecce = conversione (ingresso × fattore × η) · ' : '')
+  /** Nota sulle scale degli spessori (scala unica in tep, acqua separata, scale proprie). */
+  function notaScale(sc) {
+    if (!sc || !sc.unica) return '';
+    const sc2 = sc.scale || new Set(); let t = 'spessore ∝ equivalente in tep (scala unica)';
+    if (sc2.has('*acqua')) t += ' · acqua: scala separata';
+    if ([...sc2].some((x) => String(x).startsWith('*propria'))) t += ' · flussi senza equivalente: scala propria';
+    return t;
+  }
+  function notaLegenda(sc) {
+    const ns = notaScale(sc);
+    return (ns ? ns + ' · ' : '') + (doc.blocchi.some((b) => b.tipo === 'conversione') ? 'angoli smussati con frecce = conversione (ingresso × fattore × η) · ' : '')
       + (doc.blocchi.some((b) => b.tipo === 'confronto') ? 'parallelogramma A-B = confronto (A - B: riduzione o aumento) · ' : '')
       + (doc.blocchi.some((b) => b.tipo !== 'bilancio') ? 'rombo = riga calcolata dal blocco · ' : '') + 'tratteggio = valore mancante · corsivo = valore calcolato';
   }
@@ -2080,7 +2190,7 @@
       const righeNota = doc.nota ? t.splitTextToSize(pdfTesto(doc.nota), PW - 2 * mg) : [];
       t.setFontSize(8);
       const voci = vett.map((kk) => ({ kk, t: pdfTesto(VETTORI[kk].nome) })).map((v) => ({ ...v, w: 9 + t.getTextWidth(v.t) + 5 }));
-      const note = pdfTesto(notaLegenda()) + ' · i flussi senza etichetta valgono quanto la riga da cui partono o a cui arrivano · Pagina generata nel browser: nessun dato inviato a server.';
+      const note = pdfTesto(notaLegenda(sc).replace('∝ ', 'proporzionale all\'')) + ' · i flussi senza etichetta valgono quanto la riga da cui partono o a cui arrivano · Pagina generata nel browser: nessun dato inviato a server.';
       const righeLeg = []; let riga = [], lr = 0;
       voci.forEach((v) => { if (lr + v.w > PW - 2 * mg && riga.length) { righeLeg.push(riga); riga = []; lr = 0; } riga.push(v); lr += v.w; });
       if (riga.length) righeLeg.push(riga);
@@ -2127,70 +2237,71 @@
       pdf.text(txt, xx, yy, { baseline: 'middle' });
     });
     // blocchi
-    sc.blocchi.forEach(({ b, g }) => {
+    sc.blocchi.forEach(({ b, g: gS }) => {
+      const g = gS.base || gS, kb = k * (gS.s || 1), ptb = (px) => px * kb * 72 / 25.4;
       const st = ver && ver.r.stB.get(b.id);
-      const x0 = X(b.x), y0 = Y(b.y), w = g.w * k, h = g.h * k;
-      const fm = formaBlocco(b, g), ox = fm.ox * k;
-      const poligono = (pts) => { pdf.moveTo(x0 + pts[0][0] * k, y0 + pts[0][1] * k); pts.slice(1).forEach((q) => pdf.lineTo(x0 + q[0] * k, y0 + q[1] * k)); pdf.close(); };
+      const x0 = X(b.x), y0 = Y(b.y), w = g.w * kb, h = g.h * kb;
+      const fm = formaBlocco(b, g), ox = fm.ox * kb;
+      const poligono = (pts) => { pdf.moveTo(x0 + pts[0][0] * kb, y0 + pts[0][1] * kb); pts.slice(1).forEach((q) => pdf.lineTo(x0 + q[0] * kb, y0 + q[1] * kb)); pdf.close(); };
       const coloreBordo = st === 'ok' ? pal.successo : st === 'err' ? pal.errore : st === 'warn' ? pal.attenzione : pal.bordo;
-      const spessore = (st ? (st === 'err' ? 3.5 : 2.5) : 1.5) * k;
+      const spessore = (st ? (st === 'err' ? 3.5 : 2.5) : 1.5) * kb;
       pdf.setFillColor(st === 'err' ? pal['errore-fondo'] : '#ffffff'); pdf.setDrawColor(coloreBordo); pdf.setLineWidth(spessore);
       if (fm.para) { poligono(fm.pts); pdf.fill(); }
-      else pdf.roundedRect(x0, y0, w, h, fm.r * k, fm.r * k, 'F');
+      else pdf.roundedRect(x0, y0, w, h, fm.r * kb, fm.r * kb, 'F');
       if (b.dati.length) {
         pdf.setFillColor(st === 'err' ? pal['errore-fondo'] : pal.rialzo);
         if (fm.para) { poligono(fm.testa); pdf.fill(); }
         else {
-          const rr = fm.r * k;
+          const rr = fm.r * kb;
           pdf.moveTo(x0, y0 + rr); pdf.curveTo(x0, y0 + rr * 0.45, x0 + rr * 0.45, y0, x0 + rr, y0); pdf.lineTo(x0 + w - rr, y0);
-          pdf.curveTo(x0 + w - rr * 0.45, y0, x0 + w, y0 + rr * 0.45, x0 + w, y0 + rr); pdf.lineTo(x0 + w, y0 + TESTA * k); pdf.lineTo(x0, y0 + TESTA * k); pdf.close(); pdf.fill();
+          pdf.curveTo(x0 + w - rr * 0.45, y0, x0 + w, y0 + rr * 0.45, x0 + w, y0 + rr); pdf.lineTo(x0 + w, y0 + TESTA * kb); pdf.lineTo(x0, y0 + TESTA * kb); pdf.close(); pdf.fill();
         }
-        pdf.setDrawColor(pal.linea); pdf.setLineWidth(0.6 * k);
-        if (fm.para) pdf.line(x0 + fm.div[0] * k, y0 + TESTA * k, x0 + fm.div[2] * k, y0 + TESTA * k); else pdf.line(x0, y0 + TESTA * k, x0 + w, y0 + TESTA * k);
+        pdf.setDrawColor(pal.linea); pdf.setLineWidth(0.6 * kb);
+        if (fm.para) pdf.line(x0 + fm.div[0] * kb, y0 + TESTA * kb, x0 + fm.div[2] * kb, y0 + TESTA * kb); else pdf.line(x0, y0 + TESTA * kb, x0 + w, y0 + TESTA * kb);
       }
       pdf.setDrawColor(coloreBordo); pdf.setLineWidth(spessore);
-      if (fm.para) { poligono(fm.pts); pdf.stroke(); } else pdf.roundedRect(x0, y0, w, h, fm.r * k, fm.r * k, 'S');
+      if (fm.para) { poligono(fm.pts); pdf.stroke(); } else pdf.roundedRect(x0, y0, w, h, fm.r * kb, fm.r * kb, 'S');
       const yIc = b.dati.length ? TESTA / 2 : g.h / 2;
       if (b.tipo === 'conversione') {
-        const ix = x0 + w - (PADX + 22) * k, iy = y0 + (yIc - 6.5) * k;
-        pdf.setDrawColor(pal.inchiostro); pdf.setLineWidth(1.6 * k); pdf.setLineCap('round');
-        [[0, 3.5, 12, 3.5], [9, 0.5, 12, 3.5], [12, 3.5, 9, 6.5], [14, 9.5, 2, 9.5], [5, 6.5, 2, 9.5], [2, 9.5, 5, 12.5]].forEach((q) => pdf.line(ix + q[0] * k, iy + q[1] * k, ix + q[2] * k, iy + q[3] * k));
+        const ix = x0 + w - (PADX + 22) * kb, iy = y0 + (yIc - 6.5) * kb;
+        pdf.setDrawColor(pal.inchiostro); pdf.setLineWidth(1.6 * kb); pdf.setLineCap('round');
+        [[0, 3.5, 12, 3.5], [9, 0.5, 12, 3.5], [12, 3.5, 9, 6.5], [14, 9.5, 2, 9.5], [5, 6.5, 2, 9.5], [2, 9.5, 5, 12.5]].forEach((q) => pdf.line(ix + q[0] * kb, iy + q[1] * kb, ix + q[2] * kb, iy + q[3] * kb));
         pdf.setLineCap('butt');
       }
-      if (b.tipo === 'confronto') { pdf.setFont('helvetica', 'bold'); pdf.setFontSize(pt(11)); pdf.setTextColor(pal.tenue); pdf.text('A-B', x0 + (g.w - PADX - 14 - INCL * yIc / g.h) * k, y0 + (yIc + 1) * k, { baseline: 'middle', align: 'right' }); }
-      pdf.setFont('helvetica', 'bold'); pdf.setFontSize(pt(13)); pdf.setTextColor(pal.inchiostro);
-      if (b.dati.length) pdf.text(pdfTesto(b.nome), x0 + PADX * k + ox, y0 + (TESTA / 2 + 1) * k, { baseline: 'middle' });
+      if (b.tipo === 'confronto') { pdf.setFont('helvetica', 'bold'); pdf.setFontSize(ptb(11)); pdf.setTextColor(pal.tenue); pdf.text('A-B', x0 + (g.w - PADX - 14 - INCL * yIc / g.h) * kb, y0 + (yIc + 1) * kb, { baseline: 'middle', align: 'right' }); }
+      pdf.setFont('helvetica', 'bold'); pdf.setFontSize(ptb(13)); pdf.setTextColor(pal.inchiostro);
+      if (b.dati.length) pdf.text(pdfTesto(b.nome), x0 + PADX * kb + ox, y0 + (TESTA / 2 + 1) * kb, { baseline: 'middle' });
       else pdf.text(pdfTesto(b.nome), x0 + w / 2, y0 + h / 2, { baseline: 'middle', align: 'center' });
       g.righe.forEach((r) => {
         const c = pal[VETTORI[unitaOk(r.dt.u, r.dt.ua) ? vettoreDi(r.dt.u) : 'altro'].v];
-        const cy = y0 + r.cy * k;
-        const mx = x0 + (PADX + 4) * k + ox;
+        const cy = y0 + r.cy * kb;
+        const mx = x0 + (PADX + 4) * kb + ox;
         if (r.uscita) {
-          pdf.setFillColor(c); pdf.setDrawColor(c); pdf.setLineWidth(1.6 * k);
-          const pts = [[mx, cy - 5 * k], [mx + 5 * k, cy], [mx, cy + 5 * k], [mx - 5 * k, cy]];
+          pdf.setFillColor(c); pdf.setDrawColor(c); pdf.setLineWidth(1.6 * kb);
+          const pts = [[mx, cy - 5 * kb], [mx + 5 * kb, cy], [mx, cy + 5 * kb], [mx - 5 * kb, cy]];
           if (r.dt.ruolo === 'perdita') pts.forEach((q, i) => { const z = pts[(i + 1) % 4]; pdf.line(q[0], q[1], z[0], z[1]); });
           else { pdf.triangle(pts[0][0], pts[0][1], pts[1][0], pts[1][1], pts[2][0], pts[2][1], 'F'); pdf.triangle(pts[0][0], pts[0][1], pts[2][0], pts[2][1], pts[3][0], pts[3][1], 'F'); }
-        } else if (r.dt.ruolo === 'perdita') { pdf.setDrawColor(c); pdf.setLineWidth(1.8 * k); pdf.circle(mx, cy, 3.6 * k, 'S'); }
-        else { pdf.setFillColor(c); pdf.circle(mx, cy, 4.2 * k, 'F'); }
-        pdf.setFont('helvetica', 'normal'); pdf.setFontSize(pt(12)); pdf.setTextColor(pal.inchiostro);
+        } else if (r.dt.ruolo === 'perdita') { pdf.setDrawColor(c); pdf.setLineWidth(1.8 * kb); pdf.circle(mx, cy, 3.6 * kb, 'S'); }
+        else { pdf.setFillColor(c); pdf.circle(mx, cy, 4.2 * kb, 'F'); }
+        pdf.setFont('helvetica', 'normal'); pdf.setFontSize(ptb(12)); pdf.setTextColor(pal.inchiostro);
         const et = pdfTesto(r.et);
-        pdf.text(et, x0 + (PADX + 14) * k + ox, r.fx2 ? cy - 6 * k : cy, { baseline: 'middle' });
+        pdf.text(et, x0 + (PADX + 14) * kb + ox, r.fx2 ? cy - 6 * kb : cy, { baseline: 'middle' });
         if (r.fx) {
           const xw = pdf.getTextWidth(et); const cmpR = b.tipo === 'confronto';
-          pdf.setFont('helvetica', cmpR ? 'bold' : 'italic'); pdf.setFontSize(pt(r.fx2 ? 11 : 10.5)); pdf.setTextColor(cmpR ? pal.successo : pal.tenue); if (cmpR && /aumento/.test(r.fx)) pdf.setTextColor(pal.errore);
-          if (r.fx2) pdf.text(pdfTesto(r.fx), x0 + (PADX + 14) * k + ox, cy + 8 * k, { baseline: 'middle' });
-          else pdf.text(pdfTesto(r.fx), x0 + (PADX + 14 + 6) * k + ox + xw, cy, { baseline: 'middle' });
+          pdf.setFont('helvetica', cmpR ? 'bold' : 'italic'); pdf.setFontSize(ptb(r.fx2 ? 11 : 10.5)); pdf.setTextColor(cmpR ? pal.successo : pal.tenue); if (cmpR && /aumento/.test(r.fx)) pdf.setTextColor(pal.errore);
+          if (r.fx2) pdf.text(pdfTesto(r.fx), x0 + (PADX + 14) * kb + ox, cy + 8 * kb, { baseline: 'middle' });
+          else pdf.text(pdfTesto(r.fx), x0 + (PADX + 14 + 6) * kb + ox + xw, cy, { baseline: 'middle' });
         }
         pdf.setFont('helvetica', r.tv.cls === 'calc' ? 'bolditalic' : r.tv.cls === 'vuoto' ? 'normal' : 'bold');
         pdf.setTextColor(r.tv.cls === 'calc' ? pal.segno : r.tv.cls === 'vuoto' ? pal.tenue : pal.inchiostro);
-        pdf.text(pdfTesto(r.tv.testo), x0 + w - PADX * k - ox, r.fx2 ? cy - 6 * k : cy, { baseline: 'middle', align: 'right' });
+        pdf.text(pdfTesto(r.tv.testo), x0 + w - PADX * kb - ox, r.fx2 ? cy - 6 * kb : cy, { baseline: 'middle', align: 'right' });
       });
       if (st) {
-        const cx = x0 + w - 3 * k, cyb = y0 + 3 * k;
-        pdf.setFillColor(st === 'ok' ? pal.successo : st === 'err' ? pal.errore : pal.attenzione); pdf.setDrawColor('#ffffff'); pdf.setLineWidth(2 * k);
-        pdf.circle(cx, cyb, 9.5 * k, 'FD');
-        if (st === 'ok') { pdf.setLineWidth(2.4 * k); pdf.lines([[2.8 * k, 2.8 * k], [5.4 * k, -5.6 * k]], cx - 4.2 * k, cyb + 0.3 * k, [1, 1], 'S'); }
-        else { pdf.setFont('helvetica', 'bold'); pdf.setFontSize(pt(12)); pdf.setTextColor('#ffffff'); pdf.text(st === 'err' ? '!' : '?', cx, cyb, { baseline: 'middle', align: 'center' }); }
+        const cx = x0 + w - 3 * kb, cyb = y0 + 3 * kb;
+        pdf.setFillColor(st === 'ok' ? pal.successo : st === 'err' ? pal.errore : pal.attenzione); pdf.setDrawColor('#ffffff'); pdf.setLineWidth(2 * kb);
+        pdf.circle(cx, cyb, 9.5 * kb, 'FD');
+        if (st === 'ok') { pdf.setLineWidth(2.4 * kb); pdf.lines([[2.8 * kb, 2.8 * kb], [5.4 * kb, -5.6 * kb]], cx - 4.2 * kb, cyb + 0.3 * kb, [1, 1], 'S'); }
+        else { pdf.setFont('helvetica', 'bold'); pdf.setFontSize(ptb(12)); pdf.setTextColor('#ffffff'); pdf.text(st === 'err' ? '!' : '?', cx, cyb, { baseline: 'middle', align: 'center' }); }
       }
     });
     // legenda (su più righe se serve)
@@ -2320,11 +2431,12 @@
       ['cal', 'Caldaia integrativa', 380, 300, [['Gas naturale', null, 'Sm3'], ['Calore', null, 'MWh_th', 'valore', '', { da: 0, lib: 'gas-pci', eta: 0.92 }], ['Perdite', null, 'MWh_th', 'perdita', '', { da: 0, lib: 'gas-pci', eta: 0.08 }]], 'conv'],
       ['cpod', 'Prelievo da rete → CO₂ e TEP', 380, 700, righeCO2TEP(['Prelievo da rete', null, 'kWh'], 'el-co2', 'el-tep'), 'conv'],
       ['ut', 'Utenze termiche (sito 1)', 900, 120, [['Calore', 23713090, 'kWh_th']]],
+      ['per', 'Perdite (fumi, radiatori)', 900, 260, [['Perdite', null, 'MWh_th']]],
       ['ue', 'Utenze elettriche (sito 1)', 900, 380, [['Elettricità', 16104820, 'kWh']]],
       ['cgas', 'Gas → CO₂ e TEP', 1300, 600, righeCO2TEP(['Gas consumato', null, 'Sm3'], 'gas-co2', 'gas-tep'), 'conv'],
       ['tco2', 'Emissioni totali (t CO₂)', 1700, 560, [['Totale CO₂', null, 'tCO2']]],
       ['ttep', 'Energia primaria totale (TEP)', 1700, 690, [['Totale', null, 'tep']]]
-    ], [['gas.0', 'cog.0'], ['gas.0', 'cal.0'], ['el.0', 'cpod.0'], ['cpod.0', 'ue.0'], ['cog.1', 'ue.0'], ['cog.2', 'ut.0'], ['cal.1', 'ut.0'],
+    ], [['gas.0', 'cog.0'], ['gas.0', 'cal.0'], ['el.0', 'cpod.0'], ['cpod.0', 'ue.0'], ['cog.1', 'ue.0'], ['cog.2', 'ut.0'], ['cal.1', 'ut.0'], ['cog.3', 'per.0'], ['cal.2', 'per.0'],
       ['cog.0', 'cgas.0'], ['cal.0', 'cgas.0'], ['cgas.1', 'tco2.0'], ['cpod.1', 'tco2.0'], ['cgas.2', 'ttep.0'], ['cpod.2', 'ttep.0']],
     'Scenario sui fabbisogni 2025 del sito 1 (1_consumi.csv e termico_sito_1.csv): 16.104.820 kWh elettrici e 23.713.090 kWh termici. Cogeneratore da 1,6 MWe per 7.500 h (12.000 MWh el.). Nei blocchi di conversione il gas diventa energia con il PCI (9,59 kWh/Sm³) moltiplicato per il rendimento η, ipotizzato sul PCI: cogeneratore elettrico 40%, termico 45%, perdite 15%; caldaia integrativa 92% (perdite 8%). Aggiorna ricava all\'indietro il gas di ciascun impianto (Sm³) e il prelievo da rete. Emissioni e tep si contano sui vettori acquistati (gas bruciato e prelievo da rete): elettricità e calore autoprodotti non si contano due volte. ' + FATTORI_NOTA)),
     ospedale: () => impagina(costruisciEsempio('Ospedale — elettricità, gas, acqua, CO₂ e TEP (sito 4, 2025)', { conversione: false }, [
@@ -2352,17 +2464,18 @@
     caldaie: () => impagina(costruisciEsempio('Caldaia tradizionale vs a condensazione — stesso fabbisogno (sito 1, 2025)', { conversione: true }, [
       ['ga', 'Rete gas · scenario A', 0, 0, [['Gas naturale', null, 'Sm3']]],
       ['gb', 'Rete gas · scenario B', 0, 400, [['Gas naturale', null, 'Sm3']]],
-      ['ca', 'Caldaia tradizionale', 400, 0, [['Calore utile', null, 'MWh_th', 'valore', '', { da: 1, lib: 'cald-trad' }], ['Gas naturale', null, 'Sm3']], 'conv'],
+      ['ca', 'Caldaia tradizionale', 400, 0, [['Calore utile', null, 'MWh_th', 'valore', '', { da: 1, lib: 'cald-trad' }], ['Gas naturale', null, 'Sm3'], ['Perdite', null, 'MWh_th', 'perdita', '', { da: 1, lib: 'gas-pci', eta: 0.10 }]], 'conv'],
+      ['pa', 'Perdite · A (fumi, mantello)', 820, -200, [['Perdite', null, 'MWh_th']]],
       ['cb', 'Caldaia a condensazione', 400, 400, [['Calore utile', null, 'MWh_th', 'valore', '', { da: 1, lib: 'cald-cond' }], ['Gas naturale', null, 'Sm3']], 'conv'],
       ['ua', 'Utenza termica · A', 820, -40, [['Fabbisogno', 23713.09, 'MWh_th']]],
       ['ea', 'Gas A → CO₂ e TEP', 820, 100, righeCO2TEP(['Gas consumato', null, 'Sm3'], 'gas-co2', 'gas-tep'), 'conv'],
       ['ub', 'Utenza termica · B', 820, 360, [['Fabbisogno', 23713.09, 'MWh_th']]],
       ['eb', 'Gas B → CO₂ e TEP', 820, 500, righeCO2TEP(['Gas consumato', null, 'Sm3'], 'gas-co2', 'gas-tep'), 'conv'],
       ['cf', 'Confronta: condensazione vs tradizionale', 1260, 200, [['TEP · A tradizionale', null, 'tep'], ['TEP · B condensazione', null, 'tep'], ['Risparmio TEP', null, 'tep', 'valore', '', { a: 0, b: 1 }], ['CO₂ · A tradizionale', null, 'tCO2'], ['CO₂ · B condensazione', null, 'tCO2'], ['Risparmio CO₂', null, 'tCO2', 'valore', '', { a: 3, b: 4 }]], 'cmp']
-    ], [['ga.0', 'ca.1'], ['ca.0', 'ua.0'], ['ca.1', 'ea.0'], ['gb.0', 'cb.1'], ['cb.0', 'ub.0'], ['cb.1', 'eb.0'],
+    ], [['ga.0', 'ca.1'], ['ca.0', 'ua.0'], ['ca.1', 'ea.0'], ['ca.2', 'pa.0'], ['gb.0', 'cb.1'], ['cb.0', 'ub.0'], ['cb.1', 'eb.0'],
       ['ea.2', 'cf.0'], ['eb.2', 'cf.1'], ['ea.1', 'cf.3'], ['eb.1', 'cf.4']],
-    'Stesso fabbisogno termico in due scenari: 23.713 MWh termici, la domanda 2025 del sito 1 (termico_sito_1.csv). Calore = Sm³ × PCI 9,59 kWh/Sm³ × rendimento: caldaia tradizionale η 90%, caldaia a condensazione η 105%, entrambi riferiti al PCI (la condensazione recupera il calore latente dei fumi, escluso dal PCI). Aggiorna ricava all\'indietro il gas di ciascuna caldaia dal fabbisogno; tep e CO₂ con i fattori di Playfair-S (0,000836 tep/Sm³ e 1,96 kg CO₂/Sm³, rendimento 100%). Il blocco Confronta calcola A − B: riduzione assoluta e percentuale ottenuta con la condensazione.'), 260),
-    vapore: () => costruisciEsempio('Macchina a vapore — omaggio a Sankey (1898), su 100 kWh di calore dal carbone', { conversione: true }, [
+    'Stesso fabbisogno termico in due scenari: 23.713 MWh termici, la domanda 2025 del sito 1 (termico_sito_1.csv). Calore = Sm³ × PCI 9,59 kWh/Sm³ × rendimento: caldaia tradizionale η 90% (perdite 10%), caldaia a condensazione η 105%, entrambi riferiti al PCI (la condensazione recupera il calore latente dei fumi, escluso dal PCI, quindi sul PCI non ha perdite). Aggiorna ricava all\'indietro il gas di ciascuna caldaia dal fabbisogno; tep e CO₂ con i fattori di Playfair-S (0,000836 tep/Sm³ e 1,96 kg CO₂/Sm³, rendimento 100%). Il blocco Confronta calcola A − B: riduzione assoluta e percentuale ottenuta con la condensazione.'), 260),
+    vapore: () => costruisciEsempio('Macchina a vapore — omaggio a Sankey (1898), su 100 kWh di calore dal carbone', { conversione: true, scalaUnica: false }, [
       ['carb', 'Carbone', -80, 150, [['Carbone bruciato', null, 'kg']]],
       ['comb', 'Combustione del carbone', 270, 110, [['Carbone', null, 'kg'], ['Calore (PCI)', 100, 'kWh_th', 'valore', '', { da: 0, lib: 'carb-pci' }], ['Energia primaria', null, 'tep', 'valore', '', { da: 0, lib: 'carb-tep' }]], 'conv'],
       ['cald', 'Caldaia', 720, 120, [['Combustibile', null, 'kWh_th'], ['Fumi al camino', 20, 'kWh_th'], ['Vapore', null, 'kWh_th']]],
@@ -2372,7 +2485,7 @@
       ['amb', 'Ambiente', 1510, 190, [['Dispersioni', null, 'kWh_th']]],
       ['alb', 'Lavoro utile', 1510, 330, [['Lavoro meccanico', null, 'kWh']]]
     ], [['carb.0', 'comb.0'], ['comb.1', 'cald.0'], ['cald.1', 'cam.0'], ['cald.2', 'mot.0'], ['mot.1', 'cond.0'], ['mot.2', 'amb.0'], ['mot.3', 'alb.0']],
-    'Ricostruzione didattica del diagramma di M. H. P. R. Sankey (1898) su 100 kWh di calore. Il blocco di conversione ricava all\'indietro i kg di carbone (PCI 8,14 kWh/kg, carbone da 7.000 kcal/kg) e i tep corrispondenti (0,0007 tep/kg).'),
+    'Ricostruzione didattica del diagramma di M. H. P. R. Sankey (1898) su 100 kWh di calore. Il blocco di conversione ricava all\'indietro i kg di carbone (PCI 8,14 kWh/kg, carbone da 7.000 kcal/kg) e i tep corrispondenti (0,0007 tep/kg). Qui gli spessori usano una scala in energia (kWh), non la scala unica in tep, per restare fedeli alle proporzioni della tavola di Sankey (il lavoro all\'albero è l\'11% del calore).'),
   };
   function caricaEsempio(nome) {
     const f = ESEMPI[nome]; if (!f) return;
@@ -2444,6 +2557,10 @@
 
     document.querySelectorAll('.sk-prim').forEach((b) => b.addEventListener('click', () => impostaModo(b.dataset.modo)));
     $('#sk-aggiorna').addEventListener('click', aggiorna);
+    ['blocchi', 'tubi'].forEach((k) => $('#sk-scala-' + k).addEventListener('input', (e) => {
+      const v = clamp(Number(e.target.value) / 100, 0.5, 2); $('#sk-scala-' + k + '-val').textContent = Math.round(v * 100) + '%';
+      modifica(() => { doc.opzioni[k === 'blocchi' ? 'scalaBlocchi' : 'scalaTubi'] = v; }, { unione: 'scala-' + k, dati: false });
+    }));
     $('#sk-annulla').addEventListener('click', annulla);
     $('#sk-ripeti').addEventListener('click', ripeti);
     $('#sk-duplica').addEventListener('click', duplicaSelezione);
