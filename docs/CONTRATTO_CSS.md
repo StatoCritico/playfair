@@ -213,8 +213,10 @@ rendono l'area indipendente dai `@font-face` del tema (stessi file `woff2`, scar
 ### Serie dei grafici
 `--serie-1` … `--serie-6`, in ordine fisso (1 = corallo, 2 = azzurro, 3 = giallo, 4 = magenta, 5 = verde,
 6 = grigio). Scura: `#ff7a50 #8ccbf2 #f2d16b #e070ad #9ccf8f #b9b2ad`; chiara: `#c43c12 #1f6fb4 #a87800 #b3418a #4f7f22
-#6b625d`. `--serie-1` è anche il colore delle sedi «nell'80%» (Playfair-G), della retta di regressione (Playfair-C)
+#6b625d`. `--serie-1` è anche il colore della retta di regressione (Playfair-C)
 e della linea del PBT (Playfair-M).
+In Playfair-G ogni sede ha un colore fisso (nell'ordine del file: `--serie-1…5` × 5 toni = 25 colori, poi si
+ripetono), lo stesso nel Pareto, nell'incidenza, nella mappa a quadranti e nella tabella.
 
 ### Vettori energetici (Sankey, strumenti, home)
 | Variabile | Scura | Chiara | Significato |

@@ -75,6 +75,7 @@
 .pf-app.g table.tg tfoot td{font-weight:600;background:var(--area-rialzo);border-top:1px solid var(--area-bordo)}
 .pf-app.g .alto{color:var(--area-err);font-weight:600}
 .pf-app.g .basso{color:var(--area-ok);font-weight:600}
+.pf-app.g .cs-sede{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:6px;vertical-align:-1px}
 .pf-app.g .qtag{display:inline-block;padding:1px 7px;border-radius:999px;font-size:11.5px;border:1px solid var(--q);color:var(--area-testo);background:color-mix(in srgb,var(--q) 14%,transparent)}
 @media (max-width:700px){
   .pf-app.g .quadri{grid-template-columns:1fr}
@@ -170,23 +171,23 @@
     <div class="legge">
       <h3>Come si legge</h3>
       <p>Le barre sono i consumi delle sedi in ordine decrescente (asse sinistro); la linea è la <b>percentuale cumulata</b> del consumo del gruppo (asse destro, 0–100%). La retta orizzontale all’80% richiama il <b>principio di Pareto</b>: l’80% degli effetti è determinato dal 20% delle cause.</p>
-      <p>Le barre colorate sono le sedi che servono per arrivare all’80% del consumo: sono quelle da guardare per prime, perché ogni punto percentuale risparmiato lì vale di più. Una curva che sale ripida indica un gruppo concentrato (poche sedi pesano molto); una curva quasi diagonale indica consumi distribuiti in modo uniforme.</p>
+      <p>Ogni sede ha un <b>colore fisso</b>, lo stesso nella barra del Pareto, nella barra dell’incidenza, nel punto della mappa e nel quadratino della tabella. Le sedi a sinistra della linea tratteggiata verticale sono quelle che servono per arrivare all’80% del consumo: sono quelle da guardare per prime, perché ogni punto percentuale risparmiato lì vale di più. Una curva che sale ripida indica un gruppo concentrato (poche sedi pesano molto); una curva quasi diagonale indica consumi distribuiti in modo uniforme.</p>
     </div>
   </div>
 
   <div id="tab-incid" class="tab-content" role="tabpanel" aria-labelledby="t-incid" hidden>
     <div class="barra">
-      <label><input type="checkbox" id="o-quota" checked> mostra la quota di dimensione</label>
       <span class="spazio"></span><button type="button" data-png="incid">Scarica PNG</button>
     </div>
     <p class="sintesi" id="sint-incid"></p>
-    <div class="scorre"><div class="chart-wrap" id="w-incid" style="height:460px"><div class="vuoto">Carica un CSV per l’analisi di incidenza.</div></div></div>
+    <div class="chart-wrap" id="w-incid" style="height:480px"><div class="vuoto">Carica un CSV per l’analisi di incidenza.</div></div>
     <div class="legge">
       <h3>Come si legge</h3>
-      <p>Per ogni sede, ordinata per incidenza: la barra piena è l’<b>incidenza sul totale</b> (consumo della sede ÷ consumo del gruppo, %); la barra chiara è la <b>quota di dimensione</b> (dimensione della sede ÷ dimensione del gruppo, %); i rombi sono il <b>consumo specifico</b> (asse destro) e la retta tratteggiata è il consumo specifico del gruppo (totale ÷ totale), il riferimento.</p>
+      <p>Ogni sede è un rettangolo del suo colore: la <b>base</b> è la sua dimensione (asse orizzontale), l’<b>altezza</b> è il suo <b>consumo specifico</b> (consumo ÷ dimensione, asse verticale), quindi l’<b>area</b> è il suo <b>consumo</b>. I rettangoli sono affiancati dal consumo specifico più alto al più basso: la larghezza totale è la dimensione del gruppo, l’area totale il suo consumo. La retta tratteggiata è il consumo specifico del gruppo (totale ÷ totale), il riferimento.</p>
       <ul>
-        <li>Barra piena più alta della chiara ⇔ rombo sopra la retta: la sede consuma <b>più della media per unità di dimensione</b> (rombo rosso). Barra piena più bassa ⇔ rombo sotto: è più efficiente del gruppo (rombo verde).</li>
-        <li>Una sede può pesare molto solo perché è grande (incidenza alta, specifico nella media): lì contano gestione e manutenzione. Una sede piccola con specifico alto pesa poco sul totale ma ha margini di miglioramento in proporzione maggiori.</li>
+        <li>Rettangolo alto e largo: sede grande e poco efficiente, pesa molto sul totale. È la priorità.</li>
+        <li>Rettangolo alto e stretto: sede piccola con consumo specifico alto, pesa poco sul totale ma ha margini di miglioramento in proporzione maggiori.</li>
+        <li>La parte di area sopra la retta del gruppo è il consumo «in eccesso» rispetto al riferimento; quella che manca sotto la retta, a destra, è il consumo «evitato» dalle sedi più efficienti.</li>
       </ul>
     </div>
   </div>
@@ -203,7 +204,7 @@
     <div class="quadri" id="quadri"></div>
     <div class="legge">
       <h3>Come si legge</h3>
-      <p>Asse X: <b>consumo specifico</b> (consumo ÷ dimensione), cioè quanto la sede è efficiente. Asse Y: <b>incidenza sul totale</b> (%), cioè quanto pesa sul consumo del gruppo. Le linee dividono il piano sulla <b>media</b> (consumo specifico del gruppo, totale ÷ totale; incidenza media = 100% ÷ numero di sedi) o sulla <b>mediana</b> di ciascun asse. Con la media in X la linea verticale è la stessa retta di riferimento della scheda «Incidenza».</p>
+      <p>Asse X: <b>consumo specifico</b> (consumo ÷ dimensione), cioè quanto la sede è efficiente. Asse Y: <b>incidenza sul totale</b> (%), cioè quanto pesa sul consumo del gruppo. Le linee dividono il piano sulla <b>media</b> (consumo specifico del gruppo, totale ÷ totale; incidenza media = 100% ÷ numero di sedi) o sulla <b>mediana</b> di ciascun asse. Con la media in X la linea verticale è la stessa retta di riferimento della scheda «Incidenza». Il quadrante si riconosce dalla tinta dello sfondo; il punto ha il colore della sede, come negli altri grafici.</p>
       <ul>
         <li><b>Alto a destra — Priorità: grandi e inefficienti.</b> Pesano molto e consumano più della media per unità: diagnosi energetica e interventi strutturali per primi.</li>
         <li><b>Alto a sinistra — Grandi consumatori efficienti: interventi di gestione.</b> Pesano per le dimensioni, non per l’inefficienza: monitoraggio, regolazione, contratti, manutenzione.</li>
@@ -246,7 +247,7 @@ var ORD = { col: 'consumo', dir: -1 };
 var charts = {};
 var COL = PF.tavolozza({
   p80: ['--serie-1', '#c43c12'], resto: function () { return PF.mescola(PF.c('--area-tenue'), PF.c('--area-pannello'), .45); },
-  cum: ['--area-segno', '#3f4bd0'], soglia: ['--area-warn', '#8a5a00'], quota: function () { return PF.rgba(PF.c('--serie-2'), .45); },
+  cum: ['--area-segno', '#3f4bd0'], soglia: ['--area-warn', '#8a5a00'], quota: function () { return PF.rgba(PF.tenue(), .3); },
   alto: ['--area-err', '#a8133c'], basso: ['--area-ok', '#2e7a34'], ink: ['--area-testo', '#1c1820'], foglio: ['--area-pannello', '#fff'],
   qPri: ['--area-err', '#a8133c'], qGes: ['--area-warn', '#8a5a00'], qMir: ['--serie-2', '#1f6fb4'], qBas: ['--area-ok', '#2e7a34']
 });
@@ -256,6 +257,24 @@ var QUAD = {
   mir: { nome: 'Piccoli inefficienti: interventi mirati', pos: 'basso a destra', col: 'qMir', css: '--serie-2' },
   bas: { nome: 'Bassa priorità', pos: 'basso a sinistra', col: 'qBas', css: '--area-ok' }
 };
+
+/* colore fisso di ogni sede, uguale nei tre grafici (Pareto, Incidenza, mappa) e nella tabella.
+   Si assegna nell'ordine del file: 5 tinte dei dati (--serie-1…5) × 5 toni = 25 colori distinti, poi si ripetono. */
+var TINTE = ['--serie-1', '--serie-2', '--serie-3', '--serie-4', '--serie-5'];
+var TONI = [[null, 0], ['t', .34], ['p', .42], ['t', .6], ['p', .66]];
+function colSede(s, a) {
+  var i = s.ic % 25, base = PF.c(TINTE[i % 5]), tn = TONI[Math.floor(i / 5)];
+  var c = tn[0] ? PF.mescola(base, tn[0] === 't' ? PF.testo() : PF.c('--area-pannello'), tn[1]) : base;
+  return a == null ? c : PF.rgba(c, a);
+}
+/* legenda: per i dataset a barre con un colore per sede il riquadro è neutro */
+function legendaSedi(ch) {
+  return Chart.defaults.plugins.legend.labels.generateLabels(ch).map(function (l) {
+    var ds = ch.data.datasets[l.datasetIndex];
+    if (ds && ds.coloreSede) { l.fillStyle = PF.tenue(); l.strokeStyle = PF.tenue(); }
+    return l;
+  });
+}
 
 /* ---------------------------------------------------------------- formato italiano */
 /* separatore delle migliaia anche sotto 10.000 (in it-IT Intl lo omette per 4 cifre) */
@@ -465,7 +484,8 @@ function calcola() {
   var sedi = S.sedi;
   var totC = 0, totD = 0, totCv = 0;
   sedi.forEach(function (s) { totC += s.cons; if (!s.zero) { totD += s.dim; totCv += s.cons; } });
-  sedi.forEach(function (s) {
+  sedi.forEach(function (s, i) {
+    s.ic = i;                         // indice del colore della sede (ordine del file)
     s.cs = s.zero ? null : s.cons / s.dim;
     s.inc = totC > 0 ? s.cons / totC * 100 : 0;
     s.quota = s.zero || totD <= 0 ? null : s.dim / totD * 100;
@@ -524,7 +544,7 @@ function tela(idWrap, chiave, minW) {
   if (minW) w.style.minWidth = minW + 'px';
   return w.firstChild;
 }
-function titoloSede(s) { return s.codice + ' — ' + s.nome; }
+function titoloSede(s) { return s.codice + ' - ' + s.nome; }
 function righeSede(s) {
   return [
     nC() + ': ' + conU(fN(s.cons), uC()),
@@ -541,15 +561,14 @@ function pareto() {
   var o = R.ord;
   var cv = tela('w-pareto', 'pareto', Math.max(0, o.length * 24 + 120));
   cv.setAttribute('aria-label', 'Diagramma di Pareto dei consumi delle ' + o.length + ' sedi; ' + R.k80 + ' sedi fanno l’80% del consumo');
-  var bordo = o.map(function (s) { return s.p80 ? COL.p80 : PF.mescola(COL.resto, PF.c('--area-testo'), .25); });
   charts.pareto = new Chart(cv, {
     data: {
       labels: o.map(function (s) { return s.codice; }),
       datasets: [
         { type: 'line', label: 'Cumulata (%)', data: o.map(function (s) { return s.cum; }), yAxisID: 'y2', borderColor: COL.cum, backgroundColor: COL.cum,
           borderWidth: 2, pointRadius: 3.5, pointHoverRadius: 6, tension: 0, order: 0 },
-        { type: 'bar', label: nC() + (uC() ? ' (' + uC() + ')' : ''), data: o.map(function (s) { return s.cons; }), yAxisID: 'y',
-          backgroundColor: o.map(function (s) { return s.p80 ? PF.rgba(COL.p80, .78) : COL.resto; }), borderColor: bordo, borderWidth: 1, borderRadius: 2,
+        { type: 'bar', label: nC() + (uC() ? ' (' + uC() + ')' : '') + ' — colore = sede', coloreSede: true, data: o.map(function (s) { return s.cons; }), yAxisID: 'y',
+          backgroundColor: o.map(function (s) { return colSede(s, .85); }), borderColor: o.map(function (s) { return colSede(s); }), borderWidth: 1, borderRadius: 2,
           categoryPercentage: .82, barPercentage: .9, order: 1 }
       ]
     },
@@ -558,7 +577,7 @@ function pareto() {
       responsive: true, maintainAspectRatio: false, animation: { duration: 300 },
       interaction: { mode: 'index', intersect: false },
       plugins: {
-        legend: { display: true, position: 'top', align: 'end', labels: { boxWidth: 14, boxHeight: 10, color: PF.tenue() } },
+        legend: { display: true, position: 'top', align: 'end', labels: { boxWidth: 14, boxHeight: 10, color: PF.tenue(), generateLabels: legendaSedi } },
         title: { display: true, text: 'Diagramma di Pareto — ' + nC().toLowerCase() + ' per sede', color: PF.c('--area-titolo'), font: { size: 15, weight: '600' }, align: 'start', padding: { bottom: 4 } },
         tooltip: { callbacks: {
           title: function (it) { return titoloSede(o[it[0].dataIndex]); },
@@ -585,51 +604,78 @@ function pareto() {
 }
 
 /* ---------------------------------------------------------------- 2. Incidenza */
+/* Rettangoli di larghezza variabile: base = dimensione, altezza = consumo specifico, area = consumo della sede.
+   Le barre di Chart.js stanno su un asse x lineare; il plugin «larghezze» dopo ogni aggiornamento sposta e
+   allarga ogni barra sul suo intervallo [inizio, fine] di dimensione cumulata (così tooltip e hover restano nativi). */
+var larghezze = {
+  id: 'pfLarghezze',
+  afterDatasetsUpdate: function (ch) {
+    var xs = ch.scales.x;
+    ch.data.datasets.forEach(function (ds, k) {
+      if (!ds.intervalli) return;
+      ch.getDatasetMeta(k).data.forEach(function (el, i) {
+        var a = xs.getPixelForValue(ds.intervalli[i][0]), b = xs.getPixelForValue(ds.intervalli[i][1]);
+        el.x = (a + b) / 2; el.width = Math.max(1, b - a);
+      });
+    });
+  },
+  afterDatasetsDraw: function (ch) {     // codice della sede dentro il rettangolo, se ci sta
+    var meta = ch.getDatasetMeta(0), ds = ch.data.datasets[0], c = ch.ctx;
+    if (!ds.intervalli) return;
+    c.save(); c.font = '600 10.5px ' + (getComputedStyle(document.documentElement).getPropertyValue('--area-font-mono') || 'monospace');
+    c.textAlign = 'center'; c.textBaseline = 'middle';
+    meta.data.forEach(function (el, i) {
+      var t = ds.data[i].s.codice, w = c.measureText(t).width, h = el.base - el.y, f = colSede(ds.data[i].s);
+      var lum = (0.2126 * parseInt(f.substr(1, 2), 16) + 0.7152 * parseInt(f.substr(3, 2), 16) + 0.0722 * parseInt(f.substr(5, 2), 16)) / 255;
+      c.fillStyle = lum > 0.5 ? '#1a1c20' : '#ffffff';     // testo leggibile sul colore della sede
+      if (el.width >= w + 6 && h >= 16) { c.fillText(t, el.x, el.y + Math.min(h / 2, 12)); }
+      else if (el.width >= 13 && h >= w + 8) { c.save(); c.translate(el.x, el.y + Math.min(h / 2, w / 2 + 6)); c.rotate(-Math.PI / 2); c.fillText(t, 0, 0); c.restore(); }
+    });
+    c.restore();
+  }
+};
 function incidenza() {
-  var o = R.ord, quota = $('o-quota').checked;
-  var cv = tela('w-incid', 'incid', Math.max(0, o.length * (quota ? 30 : 24) + 140));
-  cv.setAttribute('aria-label', 'Incidenza sul totale e consumo specifico per sede, ordinate per incidenza');
-  var colPunto = o.map(function (s) { return s.cs === null ? 'transparent' : s.cs > R.csG ? COL.alto : COL.basso; });
-  var ds = [
-    { type: 'line', label: 'Consumo specifico (' + uS() + ')', data: o.map(function (s) { return s.cs; }), yAxisID: 'y2', showLine: false,
-      pointStyle: 'rectRot', pointRadius: 6, pointHoverRadius: 8, pointBackgroundColor: colPunto, pointBorderColor: PF.c('--area-pannello'), pointBorderWidth: 1.2,
-      backgroundColor: COL.alto, borderColor: COL.alto, order: 0 },
-    { type: 'bar', label: 'Incidenza sul consumo (%)', data: o.map(function (s) { return s.inc; }), yAxisID: 'y', backgroundColor: PF.rgba(COL.p80, .8), borderColor: COL.p80, borderWidth: 1, borderRadius: 2, order: 2, categoryPercentage: .8, barPercentage: .92 }
-  ];
-  if (quota) ds.push({ type: 'bar', label: 'Quota di ' + nD().toLowerCase() + ' (%)', data: o.map(function (s) { return s.quota; }), yAxisID: 'y', backgroundColor: COL.quota, borderColor: PF.c('--serie-2'), borderWidth: 1, borderRadius: 2, order: 3, categoryPercentage: .8, barPercentage: .92 });
-  var maxInc = Math.max.apply(null, o.map(function (s) { return Math.max(s.inc, s.quota || 0); }));
-  var maxCs = Math.max.apply(null, o.map(function (s) { return s.cs || 0; }));
+  // solo le sedi con dimensione: senza base il rettangolo non esiste
+  var o = S.sedi.filter(function (s) { return !s.zero; }).sort(function (a, b) { return b.cs - a.cs || b.cons - a.cons; });
+  var cv = tela('w-incid', 'incid');
+  cv.setAttribute('aria-label', 'Analisi di incidenza: rettangoli con base la ' + nD().toLowerCase() + ' e altezza il consumo specifico, ordinati dal consumo specifico più alto; l’area di ogni rettangolo è il consumo della sede');
+  var x0 = 0, intervalli = o.map(function (s) { var r = [x0, x0 + s.dim]; x0 += s.dim; return r; });
+  var maxCs = Math.max.apply(null, o.map(function (s) { return s.cs; }));
   charts.incid = new Chart(cv, {
-    data: { labels: o.map(function (s) { return s.codice; }), datasets: ds },
-    plugins: [sfondo],
+    type: 'bar',
+    data: { datasets: [{ label: 'Sedi — colore = sede', coloreSede: true, intervalli: intervalli,
+      data: o.map(function (s, i) { return { x: (intervalli[i][0] + intervalli[i][1]) / 2, y: s.cs, s: s }; }),
+      backgroundColor: o.map(function (s) { return colSede(s, .85); }), borderColor: PF.c('--area-pannello'), borderWidth: 1,
+      hoverBackgroundColor: o.map(function (s) { return colSede(s); }), hoverBorderColor: PF.testo(), hoverBorderWidth: 1.5 }] },
+    plugins: [sfondo, larghezze],
     options: {
-      responsive: true, maintainAspectRatio: false, animation: { duration: 300 },
-      interaction: { mode: 'index', intersect: false },
+      responsive: true, maintainAspectRatio: false, animation: false,
+      interaction: { mode: 'nearest', intersect: true },
       plugins: {
-        legend: { position: 'top', align: 'end', labels: { boxWidth: 14, boxHeight: 10, color: PF.tenue(), usePointStyle: false } },
-        title: { display: true, text: 'Incidenza sul totale e consumo specifico', color: PF.c('--area-titolo'), font: { size: 15, weight: '600' }, align: 'start', padding: { bottom: 4 } },
+        legend: { display: false },
+        title: { display: true, text: 'Analisi di incidenza — ' + nD().toLowerCase() + ' × consumo specifico = ' + nC().toLowerCase(), color: PF.c('--area-titolo'), font: { size: 15, weight: '600' }, align: 'start', padding: { bottom: 4 } },
         tooltip: { callbacks: {
-          title: function (it) { return titoloSede(o[it[0].dataIndex]); },
+          title: function (it) { return titoloSede(it[0].raw.s); },
           label: function () { return null; },
-          afterBody: function (it) { var s = o[it[0].dataIndex]; var r = righeSede(s); if (s.quota !== null) r.splice(4, 0, 'Quota di ' + nD().toLowerCase() + ': ' + fP(s.quota, 2)); return r; } } },
+          afterBody: function (it) { var s = it[0].raw.s; var r = righeSede(s); r.splice(4, 0, 'Quota di ' + nD().toLowerCase() + ': ' + fP(s.quota, 2)); return r; } } },
         annotation: { annotations: {
-          csG: { type: 'line', yScaleID: 'y2', yMin: R.csG, yMax: R.csG, borderColor: COL.ink, borderWidth: 1.5, borderDash: [6, 4],
-            label: { display: true, content: 'gruppo: ' + fCS(R.csG) + ' ' + uS(), position: 'end', backgroundColor: PF.rgba(COL.ink, .85), color: PF.c('--area-pannello'), font: { size: 11 }, padding: { x: 5, y: 2 } } },
-          incM: { type: 'line', yScaleID: 'y', yMin: R.incMedia, yMax: R.incMedia, borderColor: PF.rgba(COL.p80, .7), borderWidth: 1, borderDash: [2, 3],
-            label: { display: true, content: 'incidenza media ' + fP(R.incMedia, 2), position: 'center', backgroundColor: 'transparent', color: COL.p80, font: { size: 10.5 }, yAdjust: -9 } }
+          csG: { type: 'line', yMin: R.csG, yMax: R.csG, borderColor: COL.ink, borderWidth: 1.5, borderDash: [6, 4], drawTime: 'afterDatasetsDraw',
+            label: { display: true, content: 'gruppo: ' + fCS(R.csG) + ' ' + uS(), position: 'end', backgroundColor: PF.rgba(COL.ink, .85), color: PF.c('--area-pannello'), font: { size: 11 }, padding: { x: 5, y: 2 } } }
         } }
       },
       scales: {
-        x: { grid: { display: false }, ticks: { autoSkip: false, maxRotation: 60, minRotation: o.length > 14 ? 45 : 0, font: { size: 11 } } },
-        y: { beginAtZero: true, suggestedMax: maxInc * 1.08, grid: { color: PF.griglia() }, ticks: { callback: function (v) { return fN(v, v < 10 && v % 1 ? 1 : 0) + '%'; } }, title: asseTitolo('Incidenza e quota [%]') },
-        y2: { position: 'right', beginAtZero: true, suggestedMax: maxCs * 1.08, grid: { display: false }, ticks: { callback: function (v) { return fN(v); } }, title: asseTitolo('Consumo specifico [' + uS() + ']') }
+        x: { type: 'linear', min: 0, max: x0, offset: false, grid: { color: PF.griglia() }, ticks: { callback: function (v) { return fN(v); } },
+             title: asseTitolo(nD() + (uD() ? ' [' + uD() + ']' : '') + ' — cumulata, sedi dal consumo specifico più alto al più basso') },
+        y: { beginAtZero: true, suggestedMax: maxCs * 1.06, grid: { color: PF.griglia() }, ticks: { callback: function (v) { return fN(v, v % 1 ? 1 : 0); } }, title: asseTitolo('Consumo specifico [' + uS() + ']') }
       }
     }
   });
-  var sopra = o.filter(function (s) { return s.cs !== null && s.cs > R.csG; });
-  var incSopra = sopra.reduce(function (a, s) { return a + s.inc; }, 0);
-  $('sint-incid').innerHTML = '<b>' + sopra.length + ' sedi su ' + R.nValide + '</b> hanno un consumo specifico superiore a quello del gruppo (' + fCS(R.csG) + ' ' + esc(uS()) + ') e insieme valgono <b>' + fP(incSopra) + '</b> del consumo. ' +
-    'Se si portassero tutte al valore del gruppo il consumo scenderebbe di circa <b>' + conU(fN(sopra.reduce(function (a, s) { return a + (s.cs - R.csG) * s.dim; }, 0)), uC()) + '</b> (' + fP(sopra.reduce(function (a, s) { return a + (s.cs - R.csG) * s.dim; }, 0) / R.totC * 100) + ' del totale): è un ordine di grandezza, non una stima di risparmio.';
+  var sopra = o.filter(function (s) { return s.cs > R.csG; });
+  var dimSopra = sopra.reduce(function (a, s) { return a + s.dim; }, 0), incSopra = sopra.reduce(function (a, s) { return a + s.inc; }, 0);
+  var ecc = sopra.reduce(function (a, s) { return a + (s.cs - R.csG) * s.dim; }, 0);
+  $('sint-incid').innerHTML = '<b>' + sopra.length + ' sedi su ' + R.nValide + '</b> hanno un consumo specifico superiore a quello del gruppo (' + fCS(R.csG) + ' ' + esc(uS()) + '): occupano il <b>' + fP(dimSopra / R.totD * 100) + '</b> della ' + esc(nD().toLowerCase()) + ' e valgono <b>' + fP(incSopra) + '</b> del consumo. ' +
+    'L’area dei rettangoli sopra la retta del gruppo è l’eccesso rispetto al riferimento: circa <b>' + conU(fN(ecc), uC()) + '</b> (' + fP(ecc / R.totC * 100) + ' del totale), un ordine di grandezza, non una stima di risparmio.' +
+    (R.nValide < R.n ? ' Le sedi con dimensione nulla (' + (R.n - R.nValide) + ') non hanno base e non compaiono.' : '');
 }
 
 /* ---------------------------------------------------------------- 3. Quadranti */
@@ -664,7 +710,8 @@ var etichette = {
 function mappa() {
   quadranti();
   var t = soglie(), bolle = $('o-bolle').checked;
-  var valide = S.sedi.filter(function (s) { return !s.zero; });
+  // le sedi più piccole si disegnano per ultime, sopra le bolle grandi, così restano raggiungibili col mouse
+  var valide = S.sedi.filter(function (s) { return !s.zero; }).sort(function (a, b) { return b.dim - a.dim || a.ic - b.ic; });
   var cv = tela('w-quad', 'quad');
   var stretto = $('w-quad').clientWidth < 600;
   var CORTI = { pri: 'Priorità', ges: 'Gestione', mir: 'Mirati', bas: 'Bassa priorità' };
@@ -693,10 +740,11 @@ function mappa() {
     type: 'scatter',
     data: { datasets: [{ label: 'Sedi', data: valide.map(function (s) { return { x: s.cs, y: s.inc, s: s }; }),
       pointRadius: valide.map(raggio), pointHoverRadius: valide.map(function (s) { return raggio(s) + 2; }),
-      backgroundColor: valide.map(function (s) { return tinta(s.quad, .55); }), borderColor: valide.map(function (s) { return COL[QUAD[s.quad].col]; }), borderWidth: 1.5 }] },
+      backgroundColor: valide.map(function (s) { return colSede(s, .85); }), borderColor: valide.map(function (s) { return colSede(s); }), borderWidth: 1.5 }] },
     plugins: [sfondo, etichette],
     options: {
       responsive: true, maintainAspectRatio: false, animation: { duration: 300 },
+      interaction: { mode: 'nearest', intersect: true },
       plugins: {
         legend: { display: false },
         title: { display: true, text: stretto ? 'Mappa a quattro quadranti' : 'Mappa a quattro quadranti — consumo specifico e incidenza sul totale', color: PF.c('--area-titolo'), font: { size: 15, weight: '600' }, align: 'start', padding: { bottom: 8 } },
@@ -732,7 +780,7 @@ function mappa() {
 /* ---------------------------------------------------------------- tabella */
 var COLONNE = [
   { k: 'rango', t: 'N.', f: function (s) { return s.rango; } },
-  { k: 'codice', t: 'Codice', testo: 1, f: function (s) { return esc(s.codice); } },
+  { k: 'codice', t: 'Codice', testo: 1, f: function (s) { return '<span class="cs-sede" style="background:' + colSede(s) + '" aria-hidden="true"></span>' + esc(s.codice); } },
   { k: 'nome', t: 'Denominazione', testo: 1, f: function (s) { return esc(s.nome); }, cls: 'nome' },
   { k: 'dim', t: function () { return nD() + (uD() ? ' [' + uD() + ']' : ''); }, f: function (s) { return s.zero ? '<span class="alto" title="dimensione nulla o mancante">0 ⚠</span>' : fN(s.dim, s.dim % 1 ? 1 : 0); } },
   { k: 'cons', t: function () { return nC() + (uC() ? ' [' + uC() + ']' : ''); }, f: function (s) { return fN(s.cons, s.cons % 1 && s.cons < 1000 ? 2 : 0); } },
@@ -825,7 +873,6 @@ function disegnaScheda() {
   var id = schedaAttiva();
   if (id === 't-pareto') pareto(); else if (id === 't-incid') incidenza(); else mappa();
 }
-$('o-quota').addEventListener('change', function () { if (R) incidenza(); });
 $('o-soglia').addEventListener('change', function () { if (R) { mappa(); tabella(); } });
 $('o-bolle').addEventListener('change', function () { if (R) mappa(); });
 $('o-etich').addEventListener('change', function () { if (charts.quad) charts.quad.update('none'); });
@@ -849,6 +896,7 @@ window.PF_EXCEL={
     if(!charts.incid)incidenza();
     if(!charts.quad)mappa();
     if(charts.quad)charts.quad.canvas.setAttribute('data-pf-excel','entrambi');
+    if(charts.incid)charts.incid.canvas.setAttribute('data-pf-excel','immagine');   // rettangoli a base variabile: in Excel non c'è un tipo equivalente
     if(charts.pareto)charts.pareto.canvas.setAttribute('data-pf-titolo','Diagramma di Pareto');
     if(charts.incid)charts.incid.canvas.setAttribute('data-pf-titolo','Incidenza e consumo specifico');
     if(charts.quad)charts.quad.canvas.setAttribute('data-pf-titolo','Mappa a quattro quadranti');
