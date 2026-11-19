@@ -69,8 +69,8 @@ e prima di `</body>`: `<script src="assets/sito.js" defer></script>` (sempre dop
     <a href="playfair-s.html" data-tip="Site — analisi del singolo sito: costi e consumi di elettricità, gas, calore e acqua">Playfair-S</a>
     <a href="playfair-e.html" data-tip="Electric — curve di carico elettriche quartorarie: profili, mappe orarie, picchi e base">Playfair-E</a>
     <a href="playfair-t.html" data-tip="Thermal — consumi termici ed elettrici, simulazione di cogenerazione e valutazione economica">Playfair-T</a>
-    <a href="playfair-m.html" data-tip="Money — confronto di investimenti energetici: VAN, TIR, ROI, WACC e flussi di cassa">Playfair-M</a>
     <a href="playfair-g.html" data-tip="Group — analisi di un gruppo di sedi: consumo specifico, incidenza sul totale, Pareto e mappa a 4 quadranti">Playfair-G</a>
+    <a href="playfair-m.html" data-tip="Money — confronto di investimenti energetici: VAN, TIR, ROI, WACC e flussi di cassa">Playfair-M</a>
     <a href="playfair-c.html" data-tip="Cusum — regressione, residui e carta CUSUM secondo ISO 50006">Playfair-C</a>
     <a href="sankey.html" data-tip="Sankey — disegna diagrammi di flusso energetico a blocchi e verifica i bilanci">Sankey</a>
     <a href="personaggi.html" data-tip="William Playfair e Matthew H. P. R. Sankey: chi erano">Personaggi</a>
@@ -92,8 +92,8 @@ Piè di pagina comune (IDENTICO ovunque, link assoluti in 404.html): `<footer cl
 | playfair-s.html | Playfair-S (Site) — analisi di singolo sito | N_consumi.csv |
 | playfair-e.html | Playfair-E (Electric) — consumi elettrici | N_curva_di_carico.csv |
 | playfair-t.html | Playfair-T (Thermal) — termico e cogenerazione | N_curva_di_carico.csv + termico_sito_N.csv |
-| playfair-m.html | Playfair-M (Money) — analisi economiche | investimenti_energetici_v2.csv |
 | playfair-g.html | Playfair-G (Group) — analisi di un gruppo di sedi | /home/claude/esempi/sedi_gruppo_esempio.csv, sedi_gruppo_unita_virgola.csv |
+| playfair-m.html | Playfair-M (Money) — analisi economiche | investimenti_energetici_v2.csv |
 | playfair-c.html | Playfair-C (Cusum) — CUSUM ISO 50006 | consumo_cusum.csv |
 CSV d'esempio (6 set, N=1..6) in `/mnt/user-data/uploads/playfair/N/` — servono solo per i test, NON vanno copiati nel sito.
 
@@ -108,6 +108,11 @@ tubi»; legenda «acqua: scala separata, ridotta».
 - Accessibilità: contrasti come EuGEnio, focus visibile, `prefers-reduced-motion` rispettato (animazioni ferme o ridotte).
 - Ogni pagina: `<html lang="it">`, `<meta name="viewport">`, `<title>` "Playfair-X — … · Playfair", meta description, favicon `img/favicon.svg`.
 - Testare con Chrome headless (`/usr/bin/google-chrome`, Python playwright disponibile).
+
+## Zoom, «Reimposta scala» e frecce dei periodi (strumenti.js)
+- Rotella del mouse sopra un grafico = zoom orizzontale centrato sul mouse (`PF.zoomRotella(elemento, () => grafico|[grafici], {dopo})`), mai cambio di periodo; riducendo fino in fondo si torna alla vista completa. Playfair-C (pan e zoom propri) e Playfair-M (zoom verticale VAN, log-log) restano con il loro zoom.
+- «Reimposta scala» riporta TUTTO il pannello alla vista iniziale: zoom (`PF.zoomReimposta`) e minimi/massimi automatici. In Playfair-C gli oggetti finestra (`wAnd`, `wSca`, `wCus`, `wReg`) si aggiornano sul posto (`setW`), mai riassegnandoli.
+- Le frecce dei periodi (Playfair-E) e degli anni (Playfair-S) non escono dal periodo coperto dai dati: oltre, `PF.messaggio('Dati XXXX non disponibili', pulsante)` con il periodo richiesto.
 
 ## Playfair-G (Group) — convenzioni
 - CSV: `codice;denominazione;dimensione;consumo` (nomi simili riconosciuti; unità dall'intestazione o da una 2ª riga di unità; separatore `;` `,` tab; formato numeri automatico o forzato). Sedi con dimensione 0/mancante: segnalate, contano nel totale, nell'incidenza e nel Pareto, escluse da consumo specifico e quadranti.

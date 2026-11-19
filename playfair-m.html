@@ -55,8 +55,8 @@
     <a href="playfair-s.html" data-tip="Site — analisi del singolo sito: costi e consumi di elettricità, gas, calore e acqua">Playfair-S</a>
     <a href="playfair-e.html" data-tip="Electric — curve di carico elettriche quartorarie: profili, mappe orarie, picchi e base">Playfair-E</a>
     <a href="playfair-t.html" data-tip="Thermal — consumi termici ed elettrici, simulazione di cogenerazione e valutazione economica">Playfair-T</a>
-    <a href="playfair-m.html" aria-current="page" data-tip="Money — confronto di investimenti energetici: VAN, TIR, ROI, WACC e flussi di cassa">Playfair-M</a>
     <a href="playfair-g.html" data-tip="Group — analisi di un gruppo di sedi: consumo specifico, incidenza sul totale, Pareto e mappa a 4 quadranti">Playfair-G</a>
+    <a href="playfair-m.html" aria-current="page" data-tip="Money — confronto di investimenti energetici: VAN, TIR, ROI, WACC e flussi di cassa">Playfair-M</a>
     <a href="playfair-c.html" data-tip="Cusum — regressione, residui e carta CUSUM secondo ISO 50006">Playfair-C</a>
     <a href="sankey.html" data-tip="Sankey — disegna diagrammi di flusso energetico a blocchi e verifica i bilanci">Sankey</a>
     <a href="personaggi.html" data-tip="William Playfair e Matthew H. P. R. Sankey: chi erano">Personaggi</a>
@@ -172,7 +172,7 @@
 
   <div id="tab-npv" class="tab-content active">
     <div style="text-align:right;margin-bottom:6px">
-      <button onclick="npvZoomReset();renderNPVChart()">Ripristina</button>
+      <button onclick="npvZoomReset();renderNPVChart()">Reimposta scala</button>
     </div>
     <div class="chart-wrap" style="height:320px"><canvas id="npvChart" data-pf-titolo="VAN cumulato per anno"></canvas></div>
     <div id="npv-legend" style="display:flex;gap:16px;font-size:12px;color:var(--area-tenue);margin-top:8px;flex-wrap:wrap"></div>
@@ -197,7 +197,7 @@
       <label style="font-size:13px">PBT Anni:</label>
       <input type="number" id="bilog-pbt" placeholder="es. 5" min="1" style="width:90px">
       <button onclick="renderBilog()">Traccia</button>
-      <button onclick="bilogReset()">Ripristina</button>
+      <button onclick="bilogReset()">Reimposta scala</button>
     </div>
     <div id="bilog-legend" style="display:flex;gap:16px;font-size:12px;color:var(--area-tenue);flex-wrap:wrap"></div>
   </div>
@@ -430,8 +430,8 @@ function renderNPVChart(){
   }
   charts.npv=new Chart(document.getElementById('npvChart'),{type:'line',data:{labels:labels,datasets:datasets},options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},plugins:{legend:{display:false},tooltip:{callbacks:{label:function(ctx){var ds=ctx.dataset,t=ctx.dataIndex,v=ctx.parsed.y;if(v===null)return null;var s=ds.label+': '+fmtCur(v);if(ds._llcr&&t>0&&t<=ds._years&&ds._llcr[t]!==null)s+='  |  LLCR: '+ds._llcr[t].toFixed(2).replace('.',',')+'x';return s;}}}},scales:{x:{grid:{color:PF.griglia(),lineWidth:0.8},ticks:{font:{size:11},maxRotation:45,autoSkip:false}},y:{min:yMin,max:yMax,grid:{color:PF.griglia()},ticks:{callback:function(v){return fmtCur(v);}}}}}});
   var cvs=document.getElementById('npvChart');
-  cvs.onwheel=null;
-  cvs.addEventListener('wheel',function(e){e.preventDefault();var chart=charts.npv;if(!chart)return;var sy=chart.scales.y,cMin=sy.min,cMax=sy.max,rng=cMax-cMin,fac=e.deltaY<0?0.85:1.18,mid=(cMin+cMax)/2,nr=rng*fac;npvYmin=mid-nr/2;npvYmax=mid+nr/2;chart.options.scales.y.min=npvYmin;chart.options.scales.y.max=npvYmax;chart.update('none');},{passive:false});
+  // un solo ascoltatore: prima se ne aggiungeva uno a ogni ridisegno e lo zoom si moltiplicava
+  if(!cvs._pfw)(cvs._pfw=true)&&cvs.addEventListener('wheel',function(e){e.preventDefault();var chart=charts.npv;if(!chart)return;var sy=chart.scales.y,cMin=sy.min,cMax=sy.max,rng=cMax-cMin,fac=e.deltaY<0?0.85:1.18,mid=(cMin+cMax)/2,nr=rng*fac;npvYmin=mid-nr/2;npvYmax=mid+nr/2;chart.options.scales.y.min=npvYmin;chart.options.scales.y.max=npvYmax;chart.update('none');},{passive:false});
   var lh=''; for(var i=0;i<investments.length;i++){var isSel=selectedIdx===i;lh+='<span style="display:flex;align-items:center;gap:4px"><span style="display:inline-block;width:20px;height:'+(isSel?3:2)+'px;background:'+investments[i].color+';border-radius:1px"></span><span style="font-weight:'+(isSel?600:400)+'">'+investments[i].name+'</span></span>';} leg.innerHTML=lh;
 }
 

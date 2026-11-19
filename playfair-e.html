@@ -41,8 +41,8 @@
     <a href="playfair-s.html" data-tip="Site — analisi del singolo sito: costi e consumi di elettricità, gas, calore e acqua">Playfair-S</a>
     <a href="playfair-e.html" aria-current="page" data-tip="Electric — curve di carico elettriche quartorarie: profili, mappe orarie, picchi e base">Playfair-E</a>
     <a href="playfair-t.html" data-tip="Thermal — consumi termici ed elettrici, simulazione di cogenerazione e valutazione economica">Playfair-T</a>
-    <a href="playfair-m.html" data-tip="Money — confronto di investimenti energetici: VAN, TIR, ROI, WACC e flussi di cassa">Playfair-M</a>
     <a href="playfair-g.html" data-tip="Group — analisi di un gruppo di sedi: consumo specifico, incidenza sul totale, Pareto e mappa a 4 quadranti">Playfair-G</a>
+    <a href="playfair-m.html" data-tip="Money — confronto di investimenti energetici: VAN, TIR, ROI, WACC e flussi di cassa">Playfair-M</a>
     <a href="playfair-c.html" data-tip="Cusum — regressione, residui e carta CUSUM secondo ISO 50006">Playfair-C</a>
     <a href="sankey.html" data-tip="Sankey — disegna diagrammi di flusso energetico a blocchi e verifica i bilanci">Sankey</a>
     <a href="personaggi.html" data-tip="William Playfair e Matthew H. P. R. Sankey: chi erano">Personaggi</a>
@@ -61,7 +61,7 @@
     <summary>Come si usa</summary>
     <ol>
       <li>Trascina il file (CSV, Excel o LibreOffice) in un punto qualsiasi della pagina, oppure sceglilo nel riquadro «Consumi elettrici».</li>
-      <li>Scegli Settimana, Mese o Anno; spostati con le frecce o con la rotella del mouse sopra i grafici.</li>
+      <li>Scegli Settimana, Mese o Anno; spostati con le frecce (solo nel periodo coperto dai dati); la rotella del mouse sopra un grafico lo ingrandisce o lo riduce, «Reimposta scala» torna alla vista iniziale.</li>
       <li>Fai clic sulla curva di carico, sulla multioraria o sul carpet plot per ingrandire: anno → mese → settimana.</li>
       <li>Imposta Minimo, Massimo e Riferimento per fissare la scala e tracciare una potenza di riferimento.</li>
       <li>Nella curva cumulata, Riferimento 1 e 2 (es. due taglie di impianto) danno ore piene e ore equivalenti di funzionamento.</li>
@@ -79,7 +79,7 @@
     <span class="etichetta">Consumi elettrici</span>
     <button class="obtn" onclick="toggleHelp()">Istruzioni</button>
   </div>
-  <div id="helpBox" class="aiuto" style="display:none">Caricare un file .csv con data, ora (1-24) e consumo elettrico; i grafici si aggiornano automaticamente selezionando il periodo con le frecce, muovendo la rotella del mouse sopra i grafici oppure cliccando per ingrandire il periodo selezionato.</div>
+  <div id="helpBox" class="aiuto" style="display:none">Caricare un file .csv con data, ora (1-24) e consumo elettrico; i grafici si aggiornano automaticamente selezionando il periodo con le frecce oppure cliccando per passare al periodo più breve; la rotella del mouse sopra un grafico fa lo zoom.</div>
   <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
     <input type="file" id="csvFile" accept=".csv,.xlsx,.xls,.ods,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,application/vnd.oasis.opendocument.spreadsheet" aria-label="File CSV della curva di carico (es. 1_curva_di_carico.csv)">
     <span style="font-size:12px;color:var(--color-text-tertiary)" id="fileStatus">Attesa file .csv — colonne: data, ora (1–24), kWh</span>
@@ -104,11 +104,11 @@
       </label>
     </div>
     <div style="display:flex;align-items:center;border:1px solid var(--area-linea);border-radius:3px;overflow:hidden;margin-left:auto">
-      <button onclick="navigate(-1)" style="width:28px;height:26px;border:none;border-right:1px solid var(--area-linea);background:var(--color-background-secondary);cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0">
+      <button onclick="navigate(-1,event)" aria-label="Periodo precedente" style="width:28px;height:26px;border:none;border-right:1px solid var(--area-linea);background:var(--color-background-secondary);cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0">
         <svg width="10" height="10" viewBox="0 0 10 10"><polyline points="7,1 3,5 7,9" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
       </button>
       <span id="periodLabel" style="font-size:12px;color:var(--color-text-primary);padding:0 10px;min-width:140px;text-align:center;background:var(--color-background-primary)">—</span>
-      <button onclick="navigate(1)" style="width:28px;height:26px;border:none;border-left:1px solid var(--area-linea);background:var(--color-background-secondary);cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0">
+      <button onclick="navigate(1,event)" aria-label="Periodo successivo" style="width:28px;height:26px;border:none;border-left:1px solid var(--area-linea);background:var(--color-background-secondary);cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0">
         <svg width="10" height="10" viewBox="0 0 10 10"><polyline points="3,1 7,5 3,9" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
       </button>
     </div>
@@ -497,10 +497,15 @@ function applyLineScale(){
   if(cMulti){cMulti.options.scales.y.min=isNaN(mn)?undefined:mn;cMulti.options.scales.y.max=isNaN(mx)?undefined:mx;cMulti.update('none');}
 }
 function applyCumScale(){var mn=parseFloat(document.getElementById('cumMin').value);if(cCum){cCum.options.scales.y.min=isNaN(mn)?undefined:mn;cCum.update('none');}}
-function resetCumScale(){document.getElementById('cumMin').value=lastCumAutoMin;if(cCum){cCum.options.scales.y.min=lastCumAutoMin;cCum.update('none');}}
+function resetCumScale(){
+  if(!rows.length||!lastB)return;var nm=Math.ceil(lastPeak*1.05);
+  document.getElementById('cumMin').value=lastCumAutoMin;
+  if(cCum){PF.zoomReimposta(cCum);cCum.options.scales.y.min=lastCumAutoMin;cCum.options.scales.y.max=nm;cCum.update('none');setTimeout(drawCumOverlay,30);}
+}
 function applyCarpetScale(){autoScale=false;if(!lastB)return;var cm=getCM();renderCarpet(lastB,lastMap,cm.cMin,cm.cMax);}
 function resetScale(){
   if(!rows.length||!lastB)return;var nm=Math.ceil(lastPeak*1.05);
+  autoScale=true;PF.zoomReimposta([cLine,cBox,cMulti]);
   document.getElementById('yMin').value=0;document.getElementById('yMax').value=nm;document.getElementById('cMin').value=0;document.getElementById('cMax').value=nm;
   if(cLine){cLine.options.scales.y.min=0;cLine.options.scales.y.max=nm;cLine.update('none');}
   if(cCum){cCum.options.scales.y.max=nm;cCum.update('none');}
@@ -511,7 +516,17 @@ function resetScale(){
 
 function updateRadio(s){var ks=['Week','Month','Year'];for(var i=0;i<ks.length;i++){var a=ks[i].toLowerCase()===s;document.getElementById('dot'+ks[i]).style.background=a?'var(--area-accento)':'transparent';document.getElementById('radio'+ks[i]).style.borderColor=a?'var(--area-accento)':'var(--area-bordo)';}}
 function setScale(s){scale=s;offset=0;autoScale=true;updateRadio(s);if(rows.length)renderAll();}
-function navigate(dir){offset+=dir;autoScale=false;if(rows.length)renderAll();}
+function earliestD(){return rows.reduce(function(m,r){return r.d<m?r.d:m;},rows[0].d);}
+/* le frecce restano nel periodo coperto dai dati: oltre, un messaggio con il periodo richiesto */
+function navigate(dir,ev){
+  if(!rows.length)return;
+  var o0=offset;offset+=dir;var b=bounds();
+  if(b.e<earliestD()||b.s>latestD()){
+    PF.messaggio('Dati '+fmtPeriod(b)+' non disponibili',ev&&ev.currentTarget);
+    offset=o0;return;
+  }
+  autoScale=false;renderAll();
+}
 function toggleHelp(){var el=document.getElementById('helpBox');el.style.display=el.style.display==='none'?'block':'none';}
 function contactAuthor(){var email='ing.paolo.bianco@gmail.com';var ta=document.createElement('textarea');ta.value=email;ta.style.cssText='position:fixed;top:0;left:0;opacity:0';document.body.appendChild(ta);ta.focus();ta.select();try{document.execCommand('copy');}catch(e){}document.body.removeChild(ta);var btn=document.getElementById('contactBtn');var orig=btn.textContent;btn.textContent='Email copiata!';setTimeout(function(){btn.textContent=orig;},2000);}
 
@@ -527,12 +542,11 @@ document.getElementById('chartLine').addEventListener('click',function(e){if(!ro
 document.getElementById('chartMulti').addEventListener('click',function(e){if(!rows.length||scale==='week'||!cMulti)return;var rect=this.getBoundingClientRect(),x=e.clientX-rect.left,ca=cMulti.chartArea;if(x<ca.left||x>ca.right)return;drillDown((x-ca.left)/(ca.right-ca.left));});
 document.getElementById('carpetCanvas').addEventListener('click',function(e){if(!rows.length||scale==='week')return;var rect=this.getBoundingClientRect();drillDown((e.clientX-rect.left)/rect.width);});
 
-function onWheel(e){if(!rows.length)return;e.preventDefault();navigate(e.deltaY>0?-1:1);}
-document.getElementById('outerLine').addEventListener('wheel',onWheel,{passive:false});
-document.getElementById('outerCum').addEventListener('wheel',onWheel,{passive:false});
-document.getElementById('carpetViz').addEventListener('wheel',onWheel,{passive:false});
-document.getElementById('outerBox').addEventListener('wheel',onWheel,{passive:false});
-document.getElementById('outerMulti').addEventListener('wheel',onWheel,{passive:false});
+/* rotella = zoom orizzontale del grafico sotto il mouse (il periodo si cambia con le frecce) */
+PF.zoomRotella(document.getElementById('outerLine'),function(){return cLine;});
+PF.zoomRotella(document.getElementById('outerCum'),function(){return cCum;},{dopo:function(){setTimeout(drawCumOverlay,0);}});
+PF.zoomRotella(document.getElementById('outerBox'),function(){return cBox;});
+PF.zoomRotella(document.getElementById('outerMulti'),function(){return cMulti;});
 
 window.addEventListener('resize',function(){
   if(cLine)cLine.resize();if(cCum){cCum.resize();setTimeout(drawCumOverlay,50);}

@@ -56,8 +56,8 @@
     <a href="playfair-s.html" data-tip="Site — analisi del singolo sito: costi e consumi di elettricità, gas, calore e acqua">Playfair-S</a>
     <a href="playfair-e.html" data-tip="Electric — curve di carico elettriche quartorarie: profili, mappe orarie, picchi e base">Playfair-E</a>
     <a href="playfair-t.html" aria-current="page" data-tip="Thermal — consumi termici ed elettrici, simulazione di cogenerazione e valutazione economica">Playfair-T</a>
-    <a href="playfair-m.html" data-tip="Money — confronto di investimenti energetici: VAN, TIR, ROI, WACC e flussi di cassa">Playfair-M</a>
     <a href="playfair-g.html" data-tip="Group — analisi di un gruppo di sedi: consumo specifico, incidenza sul totale, Pareto e mappa a 4 quadranti">Playfair-G</a>
+    <a href="playfair-m.html" data-tip="Money — confronto di investimenti energetici: VAN, TIR, ROI, WACC e flussi di cassa">Playfair-M</a>
     <a href="playfair-c.html" data-tip="Cusum — regressione, residui e carta CUSUM secondo ISO 50006">Playfair-C</a>
     <a href="sankey.html" data-tip="Sankey — disegna diagrammi di flusso energetico a blocchi e verifica i bilanci">Sankey</a>
     <a href="personaggi.html" data-tip="William Playfair e Matthew H. P. R. Sankey: chi erano">Personaggi</a>
@@ -616,10 +616,15 @@ function applyLineScale(){
   if(cCum){cCum.options.scales.y.max=isNaN(mx)?undefined:mx;cCum.update('none');}
 }
 function applyCumScale(){var mn=parseFloat(document.getElementById('cumMin').value);if(cCum){cCum.options.scales.y.min=isNaN(mn)?undefined:mn;cCum.update('none');}}
-function resetCumScale(){document.getElementById('cumMin').value=lastCumAutoMin;if(cCum){cCum.options.scales.y.min=lastCumAutoMin;cCum.update('none');}}
+function resetCumScale(){
+  if(!lastB)return;var nm=Math.ceil(lastPeak*1.05);
+  document.getElementById('cumMin').value=lastCumAutoMin;
+  if(cCum){PF.zoomReimposta(cCum);cCum.options.scales.y.min=lastCumAutoMin;cCum.options.scales.y.max=nm;cCum.update('none');}
+}
 function resetScale(){
   if(!lastB)return;
   var nm=Math.ceil(lastPeak*1.05);
+  autoScale=true;PF.zoomReimposta(cLine);
   document.getElementById('yMin').value=0;document.getElementById('yMax').value=nm;
   if(cLine){cLine.options.scales.y.min=0;cLine.options.scales.y.max=nm;cLine.update('none');}
   if(cCum){cCum.options.scales.y.max=nm;cCum.update('none');}
@@ -635,6 +640,9 @@ function updateRadio(s){
     document.getElementById('radio'+ks[i]).style.borderColor=a?'var(--area-accento)':'var(--area-bordo)';
   }
 }
+/* rotella = zoom orizzontale del grafico sotto il mouse; «Reimposta scala» torna alla vista iniziale */
+PF.zoomRotella(document.getElementById('outerLine'),function(){return cLine;});
+PF.zoomRotella(document.getElementById('outerCum'),function(){return cCum;});
 function setScale(s){scale=s;offset=0;autoScale=true;updateRadio(s);if(rowsE_view.length||rowsT_view.length)renderAll();}
 updateRadio('year');
 

@@ -29,8 +29,8 @@
     <a href="playfair-s.html" data-tip="Site — analisi del singolo sito: costi e consumi di elettricità, gas, calore e acqua">Playfair-S</a>
     <a href="playfair-e.html" data-tip="Electric — curve di carico elettriche quartorarie: profili, mappe orarie, picchi e base">Playfair-E</a>
     <a href="playfair-t.html" data-tip="Thermal — consumi termici ed elettrici, simulazione di cogenerazione e valutazione economica">Playfair-T</a>
-    <a href="playfair-m.html" data-tip="Money — confronto di investimenti energetici: VAN, TIR, ROI, WACC e flussi di cassa">Playfair-M</a>
     <a href="playfair-g.html" data-tip="Group — analisi di un gruppo di sedi: consumo specifico, incidenza sul totale, Pareto e mappa a 4 quadranti">Playfair-G</a>
+    <a href="playfair-m.html" data-tip="Money — confronto di investimenti energetici: VAN, TIR, ROI, WACC e flussi di cassa">Playfair-M</a>
     <a href="playfair-c.html" aria-current="page" data-tip="Cusum — regressione, residui e carta CUSUM secondo ISO 50006">Playfair-C</a>
     <a href="sankey.html" data-tip="Sankey — disegna diagrammi di flusso energetico a blocchi e verifica i bilanci">Sankey</a>
     <a href="personaggi.html" data-tip="William Playfair e Matthew H. P. R. Sankey: chi erano">Personaggi</a>
@@ -154,7 +154,10 @@ var SCARTI=[], CUSUM=[];
 var chAnd=null, chReg=null, chSca=null, chCus=null;
 
 // Zoom windows for index charts (Andamenti, Scarti, CuSum)
-var wAnd={min:0,max:0};
+// NB: gli oggetti finestra si aggiornano SEMPRE sul posto (setW/Object.assign): rotella e trascinamento
+// tengono un riferimento all'oggetto passato a setupIdx, riassegnarlo li scollegherebbe.
+function setW(w,v){for(var k in v)w[k]=v[k];return w;}
+var wAnd={min:0,max:0}; var wAnd0={min:0,max:0};
 var wSca={min:0,max:0}; var wSca0={min:0,max:0};
 var wCus={min:0,max:0}; var wCus0={min:0,max:0};
 // Scatter zoom
@@ -225,7 +228,7 @@ document.getElementById('csvFile').addEventListener('change',function(e){
     document.getElementById('titleAndamenti').textContent='Andamenti — Consumo ['+cUnit+'] e '+dName+' ['+dUnit+']';
     var defN=Math.max(2,Math.round(DATA.length*0.2));
     document.getElementById('regN').value=defN;
-    wAnd={min:0,max:DATA.length-1};
+    setW(wAnd,{min:0,max:DATA.length-1}); setW(wAnd0,{min:0,max:DATA.length-1});
     doRegression();
   }});
 });
@@ -260,18 +263,17 @@ function doRegression(){
   var xs=DATA.map(function(d){return d.x;}), ys2=DATA.map(function(d){return d.y;});
   var xpad=(Math.max.apply(null,xs)-Math.min.apply(null,xs))*0.05||1;
   var ypad=(Math.max.apply(null,ys2)-Math.min.apply(null,ys2))*0.05||1;
-  wReg={x0:Math.min.apply(null,xs)-xpad,x1:Math.max.apply(null,xs)+xpad,y0:Math.min.apply(null,ys2)-ypad,y1:Math.max.apply(null,ys2)+ypad};
-  wReg0={x0:wReg.x0,x1:wReg.x1,y0:wReg.y0,y1:wReg.y1};
+  setW(wReg,{x0:Math.min.apply(null,xs)-xpad,x1:Math.max.apply(null,xs)+xpad,y0:Math.min.apply(null,ys2)-ypad,y1:Math.max.apply(null,ys2)+ypad});
+  setW(wReg0,wReg);
   // init index windows
-  wSca={min:0,max:SCARTI.length-1}; wSca0={min:0,max:SCARTI.length-1};
-  wCus={min:0,max:rN-1};            wCus0={min:0,max:rN-1};
+  setW(wSca,{min:0,max:SCARTI.length-1}); setW(wSca0,wSca);
+  setW(wCus,{min:0,max:rN-1});            setW(wCus0,wCus);
   renderAll();
 }
 
 function resetAllScales(){
-  wReg={x0:wReg0.x0,x1:wReg0.x1,y0:wReg0.y0,y1:wReg0.y1};
-  wSca={min:wSca0.min,max:wSca0.max};
-  wCus={min:wCus0.min,max:wCus0.max};
+  setW(wReg,wReg0); setW(wSca,wSca0); setW(wCus,wCus0); setW(wAnd,wAnd0);
+  if(chAnd){chAnd.options.scales.x.min=wAnd.min;chAnd.options.scales.x.max=wAnd.max;chAnd.update('none');}
   if(chReg){chReg.options.scales.x.min=wReg.x0;chReg.options.scales.x.max=wReg.x1;chReg.options.scales.y.min=wReg.y0;chReg.options.scales.y.max=wReg.y1;chReg.update('none');}
   if(chSca){chSca.options.scales.x.min=wSca.min;chSca.options.scales.x.max=wSca.max;chSca.update('none');}
   if(chCus){chCus.options.scales.x.min=wCus.min;chCus.options.scales.x.max=wCus.max;chCus.update('none');}
