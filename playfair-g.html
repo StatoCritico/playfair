@@ -896,13 +896,52 @@ window.PF_EXCEL={
     if(!charts.incid)incidenza();
     if(!charts.quad)mappa();
     if(charts.quad)charts.quad.canvas.setAttribute('data-pf-excel','entrambi');
-    if(charts.incid)charts.incid.canvas.setAttribute('data-pf-excel','immagine');   // rettangoli a base variabile: in Excel non c'è un tipo equivalente
+    if(charts.incid){ charts.incid.canvas.id='cv-incid'; charts.incid.canvas.setAttribute('data-pf-excel','nativo'); }   // grafico ad aree costruito in modelloIncidenza
     if(charts.pareto)charts.pareto.canvas.setAttribute('data-pf-titolo','Diagramma di Pareto');
-    if(charts.incid)charts.incid.canvas.setAttribute('data-pf-titolo','Incidenza e consumo specifico');
+    if(charts.incid)charts.incid.canvas.setAttribute('data-pf-titolo','Analisi di incidenza');
     if(charts.quad)charts.quad.canvas.setAttribute('data-pf-titolo','Mappa a quattro quadranti');
   },
-  tabelle:{}
+  tabelle:{},
+  modelli:{ 'cv-incid': modelloIncidenza }
 };
+/* Incidenza in Excel: grafico ad AREE nativo, una serie per sede. L'asse orizzontale è di tipo data (numerico), con
+   due righe per sede: inizio e fine della sua base sulla dimensione cumulata. La serie di una sede vale 0 su tutte le
+   righe delle altre sedi e il suo consumo specifico sulle sue due righe: dove la fine di una sede coincide con l'inizio
+   della successiva i due punti hanno la stessa x e l'area sale o scende in verticale, disegnando il rettangolo. */
+function modelloIncidenza(ch, cv, titolo, aiuti) {
+  var o = S.sedi.filter(function (s) { return !s.zero; }).sort(function (a, b) { return b.cs - a.cs || b.cons - a.cons; });
+  if (!o.length) return null;
+  var tot = o.reduce(function (a, s) { return a + s.dim; }, 0), minD = Math.min.apply(null, o.map(function (s) { return s.dim; }));
+  // l'asse data lavora a giorni interi: se le dimensioni sono piccole o decimali si scala per 10^k (massimo 2.958.465)
+  var k = 0;
+  while (k < 6 && (minD * Math.pow(10, k) < 20 || o.some(function (s) { var v = s.dim * Math.pow(10, k); return Math.abs(v - Math.round(v)) > 1e-6; })) && tot * Math.pow(10, k + 1) <= 2.9e6) k++;
+  var f = Math.pow(10, k), scala = k ? ' (× ' + fN(f) + ')' : '';
+  var tx = nD() + (uD() ? ' [' + uD() + ']' : '') + ' cumulata' + scala;
+  var colonne = [tx].concat(o.map(function (s) { return s.codice + ' - ' + s.nome; }), ['Consumo specifico del gruppo']);
+  var righe = [], x = 0;
+  o.forEach(function (s, i) {
+    var a = Math.round(x * f), b = Math.round((x + s.dim) * f); x += s.dim;
+    [a, b].forEach(function (xx) {
+      righe.push([xx].concat(o.map(function (t, j) { return j === i ? t.cs : 0; }), [R.csG]));
+    });
+  });
+  var serie = o.map(function (s, i) {
+    return { col: i + 1, nome: colonne[i + 1], kind: 'area', sec: false,
+      stile: { kind: 'area', fill: aiuti.col(colSede(s)), line: aiuti.col(colSede(s)), larg: 0.75 } };
+  });
+  serie.push({ col: o.length + 1, nome: colonne[o.length + 1], kind: 'line', sec: false,
+    stile: { kind: 'line', line: aiuti.col(PF.testo()), larg: 1.5, dash: true, marker: null } });
+  var passo = Math.pow(10, Math.floor(Math.log10(tot * f / 6)));
+  ['1', '2', '5'].some(function (m) { if (tot * f / (passo * m) <= 8) { passo *= m; return true; } return false; }) || (passo *= 10);
+  return {
+    tabella: { colonne: colonne, righe: righe },
+    avviso: 'Grafico ad aree: ogni sede è una serie che vale zero fuori dalla sua base e il suo consumo specifico sui due punti della base; l’asse orizzontale è di tipo data, usato come scala numerica della ' + nD().toLowerCase() + ' cumulata.',
+    grafico: { famiglia: 'categorie', titolo: titolo, oriz: false, impilato: false, n: righe.length, legenda: true,
+      assi: { cat: { titolo: tx, data: true, min: 0, max: Math.round(tot * f), passo: passo },
+              val: { titolo: 'Consumo specifico [' + uS() + ']', min: 0 }, val2: null },
+      serie: serie }
+  };
+}
 })();
 </script>
 <script src="assets/sito.js" defer></script>

@@ -113,6 +113,7 @@ tubi»; legenda «acqua: scala separata, ridotta».
 - CSV: `codice;denominazione;dimensione;consumo` (nomi simili riconosciuti; unità dall'intestazione o da una 2ª riga di unità; separatore `;` `,` tab; formato numeri automatico o forzato). Sedi con dimensione 0/mancante: segnalate, contano nel totale, nell'incidenza e nel Pareto, escluse da consumo specifico e quadranti.
 - Consumo specifico = consumo/dimensione; del gruppo = Σconsumi/Σdimensioni (sedi con dimensione valida). Incidenza = consumo sede/Σconsumi. Sedi "nell'80%" = insieme minimo, in ordine decrescente, la cui cumulata raggiunge l'80%.
 - Quadranti: X = consumo specifico, Y = incidenza %; soglie sulla media (X: specifico del gruppo; Y: incidenza media = 100/N) o sulla mediana; valori uguali alla soglia vanno in basso/sinistra.
+- Incidenza: rettangoli affiancati, base = dimensione, altezza = consumo specifico (area = consumo), dal consumo specifico più alto; un colore fisso per sede in tutti i grafici. In Excel: grafico ad aree nativo, una serie per sede (zero fuori dalla sua base, consumo specifico sui due punti della base), asse orizzontale di tipo data usato come scala numerica (`PF_EXCEL.modelli`, `assi.cat.data` in `excel.js`).
 - Nella home è il riquadro 08 «Radiation · le perdite» (parte `radiation`: tutte le perdite per irraggiamento, tratti grigi sottili).
 
 ## Licenza

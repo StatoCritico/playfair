@@ -9,6 +9,9 @@
      (xl/media) accanto alla tabella dei dati.
    - Ogni foglio: titolo, riga di fonte, tabella dei dati del grafico, grafico. Ultimo foglio «Fonte» con i dettagli.
    Le pagine possono personalizzare con window.PF_EXCEL = { strumento, prima(), tabelle: { idCanvas: fn(chart|canvas) },
+   modelli: { idCanvas: fn(chart, canvas, titolo, aiuti) → { tabella, grafico, avviso? } } (grafico nativo costruito dalla
+   pagina; aiuti.col converte un colore CSS in {hex, a}; in famiglia «categorie» assi.cat.data = true usa un asse
+   orizzontale di tipo data, cioè numerico: le x ripetute disegnano tratti verticali, utile per aree a gradino),
    immagini: { idCanvas: fn(canvas) → canvas }, dopo(fogli) } e con gli attributi dei <canvas>:
    data-pf-titolo, data-pf-periodo (selettore del testo del periodo), data-pf-excel="no|immagine|entrambi|nativo".
    Nessun dato esce dal browser.
@@ -213,7 +216,11 @@
     var nativo = modo !== "immagine";
     if (["bar", "line", "scatter", "bubble", "pie", "doughnut"].indexOf(tipo) < 0) nativo = false;
     var m = null;
-    try { m = nativo || !(hook.tabelle && hook.tabelle[cv.id]) ? modello(ch, titolo) : null; } catch (e) { m = null; if (window.console) console.warn("Playfair Excel:", e); }
+    if (hook.modelli && hook.modelli[cv.id]) {
+      try { m = hook.modelli[cv.id](ch, cv, titolo, { col: col }); } catch (e) { m = null; if (window.console) console.warn("Playfair Excel:", e); }
+      if (m) nativo = modo !== "immagine";
+    }
+    if (!m) try { m = nativo || !(hook.tabelle && hook.tabelle[cv.id]) ? modello(ch, titolo) : null; } catch (e) { m = null; if (window.console) console.warn("Playfair Excel:", e); }
     if (hook.tabelle && hook.tabelle[cv.id]) f.tabella = hook.tabelle[cv.id](ch, cv);
     else if (m) f.tabella = m.tabella;
     if (nativo && m && m.grafico) f.grafico = m.grafico;
@@ -550,6 +557,15 @@
       titoloXml(a.titolo, 1000, false, pos === "l" || pos === "r") + '<c:numFmt formatCode="General" sourceLinked="1"/><c:majorTickMark val="out"/><c:minorTickMark val="none"/><c:tickLblPos val="low"/>' +
       LINEA_ASSE + '<c:crossAx val="' + cross + '"/><c:crosses val="autoZero"/><c:auto val="1"/><c:lblAlgn val="ctr"/><c:lblOffset val="100"/><c:noMultiLvlLbl val="0"/></c:catAx>';
   }
+  /* asse orizzontale «data» usato come asse numerico: le categorie sono numeri (giorni) e la distanza tra i punti è
+     proporzionale alla differenza dei valori; due punti con lo stesso valore danno un tratto verticale */
+  function dateAx(id, cross, pos, a) {
+    a = a || {};
+    return '<c:dateAx><c:axId val="' + id + '"/>' + scaling(a) + '<c:delete val="' + (a.nascosto ? 1 : 0) + '"/><c:axPos val="' + pos + '"/>' +
+      titoloXml(a.titolo, 1000, false, false) + '<c:numFmt formatCode="' + esc(a.formato || "#,##0") + '" sourceLinked="0"/><c:majorTickMark val="out"/><c:minorTickMark val="none"/><c:tickLblPos val="low"/>' +
+      LINEA_ASSE + '<c:crossAx val="' + cross + '"/><c:crosses val="autoZero"/><c:auto val="0"/><c:lblOffset val="100"/><c:baseTimeUnit val="days"/>' +
+      (isNum(a.passo) ? '<c:majorUnit val="' + numXml(a.passo) + '"/><c:majorTimeUnit val="days"/>' : "") + "</c:dateAx>";
+  }
   function valAx(id, cross, pos, a, opz) {
     a = a || {};
     return '<c:valAx><c:axId val="' + id + '"/>' + scaling(a) + '<c:delete val="' + (a.nascosto ? 1 : 0) + '"/><c:axPos val="' + pos + '"/>' + (opz.griglia ? GRIGLIA : "") +
@@ -584,7 +600,9 @@
         }
       });
       var posCat = g.oriz ? "l" : "b", posVal = g.oriz ? "b" : "l";
-      assi = catAx(500100, 500200, posCat, g.assi.cat, { inverti: g.oriz }) + valAx(500200, 500100, posVal, g.assi.val, { griglia: true, crosses: g.oriz ? "max" : null });
+      var asseData = !g.oriz && g.assi.cat && g.assi.cat.data;
+      assi = (asseData ? dateAx(500100, 500200, posCat, g.assi.cat) : catAx(500100, 500200, posCat, g.assi.cat, { inverti: g.oriz })) +
+        valAx(500200, 500100, posVal, g.assi.val, { griglia: true, crosses: g.oriz ? "max" : null, midCat: asseData });
       if (g.serie.some(function (s) { return s.sec; })) {
         assi += catAx(500300, 500400, posCat, {}, { cancella: true, inverti: g.oriz }) + valAx(500400, 500300, g.oriz ? "t" : "r", g.assi.val2, { crosses: "max" });
       }
